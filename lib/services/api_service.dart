@@ -35,13 +35,14 @@ class ApiService {
       final body = response.body.isEmpty
           ? <String, dynamic>{}
           : jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode < 200 || response.statusCode >= 300)
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw ApiError.fromStatusCode(
           response.statusCode,
           message: body['error'] is Map
               ? (body['error'] as Map)['message']?.toString()
               : body['message']?.toString() ?? body['detail']?.toString(),
         );
+      }
       return body;
     } on SocketException {
       throw const ApiError(

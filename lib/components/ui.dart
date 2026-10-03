@@ -58,8 +58,10 @@ class AppButton extends StatelessWidget {
 }
 
 class PrescriptionImagePreview extends StatelessWidget {
-  const PrescriptionImagePreview({super.key, required this.image});
+  const PrescriptionImagePreview(
+      {super.key, required this.image, this.maxHeight = 240});
   final XFile image;
+  final double maxHeight;
   @override
   Widget build(BuildContext context) {
     final imageWidget = kIsWeb
@@ -74,9 +76,13 @@ class PrescriptionImagePreview extends StatelessWidget {
             errorBuilder: _imageError,
           );
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: AspectRatio(aspectRatio: .78, child: imageWidget),
+    return SizedBox(
+      height: maxHeight,
+      width: double.infinity,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: ColoredBox(color: AppColors.background, child: imageWidget),
+      ),
     );
   }
 
@@ -112,9 +118,17 @@ class AppLoading extends StatelessWidget {
 }
 
 class AppError extends StatelessWidget {
-  const AppError({super.key, required this.error, required this.retry});
+  const AppError({
+    super.key,
+    required this.error,
+    required this.retry,
+    this.onBack,
+    this.backLabel = 'Volver',
+  });
   final ApiError error;
   final VoidCallback retry;
+  final VoidCallback? onBack;
+  final String backLabel;
   @override
   Widget build(BuildContext c) => Center(
         child: Padding(
@@ -135,6 +149,14 @@ class AppError extends StatelessWidget {
               const SizedBox(height: 22),
               AppButton(
                   label: 'Reintentar', icon: Icons.refresh, onPressed: retry),
+              if (onBack != null) ...[
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  onPressed: onBack,
+                  icon: const Icon(Icons.arrow_back),
+                  label: Text(backLabel),
+                ),
+              ],
             ],
           ),
         ),

@@ -1,6 +1,6 @@
-# Farma Go — Frontend móvil
+# Farma Go — Frontend móvil y web
 
-Aplicación Flutter para tomar o seleccionar una fórmula médica, enviarla al agente de Farma Go y mostrar los medicamentos identificados. Funciona en Android, iOS y Web.
+Aplicación Flutter para pacientes de FARMA GO. Permite acceder a la plataforma, gestionar su sesión y analizar fórmulas médicas como parte de una operación que conecta EPS, gestores farmacéuticos, droguerías, repartidores y pacientes. Funciona en Android, iOS y Web.
 
 ## Requisitos
 
@@ -8,7 +8,7 @@ Aplicación Flutter para tomar o seleccionar una fórmula médica, enviarla al a
 - Python 3.11 o superior para el backend.
 - Una clave válida de OpenAI o Gemini configurada solamente en el backend. Nunca pongas claves en Flutter ni las subas a Git.
 
-El frontend necesita que el repositorio hermano `TheOff1ceAI` esté ejecutándose en el puerto `8000`.
+El frontend necesita que el repositorio hermano `TheOff1ceAI` esté ejecutándose en el puerto `8000`. Para el acceso, registro, recuperación de contraseña y Google OAuth también necesita `TheOff1ceAuth` en el puerto `3000`.
 
 ## Paso 1: iniciar el backend de IA
 
@@ -68,6 +68,21 @@ flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:8000
 
 El backend permite automáticamente los puertos locales que Flutter asigna. Si aparece `CORS error`, reinicia Uvicorn.
 
+Para probar Google OAuth con una URL local estable, usa el servidor web en el puerto `5173`:
+
+```powershell
+flutter run -d web-server --web-hostname localhost --web-port 5173 --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
+```
+
+En `TheOff1ceAuth`, `FRONTEND_URL` debe ser `http://localhost:5173` y el redirect URI autorizado en Google debe ser `http://localhost:3000/auth/google/callback`. El callback temporal del navegador es `/auth/google/callback`; al terminar, la aplicación limpia esa dirección y muestra una ruta de usuario.
+
+Para comprobar una compilación local con rutas directas (por ejemplo, recargando `/login`), ejecuta:
+
+```powershell
+flutter build web --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
+node tool/local_web_server.js
+```
+
 ### Android Emulator
 
 ```powershell
@@ -116,14 +131,27 @@ Para producción usa HTTPS; nunca expongas las claves ni el servidor de desarrol
 
 ## Arquitectura
 
-- `lib/app`: tema Material 3 y configuración global.
-- `lib/pages`: inicio, carga, preview, análisis y resultado.
+- `lib/app`: tema Material 3, rutas declarativas y configuración global.
+- `lib/pages`: acceso, inicio, carga, análisis, resultado y cuenta.
 - `lib/components`: UI reutilizable.
 - `lib/hooks`: estado con `ChangeNotifier`.
 - `lib/services`: cámara/galería y carga multipart.
 - `lib/types`: modelos y errores.
 
 La imagen se envía en `multipart/form-data`, campo `file`, al endpoint `POST /analyze`. Las páginas no hacen llamadas HTTP directamente.
+
+## Rutas de la aplicación
+
+| Ruta | Uso |
+| --- | --- |
+| `/` | Información de la plataforma. |
+| `/login`, `/register` | Inicio de sesión y creación de cuenta. |
+| `/forgot-password`, `/reset-password` | Recuperación de contraseña. |
+| `/home` | Inicio protegido de la persona autenticada. |
+| `/analyze-prescription` | Selección y análisis de una fórmula. |
+| `/account` | Datos de cuenta y cierre de sesión. |
+
+Las rutas privadas redirigen a `/login` cuando no existe sesión. Las rutas de análisis sin una imagen o resultado activo explican cómo retomar el flujo en vez de mostrar una pantalla vacía. Las rutas anteriores en español se redirigen a sus equivalentes en inglés para conservar los enlaces existentes.
 
 ## Calidad
 
