@@ -18,6 +18,7 @@ abstract final class AppRoutes {
   static const uploadPrescription = '/analyze-prescription';
   static const analyzingPrescription = '/analyze-prescription/processing';
   static const prescriptionResult = '/analyze-prescription/result';
+  static const notifications = '/notifications';
   static const account = '/account';
 
   static void backOrGo(BuildContext context, String fallback) {
@@ -41,5 +42,6 @@ abstract final class LegacyRoutes {
   static const uploadPrescription = '/analizar-formula';
   static const analyzingPrescription = '/analizar-formula/procesando';
   static const prescriptionResult = '/analizar-formula/resultado';
+  static const notifications = '/notificaciones';
   static const account = '/cuenta';
 }

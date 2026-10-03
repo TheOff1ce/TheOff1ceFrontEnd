@@ -149,6 +149,7 @@ La imagen se envía en `multipart/form-data`, campo `file`, al endpoint `POST /a
 | `/forgot-password`, `/reset-password` | Recuperación de contraseña. |
 | `/home` | Inicio protegido de la persona autenticada. |
 | `/analyze-prescription` | Selección y análisis de una fórmula. |
+| `/notifications` | Centro de actualizaciones de análisis del usuario. |
 | `/account` | Datos de cuenta y cierre de sesión. |
 
 Las rutas privadas redirigen a `/login` cuando no existe sesión. Las rutas de análisis sin una imagen o resultado activo explican cómo retomar el flujo en vez de mostrar una pantalla vacía. Las rutas anteriores en español se redirigen a sus equivalentes en inglés para conservar los enlaces existentes.

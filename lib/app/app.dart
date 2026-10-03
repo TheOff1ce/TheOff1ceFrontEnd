@@ -5,10 +5,13 @@ import 'package:image_picker/image_picker.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_repository.dart';
 import '../hooks/prescription_hook.dart';
+import '../notifications/notification_controller.dart';
+import '../notifications/notification_repository.dart';
 import '../pages/analysis_page.dart';
 import '../pages/auth_pages.dart';
 import '../pages/google_auth_callback_page.dart';
 import '../pages/home_page.dart';
+import '../pages/notifications_page.dart';
 import '../pages/password_reset_pages.dart';
 import '../pages/result_page.dart';
 import '../pages/upload_page.dart';
@@ -29,6 +32,7 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
   late final ApiService api;
   late final PrescriptionController controller;
   late final AuthController auth;
+  late final NotificationController notifications;
   late final GoRouter _router;
 
   @override
@@ -37,6 +41,8 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
     api = ApiService(AppConfig.apiBaseUrl);
     controller = PrescriptionController(PrescriptionService(api));
     auth = AuthController(AuthRepository(AppConfig.authBaseUrl));
+    notifications = NotificationController(NotificationRepository());
+    auth.addListener(_syncNotificationUser);
     _router = _createRouter();
     auth.restore();
   }
@@ -45,7 +51,9 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
   void dispose() {
     _router.dispose();
     controller.dispose();
+    auth.removeListener(_syncNotificationUser);
     auth.dispose();
+    notifications.dispose();
     api.dispose();
     super.dispose();
   }
@@ -116,6 +124,10 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
           GoRoute(
             path: LegacyRoutes.account,
             redirect: (context, state) => AppRoutes.account,
+          ),
+          GoRoute(
+            path: LegacyRoutes.notifications,
+            redirect: (context, state) => AppRoutes.notifications,
           ),
           GoRoute(
             path: AppRoutes.landing,
@@ -192,7 +204,9 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
             builder: (context, state) => _duringSessionRestore(
               HomePage(
                 auth: auth,
+                notifications: notifications,
                 onAnalyze: () => context.push(AppRoutes.uploadPrescription),
+                onNotifications: () => context.push(AppRoutes.notifications),
                 onAccount: () => context.push(AppRoutes.account),
               ),
             ),
@@ -226,7 +240,14 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
                   image: image,
                   onBack: () =>
                       AppRoutes.backOrGo(context, AppRoutes.uploadPrescription),
-                  onComplete: () => context.go(AppRoutes.prescriptionResult),
+                  onComplete: () {
+                    final result = controller.result;
+                    if (result != null) {
+                      notifications.addAnalysisCompleted(
+                          medicationCount: result.medications.length);
+                    }
+                    context.go(AppRoutes.prescriptionResult);
+                  },
                 ),
               );
             },
@@ -252,6 +273,15 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
                 ),
               );
             },
+          ),
+          GoRoute(
+            path: AppRoutes.notifications,
+            builder: (context, state) => _duringSessionRestore(
+              NotificationsPage(
+                notifications: notifications,
+                onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+              ),
+            ),
           ),
           GoRoute(
             path: AppRoutes.account,
@@ -288,6 +318,7 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
       AppRoutes.uploadPrescription,
       AppRoutes.analyzingPrescription,
       AppRoutes.prescriptionResult,
+      AppRoutes.notifications,
       AppRoutes.account,
     };
 
@@ -323,6 +354,15 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
             ? const _SessionLoadingPage()
             : child,
       );
+
+  void _syncNotificationUser() {
+    final user = auth.user;
+    if (auth.status == AuthStatus.authenticated && user != null) {
+      notifications.loadForUser(user.id);
+    } else {
+      notifications.clearSession();
+    }
+  }
 }
 
 class _SessionLoadingPage extends StatelessWidget {

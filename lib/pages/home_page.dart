@@ -3,16 +3,22 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../components/ui.dart';
+import '../notifications/notification_controller.dart';
+import 'notifications_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({
     super.key,
     this.auth,
+    required this.notifications,
     required this.onAnalyze,
+    required this.onNotifications,
     required this.onAccount,
   });
   final AuthController? auth;
+  final NotificationController notifications;
   final VoidCallback onAnalyze;
+  final VoidCallback onNotifications;
   final VoidCallback onAccount;
 
   @override
@@ -31,6 +37,13 @@ class HomePage extends StatelessWidget {
                 Row(children: [
                   const FarmaGoHomeMark(),
                   const Spacer(),
+                  AnimatedBuilder(
+                    animation: notifications,
+                    builder: (context, _) => NotificationBellButton(
+                      unreadCount: notifications.unreadCount,
+                      onPressed: onNotifications,
+                    ),
+                  ),
                   IconButton(
                     tooltip: 'Cuenta',
                     onPressed: () => _showAccountPanel(context),

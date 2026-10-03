@@ -22,6 +22,8 @@ class AnalysisPage extends StatefulWidget {
 }
 
 class _AnalysisPageState extends State<AnalysisPage> {
+  bool _completionHandled = false;
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +33,9 @@ class _AnalysisPageState extends State<AnalysisPage> {
 
   void changed() {
     if (!mounted) return;
-    if (widget.controller.status == PrescriptionStatus.success) {
+    if (widget.controller.status == PrescriptionStatus.success &&
+        !_completionHandled) {
+      _completionHandled = true;
       widget.onComplete();
     } else {
       setState(() {});
