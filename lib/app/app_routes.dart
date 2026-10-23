@@ -14,6 +14,9 @@ abstract final class AppRoutes {
   static const verifyEmail = '/verify-email';
   static const googleCallback = '/auth/google/callback';
 
+  /// Where TheOff1ceAuth redirects after Google sign-in (`FRONTEND_URL/auth/callback`).
+  static const oauthLanding = '/auth/callback';
+
   static const home = '/home';
   static const uploadPrescription = '/analyze-prescription';
   static const analyzingPrescription = '/analyze-prescription/processing';
@@ -44,4 +47,18 @@ abstract final class LegacyRoutes {
   static const prescriptionResult = '/analizar-formula/resultado';
   static const notifications = '/notificaciones';
   static const account = '/cuenta';
+
+  /// Legacy path → current path (the login redirect is special: it keeps `?error`).
+  static const mapping = [
+    (register, AppRoutes.register),
+    (forgotPassword, AppRoutes.forgotPassword),
+    (resetPassword, AppRoutes.resetPassword),
+    (verifyEmail, AppRoutes.verifyEmail),
+    (home, AppRoutes.home),
+    (uploadPrescription, AppRoutes.uploadPrescription),
+    (analyzingPrescription, AppRoutes.analyzingPrescription),
+    (prescriptionResult, AppRoutes.prescriptionResult),
+    (account, AppRoutes.account),
+    (notifications, AppRoutes.notifications),
+  ];
 }

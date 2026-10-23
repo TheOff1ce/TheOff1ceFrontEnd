@@ -1,12 +1,5 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:farma_go/pages/auth_pages.dart';
 import 'package:farma_go/pages/home_page.dart';
+import 'package:farma_go/pages/landing_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -38,5 +31,13 @@ void main() {
     ));
     await tester.tap(find.text('Analizar fórmula'));
     expect(openedAnalysis, isTrue);
+  });
+
+  testWidgets('upcoming features are explained up front instead of looking clickable', (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: HomeActionCard(icon: Icons.inventory_2_outlined, title: 'Mis medicamentos', description: 'Historial.'),
+    ));
+    expect(find.text('Pronto'), findsOneWidget);
+    expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
   });
 }

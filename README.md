@@ -1,162 +1,58 @@
 # Farma Go — Frontend móvil y web
 
-Aplicación Flutter para pacientes de FARMA GO. Permite acceder a la plataforma, gestionar su sesión y analizar fórmulas médicas como parte de una operación que conecta EPS, gestores farmacéuticos, droguerías, repartidores y pacientes. Funciona en Android, iOS y Web.
+Aplicación Flutter para pacientes de FARMA GO: registro e inicio de sesión (correo + código, o Google en web), análisis de fórmulas médicas con IA, resultados y notificaciones. Plataformas soportadas: **Android, iOS y Web**.
 
 ## Requisitos
 
-- Flutter instalado (`flutter --version`).
-- Python 3.11 o superior para el backend.
-- Una clave válida de OpenAI o Gemini configurada solamente en el backend. Nunca pongas claves en Flutter ni las subas a Git.
+- Flutter estable (`flutter --version`).
+- `TheOff1ceAuth` en el puerto 3000 y `TheOff1ceAI` en el puerto 8000 (por ejemplo con `docker compose -f docker-compose-up.yml up --build` desde la carpeta raíz de FarmaGo).
+- Nunca se configuran claves ni secretos en Flutter. El access token de Auth vive solo en memoria y se envía a AI como `Authorization: Bearer`.
 
-El frontend necesita que el repositorio hermano `TheOff1ceAI` esté ejecutándose en el puerto `8000`. Para el acceso, registro, recuperación de contraseña y Google OAuth también necesita `TheOff1ceAuth` en el puerto `3000`.
-
-## Paso 1: iniciar el backend de IA
-
-Abre una primera terminal de PowerShell:
+## Preparar
 
 ```powershell
-cd "C:\Users\julia\Desktop\TRABAJOS U\8 semestre\SWNT\FarmaGo\TheOff1ceAI"
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-```
-
-Edita `.env` y configura un proveedor. Ejemplo:
-
-```dotenv
-AI_PROVIDER=openai
-OPENAI_API_KEY=tu_clave_privada
-OPENAI_MODEL=gpt-4.1-mini
-MAX_FILE_SIZE_MB=10
-CONFIDENCE_THRESHOLD=0.75
-```
-
-Inicia el servidor y déjalo abierto:
-
-```powershell
-uvicorn app.main:app --reload
-```
-
-Verifica que responde en [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs), o ejecuta:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8000/health
-```
-
-Debe devolver `status: ok`.
-
-## Paso 2: preparar el frontend
-
-Abre una segunda terminal, sin cerrar la del backend:
-
-```powershell
-cd "C:\Users\julia\Desktop\TRABAJOS U\8 semestre\SWNT\FarmaGo\TheOff1ceFrontEnd"
-flutter create .
 flutter pub get
-```
-
-`flutter create .` solo se necesita la primera vez; crea las carpetas nativas de Android, iOS y Web si no existen.
-
-## Paso 3: ejecutar Farma Go
-
-### Chrome / Web
-
-```powershell
-flutter run -d chrome --dart-define=API_BASE_URL=http://127.0.0.1:8000
-```
-
-El backend permite automáticamente los puertos locales que Flutter asigna. Si aparece `CORS error`, reinicia Uvicorn.
-
-Para probar Google OAuth con una URL local estable, usa el servidor web en el puerto `5173`:
-
-```powershell
-flutter run -d web-server --web-hostname localhost --web-port 5173 --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
-```
-
-En `TheOff1ceAuth`, `FRONTEND_URL` debe ser `http://localhost:5173` y el redirect URI autorizado en Google debe ser `http://localhost:3000/auth/google/callback`. El callback temporal del navegador es `/auth/google/callback`; al terminar, la aplicación limpia esa dirección y muestra una ruta de usuario.
-
-Para comprobar una compilación local con rutas directas (por ejemplo, recargando `/login`), ejecuta:
-
-```powershell
-flutter build web --dart-define=API_BASE_URL=http://127.0.0.1:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
-node tool/local_web_server.js
-```
-
-### Android Emulator
-
-```powershell
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000
-```
-
-`10.0.2.2` es la dirección especial que usa Android Emulator para llegar a tu computador. No uses `localhost` en el emulador.
-
-### iOS Simulator
-
-```powershell
-flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000
-```
-
-### Teléfono físico
-
-Conecta teléfono y computador a la misma red Wi-Fi. Ejecuta `ipconfig`, identifica la IPv4 de tu computador y úsala, por ejemplo:
-
-```powershell
-flutter run --dart-define=API_BASE_URL=http://192.168.1.10:8000
-```
-
-Para producción usa HTTPS; nunca expongas las claves ni el servidor de desarrollo a Internet.
-
-## Paso 4: probar el flujo
-
-1. Confirma que Uvicorn sigue ejecutándose.
-2. En Farma Go presiona **Analizar fórmula**.
-3. Elige cámara o galería.
-4. Selecciona una imagen JPG, JPEG, PNG o WEBP que sea legible.
-5. Comprueba la vista previa completa, sin recortes.
-6. Presiona **Analizar fórmula**.
-7. Revisa medicamentos, dosis, frecuencia, duración, cantidad, confianza y advertencias.
-8. Usa **Analizar otra fórmula** para empezar de nuevo.
-
-## Problemas frecuentes
-
-| Problema | Solución |
-| --- | --- |
-| Queda analizando | Revisa la terminal del backend: el proveedor de IA puede tardar o no tener una clave válida. |
-| `CORS error` | Reinicia el backend con `uvicorn app.main:app --reload`. |
-| Error `415` | Usa JPG, JPEG, PNG o WEBP reales; no cambies manualmente la extensión de otro archivo. |
-| Sin conexión | Confirma que el backend está en el puerto `8000` y que `API_BASE_URL` corresponde a la plataforma. |
-| Cámara no abre | Acepta el permiso que pide Android, iOS o el navegador. |
-| `flutter` no se reconoce | Cierra y abre una nueva terminal o revisa el PATH de Flutter. |
-
-## Arquitectura
-
-- `lib/app`: tema Material 3, rutas declarativas y configuración global.
-- `lib/pages`: acceso, inicio, carga, análisis, resultado y cuenta.
-- `lib/components`: UI reutilizable.
-- `lib/hooks`: estado con `ChangeNotifier`.
-- `lib/services`: cámara/galería y carga multipart.
-- `lib/types`: modelos y errores.
-
-La imagen se envía en `multipart/form-data`, campo `file`, al endpoint `POST /analyze`. Las páginas no hacen llamadas HTTP directamente.
-
-## Rutas de la aplicación
-
-| Ruta | Uso |
-| --- | --- |
-| `/` | Información de la plataforma. |
-| `/login`, `/register` | Inicio de sesión y creación de cuenta. |
-| `/forgot-password`, `/reset-password` | Recuperación de contraseña. |
-| `/home` | Inicio protegido de la persona autenticada. |
-| `/analyze-prescription` | Selección y análisis de una fórmula. |
-| `/notifications` | Centro de actualizaciones de análisis del usuario. |
-| `/account` | Datos de cuenta y cierre de sesión. |
-
-Las rutas privadas redirigen a `/login` cuando no existe sesión. Las rutas de análisis sin una imagen o resultado activo explican cómo retomar el flujo en vez de mostrar una pantalla vacía. Las rutas anteriores en español se redirigen a sus equivalentes en inglés para conservar los enlaces existentes.
-
-## Calidad
-
-```powershell
-dart analyze
+flutter analyze
 flutter test
+```
+
+## Ejecutar
+
+```powershell
+# Web en un puerto fijo (necesario para Google OAuth y para que Auth acepte el origen)
+flutter run -d web-server --web-hostname localhost --web-port 5173 `
+  --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
+
+# Android Emulator (10.0.2.2 llega al computador)
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000 --dart-define=AUTH_BASE_URL=http://10.0.2.2:3000
+
+# iOS Simulator
+flutter run --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
+```
+
+Sin `--dart-define`, en web se usa el mismo host que sirve la página (puertos 8000 y 3000), y en Android `10.0.2.2`.
+
+En `TheOff1ceAuth`, `FRONTEND_URL` debe ser exactamente el origen del frontend (por ejemplo `http://localhost:5173`), y en `TheOff1ceAI`, `ALLOWED_ORIGINS` debe incluirlo. El redirect URI de Google es `http://localhost:3000/auth/google/callback`.
+
+## Compilar para desplegar (web)
+
+```powershell
+flutter build web --release --dart-define=API_BASE_URL=https://ai.tu-dominio --dart-define=AUTH_BASE_URL=https://auth.tu-dominio
+node tool/local_web_server.js   # prueba local de build/web con rutas directas (SPA) en el puerto 5173
+```
+
+Publica `build/web` en cualquier hosting estático con *fallback* a `index.html`. Para que la cookie de refresh funcione, el frontend y Auth deben compartir dominio (por ejemplo `app.tu-dominio` y `auth.tu-dominio`).
+
+## Estructura
+
+```text
+lib/
+├── app/            tema (tokens Material 3), router (go_router), composición de dependencias
+├── auth/           sesión (refresco a los 600 s), recuperación de contraseña, repositorio de Auth
+├── errors/         AppError + ErrorMapper + mensajes en español (único lugar)
+├── services/       cliente de AI con Bearer, utilidades HTTP con timeouts, imágenes
+├── hooks/          estado del análisis
+├── pages/ · components/ · notifications/ · types/ · utils/
+assets/fonts/       Manrope (OFL)
+tool/               servidor local para probar build/web
 ```

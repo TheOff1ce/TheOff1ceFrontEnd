@@ -5,263 +5,116 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/app_theme.dart';
-import '../types/api_error.dart';
-import '../types/medication.dart';
 
 class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.color});
+  const AppCard({super.key, required this.child, this.color, this.bordered = false});
+
   final Widget child;
   final Color? color;
+  final bool bordered;
+
   @override
-  Widget build(BuildContext c) => Card(
-        color: color ?? Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(padding: const EdgeInsets.all(20), child: child),
+  Widget build(BuildContext context) => Card(
+        color: color,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.xl),
+          side: bordered ? BorderSide(color: context.colors.outline) : BorderSide.none,
+        ),
+        child: Padding(padding: const EdgeInsets.all(AppSpacing.l + 4), child: child),
       );
 }
 
 class AppButton extends StatelessWidget {
-  const AppButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-    this.icon,
-    this.outlined = false,
-  });
+  const AppButton({super.key, required this.label, required this.onPressed, this.icon, this.outlined = false});
+
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool outlined;
-  @override
-  Widget build(BuildContext c) {
-    final child = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (icon != null) ...[Icon(icon), const SizedBox(width: 9)],
-        Text(label),
-      ],
-    );
-    final style = ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size.fromHeight(56)),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
-    );
-    return SizedBox(
-      width: double.infinity,
-      child: outlined
-          ? OutlinedButton(onPressed: onPressed, style: style, child: child)
-          : FilledButton(onPressed: onPressed, style: style, child: child),
-    );
-  }
-}
 
-class PrescriptionImagePreview extends StatelessWidget {
-  const PrescriptionImagePreview(
-      {super.key, required this.image, this.maxHeight = 240});
-  final XFile image;
-  final double maxHeight;
   @override
   Widget build(BuildContext context) {
+    final iconWidget = icon == null ? null : Icon(icon);
+    final text = Text(label, textAlign: TextAlign.center);
+    final Widget button = outlined
+        ? (iconWidget == null
+            ? OutlinedButton(onPressed: onPressed, child: text)
+            : OutlinedButton.icon(onPressed: onPressed, icon: iconWidget, label: text))
+        : (iconWidget == null
+            ? FilledButton(onPressed: onPressed, child: text)
+            : FilledButton.icon(onPressed: onPressed, icon: iconWidget, label: text));
+    return SizedBox(width: double.infinity, child: button);
+  }
+}
+
+/// Prescription photo preview decoded at display size, not at camera size (FE-018).
+class PrescriptionImagePreview extends StatelessWidget {
+  const PrescriptionImagePreview({super.key, required this.image, this.maxHeight = 240});
+
+  final XFile image;
+  final double maxHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final cacheHeight = (maxHeight * pixelRatio).round();
     final imageWidget = kIsWeb
-        ? Image.network(
-            image.path,
-            fit: BoxFit.contain,
-            errorBuilder: _imageError,
-          )
-        : Image.file(
-            File(image.path),
-            fit: BoxFit.contain,
-            errorBuilder: _imageError,
-          );
-
-    return SizedBox(
-      height: maxHeight,
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: ColoredBox(color: AppColors.background, child: imageWidget),
+        ? Image.network(image.path, fit: BoxFit.contain, cacheHeight: cacheHeight, errorBuilder: _imageError)
+        : Image.file(File(image.path), fit: BoxFit.contain, cacheHeight: cacheHeight, errorBuilder: _imageError);
+    return Semantics(
+      image: true,
+      label: 'Vista previa de la fórmula seleccionada',
+      child: SizedBox(
+        height: maxHeight,
+        width: double.infinity,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadii.m),
+          child: ColoredBox(color: context.status.brandSurface, child: ExcludeSemantics(child: imageWidget)),
+        ),
       ),
     );
   }
 
-  Widget _imageError(
-      BuildContext context, Object error, StackTrace? stackTrace) {
-    return const Center(child: Icon(Icons.broken_image, size: 50));
-  }
-}
-
-class AppLoading extends StatelessWidget {
-  const AppLoading({super.key});
-  @override
-  Widget build(BuildContext c) => const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 64,
-              height: 64,
-              child: CircularProgressIndicator(strokeWidth: 5),
-            ),
-            SizedBox(height: 25),
-            Text('Analizando tu fórmula...', style: AppText.heading),
-            SizedBox(height: 10),
-            Text(
-              'Estamos identificando los medicamentos y organizando la información.',
-              style: AppText.body,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+  Widget _imageError(BuildContext context, Object error, StackTrace? stackTrace) => Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Icon(Icons.broken_image_outlined, size: 44),
+          const SizedBox(height: AppSpacing.s),
+          Text('No pudimos mostrar la vista previa.', style: context.text.bodySmall),
+        ]),
       );
 }
 
-class AppError extends StatelessWidget {
-  const AppError({
-    super.key,
-    required this.error,
-    required this.retry,
-    this.onBack,
-    this.backLabel = 'Volver',
-  });
-  final ApiError error;
-  final VoidCallback retry;
-  final VoidCallback? onBack;
-  final String backLabel;
+/// Visible notice while the session cannot be refreshed (FE-003 / FE-004).
+class ConnectionBanner extends StatelessWidget {
+  const ConnectionBanner({super.key, required this.visible, this.onRetry});
+
+  final bool visible;
+  final VoidCallback? onRetry;
+
   @override
-  Widget build(BuildContext c) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.error, size: 54),
-              const SizedBox(height: 16),
-              const Text(
-                'No pudimos analizar la fórmula',
-                style: AppText.heading,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(error.message,
-                  style: AppText.body, textAlign: TextAlign.center),
-              const SizedBox(height: 22),
-              AppButton(
-                  label: 'Reintentar', icon: Icons.refresh, onPressed: retry),
-              if (onBack != null) ...[
-                const SizedBox(height: 10),
-                TextButton.icon(
-                  onPressed: onBack,
-                  icon: const Icon(Icons.arrow_back),
-                  label: Text(backLabel),
-                ),
-              ],
-            ],
-          ),
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: AppSpacing.l),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.s, AppSpacing.s, AppSpacing.s),
+        decoration: BoxDecoration(
+          color: context.status.warningContainer,
+          borderRadius: BorderRadius.circular(AppRadii.s),
         ),
-      );
-}
-
-class MedicationCard extends StatelessWidget {
-  const MedicationCard({super.key, required this.m});
-  final Medication m;
-  @override
-  Widget build(BuildContext c) {
-    final top = [
-      m.concentration,
-      m.pharmaceuticalForm,
-    ].whereType<String>().join(' · ');
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                backgroundColor: AppColors.light,
-                child: Icon(Icons.medication, color: AppColors.primary),
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(m.name, style: AppText.title)),
-            ],
-          ),
-          if (top.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(top, style: AppText.body),
-          ],
-          ...{
-            'Principio activo': m.activeIngredient,
-            'Presentación': m.presentation,
-            'Dosis': m.dose,
-            'Frecuencia': m.frequency,
-            'Duración': m.duration,
-            'Cantidad': m.quantity,
-            'Instrucciones': m.instructions,
-          }.entries.where((e) => e.value != null).map(
-                (e) => Padding(
-                  padding: const EdgeInsets.only(top: 13),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(e.key, style: AppText.label),
-                      Text(
-                        e.value!,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          if (m.confidence != null) ...[
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Divider(),
+        child: Row(children: [
+          Icon(Icons.wifi_off_rounded, color: context.status.onWarningContainer),
+          const SizedBox(width: AppSpacing.s),
+          Expanded(
+            child: Text(
+              'Sin conexión con el servicio. Seguiremos intentando; puedes seguir usando la app.',
+              style: context.text.bodySmall?.copyWith(color: context.status.onWarningContainer),
             ),
-            ConfidenceIndicator(value: m.confidence!),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class ConfidenceIndicator extends StatelessWidget {
-  const ConfidenceIndicator({super.key, required this.value});
-  final double value;
-  @override
-  Widget build(BuildContext c) {
-    final v = value <= 1 ? value : value / 100;
-    final low = v < .7;
-    final color = low ? AppColors.warningText : Colors.green;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: low ? AppColors.warning : const Color(0xFFE1F5EC),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Confianza de extracción: ${(v * 100).round()}%',
-            style: TextStyle(fontWeight: FontWeight.w700, color: color),
           ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: v.clamp(0, 1).toDouble(),
-            color: color,
-            backgroundColor: Colors.white,
-          ),
-          if (low)
-            const Padding(
-              padding: EdgeInsets.only(top: 7),
-              child: Text(
-                'La confianza refleja la extracción del texto, no una certeza médica.',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-        ],
+          if (onRetry != null) TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+        ]),
       ),
     );
   }

@@ -11,9 +11,15 @@ class NotificationController extends ChangeNotifier {
   String? _userId;
   bool loading = false;
 
+  /// False when the device could not read or save notifications (FE-015).
+  bool storageAvailable = true;
+
   List<NotificationItem> get items => List.unmodifiable(_items);
   int get unreadCount => _items.where((item) => !item.isRead).length;
   bool get hasReadItems => _items.any((item) => item.isRead);
+
+  /// Whether notifications survive closing the app on this platform.
+  bool get persistsAcrossSessions => _repository.persistent && storageAvailable;
 
   Future<void> loadForUser(String userId) async {
     if (userId.isEmpty || (_userId == userId && !loading)) return;
@@ -22,7 +28,14 @@ class NotificationController extends ChangeNotifier {
     _items.clear();
     notifyListeners();
 
-    final stored = await _repository.read(userId);
+    List<NotificationItem> stored;
+    try {
+      stored = await _repository.read(userId);
+      storageAvailable = true;
+    } on NotificationStorageException {
+      stored = const [];
+      storageAvailable = false;
+    }
     if (_userId != userId) return;
     _items
       ..clear()
@@ -41,9 +54,11 @@ class NotificationController extends ChangeNotifier {
   }
 
   Future<void> addAnalysisCompleted({required int medicationCount}) async {
-    final countText = medicationCount == 1
-        ? 'Identificamos 1 medicamento.'
-        : 'Identificamos $medicationCount medicamentos.';
+    final countText = switch (medicationCount) {
+      0 => 'No identificamos medicamentos.',
+      1 => 'Identificamos 1 medicamento.',
+      _ => 'Identificamos $medicationCount medicamentos.',
+    };
     await _add(
       NotificationItem(
         id: 'analysis-${DateTime.now().microsecondsSinceEpoch}',
@@ -72,10 +87,20 @@ class NotificationController extends ChangeNotifier {
     await _persist();
   }
 
-  Future<void> remove(String id) async {
-    final previousLength = _items.length;
-    _items.removeWhere((item) => item.id == id);
-    if (_items.length == previousLength) return;
+  /// Removes an item and returns it so the UI can offer "Deshacer".
+  Future<NotificationItem?> remove(String id) async {
+    final index = _items.indexWhere((item) => item.id == id);
+    if (index == -1) return null;
+    final removed = _items.removeAt(index);
+    notifyListeners();
+    await _persist();
+    return removed;
+  }
+
+  Future<void> restore(NotificationItem item) async {
+    if (_items.any((existing) => existing.id == item.id)) return;
+    _items.add(item);
+    _sort();
     notifyListeners();
     await _persist();
   }
@@ -100,6 +125,18 @@ class NotificationController extends ChangeNotifier {
 
   Future<void> _persist() async {
     final userId = _userId;
-    if (userId != null) await _repository.write(userId, _items);
+    if (userId == null) return;
+    try {
+      await _repository.write(userId, _items);
+      if (!storageAvailable) {
+        storageAvailable = true;
+        notifyListeners();
+      }
+    } on NotificationStorageException {
+      if (storageAvailable) {
+        storageAvailable = false;
+        notifyListeners();
+      }
+    }
   }
 }

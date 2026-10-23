@@ -4,14 +4,12 @@ import 'package:go_router/go_router.dart';
 import '../app/app_routes.dart';
 import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
+import '../errors/app_error.dart';
+import '../errors/error_mapper.dart';
 
-/// Receives the OAuth redirect once and removes its technical URL afterwards.
+/// Receives the OAuth redirect once and replaces its technical URL afterwards.
 class GoogleAuthCallbackPage extends StatefulWidget {
-  const GoogleAuthCallbackPage({
-    super.key,
-    required this.auth,
-    this.errorCode,
-  });
+  const GoogleAuthCallbackPage({super.key, required this.auth, this.errorCode});
 
   final AuthController auth;
   final String? errorCode;
@@ -37,37 +35,34 @@ class _GoogleAuthCallbackPageState extends State<GoogleAuthCallbackPage> {
   }
 
   void _continueFlow() {
-    if (!mounted || _redirecting || widget.auth.status == AuthStatus.checking) {
-      return;
-    }
-    if (widget.auth.status == AuthStatus.authenticated) return;
-
+    final status = widget.auth.status;
+    if (!mounted || _redirecting || status == AuthStatus.checking || status == AuthStatus.unreachable) return;
+    if (status == AuthStatus.authenticated && widget.errorCode == null) return; // the router takes over
     _redirecting = true;
-    widget.auth.showPublicError(_messageFor(widget.errorCode));
+    widget.auth.showNotice(AppError(
+      kind: AppErrorKind.unauthorized,
+      userMessage: ErrorMapper.googleRedirectMessage(widget.errorCode),
+      retryable: true,
+      code: widget.errorCode ?? 'google_session_missing',
+    ));
     context.go(AppRoutes.login);
   }
 
-  String _messageFor(String? errorCode) {
-    switch (errorCode) {
-      case 'google_account_conflict':
-        return 'Ya existe una cuenta con este correo. Inicia sesión con tu contraseña.';
-      case 'oauth_state_invalid':
-        return 'No pudimos validar el inicio con Google. Inténtalo de nuevo.';
-      case 'google_auth_failed':
-        return 'No pudimos validar tu cuenta de Google. Revisa la configuración e inténtalo de nuevo.';
-      default:
-        return 'No pudimos completar el inicio con Google. Inténtalo de nuevo.';
-    }
-  }
-
   @override
-  Widget build(BuildContext context) => const Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         body: Center(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            SizedBox(width: 42, height: 42, child: CircularProgressIndicator()),
-            SizedBox(height: 18),
-            Text('Comprobando tu acceso...', style: AppText.heading),
-          ]),
+          child: Semantics(
+            liveRegion: true,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const SizedBox(
+                width: 42,
+                height: 42,
+                child: CircularProgressIndicator(semanticsLabel: 'Comprobando tu acceso'),
+              ),
+              const SizedBox(height: AppSpacing.l),
+              Text('Comprobando tu acceso…', style: context.text.headlineSmall),
+            ]),
+          ),
         ),
       );
 }

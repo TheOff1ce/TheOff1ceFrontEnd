@@ -2,308 +2,269 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/app_theme.dart';
+import '../components/analysis_widgets.dart';
+import '../components/feedback.dart';
 import '../components/ui.dart';
+import '../errors/app_error.dart';
 import '../services/image_service.dart';
 
 class UploadPage extends StatefulWidget {
-  const UploadPage({
-    super.key,
-    required this.onBack,
-    required this.onAnalyze,
-  });
+  const UploadPage({super.key, required this.onBack, required this.onAnalyze, this.images});
+
   final VoidCallback onBack;
   final ValueChanged<XFile> onAnalyze;
+  final ImageService? images;
+
   @override
   State<UploadPage> createState() => _UploadPageState();
 }
 
 class _UploadPageState extends State<UploadPage> {
-  final _images = ImageService();
+  late final ImageService _images = widget.images ?? ImageService();
   XFile? _image;
   bool _selecting = false;
 
-  Future<void> _pick(bool camera) async {
+  Future<void> _pick({required bool camera}) async {
     if (_selecting) return;
     setState(() => _selecting = true);
     try {
       final image = camera ? await _images.camera() : await _images.gallery();
-      if (mounted && image != null) {
-        setState(() => _image = image);
-      }
-    } on ImagePickFailure {
-      if (mounted) {
-        _message(
-            'No pudimos seleccionar la imagen. Revisa los permisos e inténtalo otra vez.');
-      }
+      if (mounted && image != null) setState(() => _image = image);
+    } on AppError catch (error) {
+      ErrorReporter.report(error);
+      if (mounted) showAppSnackBar(context, error.userMessage);
     } finally {
-      if (mounted) {
-        setState(() => _selecting = false);
-      }
+      if (mounted) setState(() => _selecting = false);
     }
   }
 
-  void _message(String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  /// "Quitar imagen" is reversible with "Deshacer" (frontend-guardian §2.6).
+  void _remove() {
+    final removed = _image;
+    setState(() => _image = null);
+    if (removed == null) return;
+    showAppSnackBar(
+      context,
+      'Quitamos la imagen.',
+      action: SnackBarAction(label: 'Deshacer', onPressed: () {
+        if (mounted) setState(() => _image = removed);
+      }),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: const Text('Analizar fórmula'),
-          leading: IconButton(
-            tooltip: 'Volver al inicio',
-            onPressed: widget.onBack,
-            icon: const Icon(Icons.arrow_back),
-          ),
-        ),
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 30),
-                children: [
-                  const _StepIndicator(activeStep: 1),
-                  const SizedBox(height: 24),
-                  Text(
-                      _image == null
-                          ? 'Analiza tu fórmula médica.'
-                          : 'Imagen seleccionada.',
-                      style: AppText.heading),
-                  const SizedBox(height: 8),
-                  Text(
-                    _image == null
-                        ? 'Sube una foto clara y te ayudaremos a identificar los medicamentos indicados.'
-                        : 'Revisa que el texto esté completo y sea legible antes de iniciar el análisis.',
-                    style: AppText.body,
+  Widget build(BuildContext context) {
+    final image = _image;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Analizar fórmula'),
+        leading: IconButton(tooltip: 'Volver al inicio', onPressed: widget.onBack, icon: const Icon(Icons.arrow_back)),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.s, AppSpacing.xl, AppSpacing.xxl),
+              children: [
+                const StepIndicator(activeStep: 1),
+                const SizedBox(height: AppSpacing.xl),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    image == null ? 'Analiza tu fórmula médica.' : 'Imagen seleccionada.',
+                    style: context.text.headlineSmall,
                   ),
-                  const SizedBox(height: 24),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    child: _image == null
-                        ? _emptyUpload()
-                        : _selectedUpload(_image!),
+                ),
+                const SizedBox(height: AppSpacing.s),
+                Text(
+                  image == null
+                      ? 'Sube una foto clara y te ayudaremos a identificar los medicamentos indicados.'
+                      : 'Revisa que el texto esté completo y sea legible antes de iniciar el análisis.',
+                  style: context.text.bodyLarge,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: image == null ? const _EmptyUpload() : _SelectedUpload(image: image),
+                ),
+                const SizedBox(height: AppSpacing.xl - 2),
+                if (image == null) ...[
+                  _UploadChoice(
+                    icon: Icons.camera_alt_outlined,
+                    title: 'Tomar foto',
+                    detail: 'Usa la cámara de tu dispositivo',
+                    loading: _selecting,
+                    onTap: () => _pick(camera: true),
                   ),
-                  const SizedBox(height: 22),
-                  if (_image == null) ...[
-                    _UploadChoice(
-                        icon: Icons.camera_alt_outlined,
-                        title: 'Tomar foto',
-                        detail: 'Usa la cámara de tu dispositivo',
-                        loading: _selecting,
-                        onTap: () => _pick(true)),
-                    const SizedBox(height: 12),
-                    _UploadChoice(
-                        icon: Icons.photo_library_outlined,
-                        title: 'Elegir de galería',
-                        detail: 'Selecciona una imagen guardada',
-                        loading: _selecting,
-                        onTap: () => _pick(false)),
-                  ] else ...[
-                    OutlinedButton.icon(
-                        onPressed:
-                            _selecting ? null : () => _showImageOptions(),
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Cambiar imagen')),
-                    const SizedBox(height: 12),
-                    FilledButton.icon(
-                      onPressed: () => widget.onAnalyze(_image!),
-                      icon: const Icon(Icons.auto_awesome_outlined),
-                      label: const Text('Analizar fórmula'),
-                    ),
-                  ],
-                  const SizedBox(height: 26),
-                  const _PhotoTips(),
+                  const SizedBox(height: AppSpacing.m),
+                  _UploadChoice(
+                    icon: Icons.photo_library_outlined,
+                    title: 'Elegir de galería',
+                    detail: 'Selecciona una imagen guardada',
+                    loading: _selecting,
+                    onTap: () => _pick(camera: false),
+                  ),
+                ] else ...[
+                  FilledButton.icon(
+                    onPressed: _selecting ? null : () => widget.onAnalyze(image),
+                    icon: const Icon(Icons.auto_awesome_outlined),
+                    label: const Text('Analizar fórmula'),
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  OutlinedButton.icon(
+                    onPressed: _selecting ? null : _showImageOptions,
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text('Cambiar imagen'),
+                  ),
                 ],
-              ),
+                const SizedBox(height: AppSpacing.xl),
+                const PhotoTips(),
+              ],
             ),
           ),
         ),
-      );
-
-  Widget _emptyUpload() => Container(
-        key: const ValueKey('empty-upload'),
-        height: 190,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-            color: AppColors.light,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.sky)),
-        child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_a_photo_outlined, size: 46, color: AppColors.navy),
-              SizedBox(height: 12),
-              Text('Sube tu fórmula médica', style: AppText.title),
-              SizedBox(height: 5),
-              Text('Toma una foto o elige una imagen desde tu galería.',
-                  style: AppText.body, textAlign: TextAlign.center),
-            ]),
-      );
-
-  Widget _selectedUpload(XFile image) => Container(
-        key: const ValueKey('selected-upload'),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.sky)),
-        child: PrescriptionImagePreview(image: image, maxHeight: 240),
-      );
+      ),
+    );
+  }
 
   void _showImageOptions() => showModalBottomSheet<void>(
         context: context,
         showDragHandle: true,
         builder: (sheetContext) => SafeArea(
-            child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
-          child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('Cambiar imagen', style: AppText.heading),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      _pick(true);
-                    },
-                    icon: const Icon(Icons.camera_alt_outlined),
-                    label: const Text('Tomar foto')),
-                const SizedBox(height: 10),
-                OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      _pick(false);
-                    },
-                    icon: const Icon(Icons.photo_library_outlined),
-                    label: const Text('Elegir de galería')),
-                const SizedBox(height: 10),
-                TextButton.icon(
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      setState(() => _image = null);
-                    },
-                    icon: const Icon(Icons.delete_outline,
-                        color: AppColors.error),
-                    label: const Text('Quitar imagen',
-                        style: TextStyle(color: AppColors.error))),
-                const SizedBox(height: 4),
-                TextButton(
-                  onPressed: () => Navigator.pop(sheetContext),
-                  child: const Text('Cancelar'),
-                ),
-              ]),
-        )),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xs, AppSpacing.xl, AppSpacing.xl),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text('Cambiar imagen', style: sheetContext.text.headlineSmall),
+              const SizedBox(height: AppSpacing.l),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(sheetContext);
+                  _pick(camera: true);
+                },
+                icon: const Icon(Icons.camera_alt_outlined),
+                label: const Text('Tomar otra foto'),
+              ),
+              const SizedBox(height: AppSpacing.s),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(sheetContext);
+                  _pick(camera: false);
+                },
+                icon: const Icon(Icons.photo_library_outlined),
+                label: const Text('Elegir otra de la galería'),
+              ),
+              const SizedBox(height: AppSpacing.s),
+              TextButton.icon(
+                style: TextButton.styleFrom(foregroundColor: sheetContext.colors.error),
+                onPressed: () {
+                  Navigator.pop(sheetContext);
+                  _remove();
+                },
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Quitar imagen'),
+              ),
+              TextButton(onPressed: () => Navigator.pop(sheetContext), child: const Text('Cancelar')),
+            ]),
+          ),
+        ),
       );
 }
 
-class _StepIndicator extends StatelessWidget {
-  const _StepIndicator({required this.activeStep});
-  final int activeStep;
+class _EmptyUpload extends StatelessWidget {
+  const _EmptyUpload();
+
   @override
-  Widget build(BuildContext context) => Row(children: [
-        _step('1', 'Foto', activeStep >= 1),
-        const Expanded(child: Divider(color: AppColors.sky)),
-        _step('2', 'Revisar', activeStep >= 2),
-        const Expanded(child: Divider(color: AppColors.sky)),
-        _step('3', 'Resultado', activeStep >= 3),
-      ]);
-  Widget _step(String number, String label, bool active) =>
-      Row(mainAxisSize: MainAxisSize.min, children: [
-        CircleAvatar(
-            radius: 12,
-            backgroundColor: active ? AppColors.navy : AppColors.sky,
-            child: Text(number,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    color: active ? Colors.white : AppColors.navy))),
-        const SizedBox(width: 5),
-        Text(label,
-            style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: active ? AppColors.navy : AppColors.secondary)),
-      ]);
+  Widget build(BuildContext context) => Container(
+        key: const ValueKey('empty-upload'),
+        constraints: const BoxConstraints(minHeight: 190),
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: context.status.brandSurface,
+          borderRadius: BorderRadius.circular(AppRadii.xl),
+          border: Border.all(color: context.status.decorative),
+        ),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          ExcludeSemantics(child: Icon(Icons.add_a_photo_outlined, size: 46, color: context.colors.primary)),
+          const SizedBox(height: AppSpacing.m),
+          Text('Aún no has elegido una fórmula', style: context.text.titleMedium, textAlign: TextAlign.center),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Toma una foto o elige una imagen desde tu galería.',
+            style: context.text.bodyLarge,
+            textAlign: TextAlign.center,
+          ),
+        ]),
+      );
+}
+
+class _SelectedUpload extends StatelessWidget {
+  const _SelectedUpload({required this.image});
+
+  final XFile image;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        key: const ValueKey('selected-upload'),
+        padding: const EdgeInsets.all(AppSpacing.m),
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.xl),
+          border: Border.all(color: context.status.decorative),
+        ),
+        child: PrescriptionImagePreview(image: image, maxHeight: 240),
+      );
 }
 
 class _UploadChoice extends StatelessWidget {
-  const _UploadChoice(
-      {required this.icon,
-      required this.title,
-      required this.detail,
-      required this.loading,
-      required this.onTap});
+  const _UploadChoice({
+    required this.icon,
+    required this.title,
+    required this.detail,
+    required this.loading,
+    required this.onTap,
+  });
+
   final IconData icon;
   final String title, detail;
   final bool loading;
   final VoidCallback onTap;
+
   @override
-  Widget build(BuildContext context) => Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        child: InkWell(
-            borderRadius: BorderRadius.circular(18),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        enabled: !loading,
+        child: Material(
+          color: context.colors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.l),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadii.l),
             onTap: loading ? null : onTap,
             child: Container(
-              padding: const EdgeInsets.all(17),
+              padding: const EdgeInsets.all(AppSpacing.l),
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppColors.sky)),
+                borderRadius: BorderRadius.circular(AppRadii.l),
+                border: Border.all(color: context.colors.outline),
+              ),
               child: Row(children: [
                 CircleAvatar(
-                    backgroundColor: AppColors.light,
-                    child: loading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : Icon(icon, color: AppColors.navy)),
-                const SizedBox(width: 14),
+                  backgroundColor: context.status.brandSurface,
+                  child: loading
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : ExcludeSemantics(child: Icon(icon, color: context.colors.primary)),
+                ),
+                const SizedBox(width: AppSpacing.m + 2),
                 Expanded(
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                      Text(title, style: AppText.title),
-                      const SizedBox(height: 3),
-                      Text(detail, style: AppText.body)
-                    ])),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.blue),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(title, style: context.text.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(detail, style: context.text.bodySmall),
+                  ]),
+                ),
+                ExcludeSemantics(child: Icon(Icons.chevron_right_rounded, color: context.colors.secondary)),
               ]),
-            )),
+            ),
+          ),
+        ),
       );
-}
-
-class _PhotoTips extends StatelessWidget {
-  const _PhotoTips();
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: const Color(0xFFF1F8FD),
-            borderRadius: BorderRadius.circular(18)),
-        child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Para una mejor lectura', style: AppText.title),
-              SizedBox(height: 9),
-              _Tip('Usa buena iluminación'),
-              _Tip('Incluye todo el texto de la fórmula'),
-              _Tip('Evita fotos borrosas o con reflejos'),
-            ]),
-      );
-}
-
-class _Tip extends StatelessWidget {
-  const _Tip(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Row(children: [
-        const Icon(Icons.check_circle_outline,
-            size: 17, color: AppColors.success),
-        const SizedBox(width: 8),
-        Expanded(child: Text(text, style: AppText.body))
-      ]));
 }
