@@ -62,6 +62,31 @@ abstract final class ErrorMessages {
   static const googleFailed =
       'Google no confirmó tu acceso. Inténtalo de nuevo o usa tu correo y contraseña.';
 
+  // Home deliveries and tracking
+  static const orderNotAvailable =
+      'Otro repartidor ya tomó este pedido. Elige otro de la lista.';
+  static const orderNotCancellable =
+      'Este domicilio ya no se puede cancelar porque el repartidor lo recogió.';
+  static const deliveryNotFound = 'No encontramos este domicilio. Actualiza la lista.';
+  static const addressNotFound =
+      'No encontramos una de las direcciones. Revísala (calle, número y ciudad) e inténtalo de nuevo.';
+  static const routeNotFound =
+      'No hay una ruta disponible entre la farmacia y tu dirección. Revisa las direcciones.';
+  static const mapsUnavailable =
+      'El servicio de mapas no responde en este momento. Inténtalo de nuevo en unos minutos.';
+  static const trackingUnavailable =
+      'El seguimiento de domicilios no está disponible ahora. Inténtalo de nuevo en unos minutos.';
+  static const invalidStatusTransition =
+      'El estado del domicilio cambió. Actualiza la pantalla para ver el estado actual.';
+  static const trackingNotActive =
+      'La ubicación solo se comparte mientras llevas el pedido.';
+  static const locationDisabled =
+      'Activa la ubicación del teléfono para compartir tu recorrido con el paciente.';
+  static const locationPermission =
+      'Permite el acceso a tu ubicación para que el paciente pueda seguir el domicilio.';
+  static const locationUnavailable =
+      'No pudimos obtener tu ubicación. Revisa el GPS; lo intentaremos de nuevo.';
+
   // Local device
   static const imagePick =
       'No pudimos abrir la imagen. Revisa que la app tenga permiso para usar la cámara o la galería e inténtalo otra vez.';

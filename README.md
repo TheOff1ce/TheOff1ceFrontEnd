@@ -56,3 +56,27 @@ lib/
 assets/fonts/       Manrope (OFL)
 tool/               servidor local para probar build/web
 ```
+
+## Domicilios y seguimiento
+
+- **Paciente**: en Inicio, *Pedir medicamento a casa* (farmacia, dirección y productos) y *Mis domicilios*. Cada pedido abre el **seguimiento en vivo**: mapa con la ruta, la ubicación del repartidor, la ETA y el estado.
+- Las listas muestran el estado real del envío (Geolocation): *Buscando repartidor*, *En camino*, *Entregado*…; el paciente solo puede cancelar antes de que el repartidor recoja el pedido, y el repartidor deja de ver en *Mis entregas* las que ya terminó.
+- **Repartidor** (rol `DELIVERY_DRIVER`): *Domicilios disponibles* para tomar un pedido, ver qué recoger y dónde entregarlo, y avanzar el estado (*Ya recogí el pedido* → *Empezar viaje* → *Marcar como entregado*). Mientras lleva el pedido, la app envía su ubicación cada 10 s y deja de hacerlo al entregar.
+- Servicios: `TheOff1ceOrderDelivery` (puerto 3002) y `TheOff1ceGeolocation` (puerto 3001, REST y Socket.IO `/tracking`). Todas las llamadas llevan el `Authorization: Bearer` de Auth; en Socket.IO el token va en el handshake (`auth.token`), nunca en la URL. Si el token vence con el socket abierto, la app lo refresca y se reconecta sola.
+
+```powershell
+flutter run -d web-server --web-hostname localhost --web-port 5173 `
+  --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000 `
+  --dart-define=ORDERS_BASE_URL=http://localhost:3002 --dart-define=GEOLOCATION_BASE_URL=http://localhost:3001 `
+  --dart-define=MAPS_API_KEY=<clave de cliente, opcional>
+```
+
+**Mapa:** sin `MAPS_API_KEY` se muestra una vista simplificada (ruta y puntos dibujados, sin teselas), suficiente para probar con `MAPS_PROVIDER=fake` en Geolocation. Con clave, se usa `google_maps_flutter`. La clave del cliente es **distinta** de la del servidor:
+
+| Plataforma | Dónde va | Restricción en Google Cloud |
+|---|---|---|
+| Web | `--dart-define=MAPS_API_KEY=...` (la app carga Maps JavaScript API) | *HTTP referrers* (`http://localhost:5173/*`, tu dominio) + solo *Maps JavaScript API* |
+| Android | `MAPS_API_KEY=...` en `android/local.properties` (no se sube a git) | App Android (paquete + SHA-1) + solo *Maps SDK for Android* |
+| iOS | `MAPS_API_KEY=...` en `ios/Flutter/Secrets.xcconfig` (lo incluyen Debug/Release y no se sube a git) | App iOS (bundle ID) + solo *Maps SDK for iOS* |
+
+La clave del cliente nunca debe tener habilitadas Routes ni Geocoding (esas solo las usa el backend).

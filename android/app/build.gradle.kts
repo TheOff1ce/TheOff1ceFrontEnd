@@ -4,6 +4,15 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.util.Properties
+
+/** Google Maps client key: Gradle property MAPS_API_KEY, or android/local.properties. */
+val mapsApiKey: String = (project.findProperty("MAPS_API_KEY") as String?)
+    ?: Properties().apply {
+        val file = rootProject.file("local.properties")
+        if (file.exists()) file.inputStream().use { load(it) }
+    }.getProperty("MAPS_API_KEY", "")
+
 android {
     namespace = "com.example.farma_go"
     compileSdk = flutter.compileSdkVersion
@@ -27,6 +36,7 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {

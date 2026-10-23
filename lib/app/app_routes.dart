@@ -24,6 +24,20 @@ abstract final class AppRoutes {
   static const notifications = '/notifications';
   static const account = '/account';
 
+  // Home deliveries (patient)
+  static const myOrders = '/orders';
+  static const requestDelivery = '/orders/new';
+  static const trackingPattern = '/orders/tracking/:deliveryId';
+  static String tracking(String deliveryId) => '/orders/tracking/${Uri.encodeComponent(deliveryId)}';
+
+  // Home deliveries (driver)
+  static const driverBoard = '/driver/orders';
+  static const driverDeliveryPattern = '/driver/orders/:orderId';
+  static String driverDelivery(String orderId) => '/driver/orders/${Uri.encodeComponent(orderId)}';
+
+  static bool isPatientDeliveryPath(String path) => path == myOrders || path.startsWith('$myOrders/');
+  static bool isDriverPath(String path) => path == driverBoard || path.startsWith('/driver/');
+
   static void backOrGo(BuildContext context, String fallback) {
     final router = GoRouter.of(context);
     if (router.canPop()) {

@@ -42,6 +42,33 @@ abstract final class ErrorMapper {
     'INTERNAL_ERROR': (AppErrorKind.server, ErrorMessages.server, true),
   };
 
+  /// Codes from TheOff1ceOrderDelivery and TheOff1ceGeolocation.
+  static const Map<String, _Entry> _deliveryCodes = {
+    'ORDER_NOT_AVAILABLE': (AppErrorKind.conflict, ErrorMessages.orderNotAvailable, false),
+    'DRIVER_ALREADY_ASSIGNED': (AppErrorKind.conflict, ErrorMessages.orderNotAvailable, false),
+    'ORDER_NOT_CANCELLABLE': (AppErrorKind.conflict, ErrorMessages.orderNotCancellable, false),
+    'ORDER_NOT_FOUND': (AppErrorKind.notFound, ErrorMessages.deliveryNotFound, false),
+    'DELIVERY_NOT_FOUND': (AppErrorKind.notFound, ErrorMessages.deliveryNotFound, false),
+    'ADDRESS_NOT_FOUND': (AppErrorKind.validation, ErrorMessages.addressNotFound, false),
+    'ROUTE_NOT_FOUND': (AppErrorKind.validation, ErrorMessages.routeNotFound, false),
+    'MAPS_UNAVAILABLE': (AppErrorKind.server, ErrorMessages.mapsUnavailable, true),
+    'TRACKING_UNAVAILABLE': (AppErrorKind.server, ErrorMessages.trackingUnavailable, true),
+    'INVALID_STATUS_TRANSITION': (AppErrorKind.conflict, ErrorMessages.invalidStatusTransition, true),
+    'TRACKING_NOT_ACTIVE': (AppErrorKind.conflict, ErrorMessages.trackingNotActive, false),
+    'CONFLICT': (AppErrorKind.conflict, ErrorMessages.conflict, true),
+    'TOKEN_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
+    'TOKEN_REQUIRED': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
+    'FORBIDDEN': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'VALIDATION_FAILED': (AppErrorKind.validation, ErrorMessages.validation, false),
+    'NOT_FOUND': (AppErrorKind.notFound, ErrorMessages.notFound, false),
+    'SERVICE_UNAVAILABLE': (AppErrorKind.server, ErrorMessages.server, true),
+    'INTERNAL_ERROR': (AppErrorKind.server, ErrorMessages.server, true),
+  };
+
+  /// Error answered by TheOff1ceOrderDelivery or TheOff1ceGeolocation.
+  static AppError fromDelivery(int status, Map<String, dynamic> body) =>
+      _fromCode(_deliveryCodes, status, body);
+
   /// Error answered by TheOff1ceAI (`{success:false, error:{code,message}}`).
   static AppError fromAi(int status, Map<String, dynamic> body) =>
       _fromCode(_aiCodes, status, body);

@@ -14,6 +14,9 @@ class HomePage extends StatelessWidget {
     required this.onAnalyze,
     required this.onNotifications,
     required this.onAccount,
+    this.onRequestDelivery,
+    this.onMyOrders,
+    this.onDriverBoard,
   });
 
   final AuthController auth;
@@ -21,13 +24,17 @@ class HomePage extends StatelessWidget {
   final VoidCallback onAnalyze;
   final VoidCallback onNotifications;
   final VoidCallback onAccount;
+  final VoidCallback? onRequestDelivery;
+  final VoidCallback? onMyOrders;
+  final VoidCallback? onDriverBoard;
 
   static const _upcoming = [
     (Icons.medication_outlined, 'Medicamentos pendientes', 'Revisa lo que tienes por gestionar.'),
-    (Icons.home_outlined, 'Pedir medicamento a casa', 'Solicita entregas a domicilio.'),
     (Icons.inventory_2_outlined, 'Mis medicamentos', 'Consulta tu historial de medicamentos.'),
-    (Icons.receipt_long_outlined, 'Mis solicitudes', 'Sigue el estado de tus pedidos y solicitudes.'),
   ];
+
+  bool get _isDriver => auth.user?.role == 'DELIVERY_DRIVER';
+  bool get _isPatient => auth.user?.role == 'PATIENT';
 
   @override
   Widget build(BuildContext context) {
@@ -71,24 +78,52 @@ class HomePage extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s),
                 Text('Organiza lo importante de tu tratamiento desde un solo lugar.', style: context.text.bodyLarge),
                 const SizedBox(height: AppSpacing.xl),
-                HomeActionCard(
-                  featured: true,
-                  icon: Icons.document_scanner_outlined,
-                  title: 'Analizar fórmula',
-                  description: 'Lee una foto de tu fórmula y revisa los medicamentos identificados.',
-                  onTap: onAnalyze,
-                ),
-                const SizedBox(height: AppSpacing.xxl - 2),
-                Semantics(header: true, child: Text('Próximamente', style: context.text.headlineSmall)),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Estamos preparando estas funciones para conectarlas con las droguerías y los repartidores de FARMA GO.',
-                  style: context.text.bodyLarge,
-                ),
-                const SizedBox(height: AppSpacing.m),
-                for (final (icon, title, description) in _upcoming) ...[
-                  HomeActionCard(icon: icon, title: title, description: description),
+                if (_isDriver) ...[
+                  HomeActionCard(
+                    featured: true,
+                    icon: Icons.delivery_dining,
+                    title: 'Domicilios disponibles',
+                    description: 'Toma un pedido, recógelo en la farmacia y compártelo en el mapa.',
+                    onTap: onDriverBoard,
+                  ),
+                ] else ...[
+                  HomeActionCard(
+                    featured: true,
+                    icon: Icons.document_scanner_outlined,
+                    title: 'Analizar fórmula',
+                    description: 'Lee una foto de tu fórmula y revisa los medicamentos identificados.',
+                    onTap: onAnalyze,
+                  ),
+                  if (_isPatient) ...[
+                    const SizedBox(height: AppSpacing.m),
+                    HomeActionCard(
+                      icon: Icons.home_outlined,
+                      title: 'Pedir medicamento a casa',
+                      description: 'Solicita un domicilio y sigue al repartidor en el mapa.',
+                      onTap: onRequestDelivery,
+                    ),
+                    const SizedBox(height: AppSpacing.m),
+                    HomeActionCard(
+                      icon: Icons.receipt_long_outlined,
+                      title: 'Mis domicilios',
+                      description: 'Sigue el estado de tus pedidos en tiempo real.',
+                      onTap: onMyOrders,
+                    ),
+                  ],
+                ],
+                if (!_isDriver) ...[
+                  const SizedBox(height: AppSpacing.xxl - 2),
+                  Semantics(header: true, child: Text('Próximamente', style: context.text.headlineSmall)),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Estamos preparando estas funciones para conectarlas con las droguerías y los repartidores de FARMA GO.',
+                    style: context.text.bodyLarge,
+                  ),
                   const SizedBox(height: AppSpacing.m),
+                  for (final (icon, title, description) in _upcoming) ...[
+                    HomeActionCard(icon: icon, title: title, description: description),
+                    const SizedBox(height: AppSpacing.m),
+                  ],
                 ],
               ],
             ),

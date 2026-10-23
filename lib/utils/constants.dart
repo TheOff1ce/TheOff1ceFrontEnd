@@ -6,9 +6,19 @@ import 'package:flutter/foundation.dart';
 abstract final class AppConfig {
   static const _aiUrl = String.fromEnvironment('API_BASE_URL');
   static const _authUrl = String.fromEnvironment('AUTH_BASE_URL');
+  static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL');
+  static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL');
+
+  /// Client key for Google Maps (browser/app key restricted by referrer or package),
+  /// never the server key. Empty: the app shows a simplified map.
+  static const mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
+
+  static bool get hasMapsKey => mapsApiKey.isNotEmpty;
 
   static const aiPort = 8000;
   static const authPort = 3000;
+  static const geolocationPort = 3001;
+  static const ordersPort = 3002;
 
   static String get apiBaseUrl => resolve(
         defined: _aiUrl,
@@ -22,6 +32,24 @@ abstract final class AppConfig {
   static String get authBaseUrl => resolve(
         defined: _authUrl,
         port: authPort,
+        isWeb: kIsWeb,
+        platform: defaultTargetPlatform,
+        pageUri: kIsWeb ? Uri.base : null,
+      );
+
+  /// TheOff1ceOrderDelivery: patients request deliveries, drivers take them.
+  static String get ordersBaseUrl => resolve(
+        defined: _ordersUrl,
+        port: ordersPort,
+        isWeb: kIsWeb,
+        platform: defaultTargetPlatform,
+        pageUri: kIsWeb ? Uri.base : null,
+      );
+
+  /// TheOff1ceGeolocation: delivery tracking (REST and Socket.IO).
+  static String get geolocationBaseUrl => resolve(
+        defined: _geolocationUrl,
+        port: geolocationPort,
         isWeb: kIsWeb,
         platform: defaultTargetPlatform,
         pageUri: kIsWeb ? Uri.base : null,
@@ -55,6 +83,16 @@ abstract final class NetworkTimeouts {
   static const auth = Duration(seconds: 15);
   static const analysis = Duration(seconds: 90);
 
+  /// Publishing an order geocodes addresses and computes a route in Geolocation.
+  static const orders = Duration(seconds: 25);
+  static const tracking = Duration(seconds: 15);
+
   /// After this delay the analysis screen explains that it is taking longer.
   static const slowAnalysisHint = Duration(seconds: 12);
+}
+
+/// Delivery tracking cadence.
+abstract final class TrackingConfig {
+  /// How often the driver's app sends its location while on the way.
+  static const locationInterval = Duration(seconds: 10);
 }

@@ -5,16 +5,21 @@ import 'package:image_picker/image_picker.dart';
 import '../auth/auth_controller.dart';
 import '../pages/account_page.dart';
 import '../pages/analysis_page.dart';
+import '../pages/driver_board_page.dart';
+import '../pages/driver_delivery_page.dart';
 import '../pages/forgot_password_page.dart';
 import '../pages/google_auth_callback_page.dart';
 import '../pages/home_page.dart';
 import '../pages/landing_page.dart';
 import '../pages/login_page.dart';
+import '../pages/my_orders_page.dart';
 import '../pages/notifications_page.dart';
 import '../pages/register_page.dart';
+import '../pages/request_delivery_page.dart';
 import '../pages/reset_password_page.dart';
 import '../pages/result_page.dart';
 import '../pages/system_pages.dart';
+import '../pages/tracking_page.dart';
 import '../pages/upload_page.dart';
 import '../pages/verify_email_page.dart';
 import 'app_dependencies.dart';
@@ -46,6 +51,10 @@ class AppRouter {
     AppRoutes.account,
   };
 
+  /// Private paths, including the parameterized delivery routes.
+  static bool isProtected(String path) =>
+      protectedRoutes.contains(path) || AppRoutes.isPatientDeliveryPath(path) || AppRoutes.isDriverPath(path);
+
   late final GoRouter router = GoRouter(
     refreshListenable: _auth,
     redirect: redirect,
@@ -69,15 +78,23 @@ class AppRouter {
         if (publicRoutes.contains(path) || path == AppRoutes.verifyEmail) {
           return _auth.takeReturnTo() ?? AppRoutes.home;
         }
-        return null;
+        return _roleRedirect(path);
       case AuthStatus.unauthenticated:
         return _signedOutRedirect(state);
     }
   }
 
+  /// Delivery screens are role specific: patients request and track, drivers take and deliver.
+  String? _roleRedirect(String path) {
+    final role = _auth.user?.role;
+    if (AppRoutes.isDriverPath(path) && role != 'DELIVERY_DRIVER') return AppRoutes.home;
+    if (AppRoutes.isPatientDeliveryPath(path) && role != 'PATIENT') return AppRoutes.home;
+    return null;
+  }
+
   String? _signedOutRedirect(GoRouterState state) {
     final path = state.uri.path;
-    if (protectedRoutes.contains(path)) {
+    if (isProtected(path)) {
       // The processing step needs the in-memory image, so it resumes at the upload step.
       _auth.rememberReturnTo(
         path == AppRoutes.analyzingPrescription ? AppRoutes.uploadPrescription : state.uri.toString(),
@@ -199,8 +216,12 @@ class AppRouter {
             onAnalyze: () => context.push(AppRoutes.uploadPrescription),
             onNotifications: () => context.push(AppRoutes.notifications),
             onAccount: () => context.push(AppRoutes.account),
+            onRequestDelivery: () => context.push(AppRoutes.requestDelivery),
+            onMyOrders: () => context.push(AppRoutes.myOrders),
+            onDriverBoard: () => context.push(AppRoutes.driverBoard),
           )),
         ),
+        ..._deliveryPages,
         GoRoute(
           path: AppRoutes.uploadPrescription,
           builder: (context, state) => _gate(UploadPage(
@@ -259,6 +280,60 @@ class AppRouter {
             auth: _auth,
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
           )),
+        ),
+      ];
+
+  List<RouteBase> get _deliveryPages => [
+        GoRoute(
+          path: AppRoutes.myOrders,
+          builder: (context, state) => _gate(MyOrdersPage(
+            controller: _deps.patientOrders,
+            onRequest: () => context.push(AppRoutes.requestDelivery),
+            onTrack: (order) => context.push(AppRoutes.tracking(order.deliveryId)),
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.requestDelivery,
+          builder: (context, state) => _gate(RequestDeliveryPage(
+            controller: _deps.patientOrders,
+            onCreated: (order) => context.pushReplacement(AppRoutes.tracking(order.deliveryId)),
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.myOrders),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.trackingPattern,
+          builder: (context, state) {
+            final deliveryId = state.pathParameters['deliveryId'] ?? '';
+            return _gate(TrackingPage(
+              key: ValueKey(deliveryId),
+              createController: () => _deps.trackingFor(deliveryId),
+              onBack: () => AppRoutes.backOrGo(context, AppRoutes.myOrders),
+            ));
+          },
+        ),
+        GoRoute(
+          path: AppRoutes.driverBoard,
+          builder: (context, state) => _gate(DriverBoardPage(
+            controller: _deps.driverBoard,
+            onOpen: (order) => context.push(AppRoutes.driverDelivery(order.id)),
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.driverDeliveryPattern,
+          builder: (context, state) {
+            final order = _deps.driverBoard.takenById(state.pathParameters['orderId'] ?? '');
+            if (order == null) {
+              return _gate(MissingDeliveryPage(onBack: () => context.go(AppRoutes.driverBoard)));
+            }
+            return _gate(DriverDeliveryPage(
+              key: ValueKey(order.id),
+              order: order,
+              createController: _deps.driverDeliveryFor,
+              onBack: () => AppRoutes.backOrGo(context, AppRoutes.driverBoard),
+            ));
+          },
         ),
       ];
 

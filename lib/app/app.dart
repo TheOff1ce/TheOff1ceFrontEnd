@@ -43,11 +43,17 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
     final user = _auth.user;
     if (_auth.status == AuthStatus.authenticated && user != null) {
       // A different person never sees the previous user's prescription result.
-      if (_lastUserId != null && _lastUserId != user.id) _deps.prescriptions.reset();
+      if (_lastUserId != null && _lastUserId != user.id) {
+        _deps.prescriptions.reset();
+        _deps.patientOrders.clear();
+        _deps.driverBoard.clear();
+      }
       _lastUserId = user.id;
       _deps.notifications.loadForUser(user.id);
     } else if (_auth.status == AuthStatus.unauthenticated) {
       _deps.notifications.clearSession();
+      _deps.patientOrders.clear();
+      _deps.driverBoard.clear();
     }
   }
 
