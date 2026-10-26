@@ -8,6 +8,7 @@ class AuthUser {
         'PATIENT' => 'Paciente',
         'EPS' => 'EPS',
         'DELIVERY_DRIVER' => 'Repartidor',
+        'ADMIN' => 'Administrador',
         _ => 'Sin rol asignado',
       };
 

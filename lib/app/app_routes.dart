@@ -35,6 +35,13 @@ abstract final class AppRoutes {
   static const driverDeliveryPattern = '/driver/orders/:orderId';
   static String driverDelivery(String orderId) => '/driver/orders/${Uri.encodeComponent(orderId)}';
 
+  // Administrator back-office
+  static const adminUsers = '/admin/users';
+  static const adminOrders = '/admin/orders';
+  static const adminTrackingPattern = '/admin/orders/tracking/:deliveryId';
+  static String adminTracking(String deliveryId) => '/admin/orders/tracking/${Uri.encodeComponent(deliveryId)}';
+
+  static bool isAdminPath(String path) => path == '/admin' || path.startsWith('/admin/');
   static bool isPatientDeliveryPath(String path) => path == myOrders || path.startsWith('$myOrders/');
   static bool isDriverPath(String path) => path == driverBoard || path.startsWith('/driver/');
 

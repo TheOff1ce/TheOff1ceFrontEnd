@@ -17,6 +17,8 @@ class HomePage extends StatelessWidget {
     this.onRequestDelivery,
     this.onMyOrders,
     this.onDriverBoard,
+    this.onAdminUsers,
+    this.onAdminOrders,
   });
 
   final AuthController auth;
@@ -27,6 +29,8 @@ class HomePage extends StatelessWidget {
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onMyOrders;
   final VoidCallback? onDriverBoard;
+  final VoidCallback? onAdminUsers;
+  final VoidCallback? onAdminOrders;
 
   static const _upcoming = [
     (Icons.medication_outlined, 'Medicamentos pendientes', 'Revisa lo que tienes por gestionar.'),
@@ -35,6 +39,7 @@ class HomePage extends StatelessWidget {
 
   bool get _isDriver => auth.user?.role == 'DELIVERY_DRIVER';
   bool get _isPatient => auth.user?.role == 'PATIENT';
+  bool get _isAdmin => auth.user?.role == 'ADMIN';
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +81,36 @@ class HomePage extends StatelessWidget {
                   child: Text('Hola${firstName == null ? '' : ', $firstName'}', style: context.text.displaySmall),
                 ),
                 const SizedBox(height: AppSpacing.s),
-                Text('Organiza lo importante de tu tratamiento desde un solo lugar.', style: context.text.bodyLarge),
+                Text(
+                  _isAdmin
+                      ? 'Administra los usuarios y los domicilios de FARMA GO.'
+                      : 'Organiza lo importante de tu tratamiento desde un solo lugar.',
+                  style: context.text.bodyLarge,
+                ),
                 const SizedBox(height: AppSpacing.xl),
-                if (_isDriver) ...[
+                if (_isAdmin) ...[
+                  HomeActionCard(
+                    featured: true,
+                    icon: Icons.pending_actions_outlined,
+                    title: 'Domicilios pendientes',
+                    description: 'Revisa todos los pedidos, síguelos en el mapa o cancélalos.',
+                    onTap: onAdminOrders,
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  HomeActionCard(
+                    icon: Icons.manage_accounts_outlined,
+                    title: 'Usuarios y roles',
+                    description: 'Busca usuarios y cambia su rol.',
+                    onTap: onAdminUsers,
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  HomeActionCard(
+                    icon: Icons.document_scanner_outlined,
+                    title: 'Analizar fórmula',
+                    description: 'Lee una foto de una fórmula y revisa los medicamentos identificados.',
+                    onTap: onAnalyze,
+                  ),
+                ] else if (_isDriver) ...[
                   HomeActionCard(
                     featured: true,
                     icon: Icons.delivery_dining,
@@ -111,7 +143,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ],
                 ],
-                if (!_isDriver) ...[
+                if (!_isDriver && !_isAdmin) ...[
                   const SizedBox(height: AppSpacing.xxl - 2),
                   Semantics(header: true, child: Text('Próximamente', style: context.text.headlineSmall)),
                   const SizedBox(height: AppSpacing.xs),
