@@ -59,6 +59,10 @@ class AuthRepository {
 
   Future<AuthSession> refresh() async => AuthSession.fromJson(await _post('refresh', null));
 
+  /// Cross-site Google sign-in: trades the one-time code from the callback URL for a session.
+  Future<AuthSession> exchangeGoogleCode(String code) async =>
+      AuthSession.fromJson(await _post('google/exchange', {'code': code}));
+
   Future<AuthUser> me(String accessToken) async {
     final response = await sendWithin(
       _timeout,

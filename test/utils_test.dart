@@ -4,6 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('deployed defaults', () {
+    test('Auth and AI point to Azure unless a --dart-define overrides them', () {
+      expect(AppConfig.authBaseUrl, 'https://farmago-auth-jl.azurewebsites.net');
+      expect(AppConfig.apiBaseUrl, 'https://farmago-ai-jl.azurewebsites.net');
+    });
+  });
+
   group('FE-001 AppConfig.resolve', () {
     test('uses --dart-define first', () {
       expect(

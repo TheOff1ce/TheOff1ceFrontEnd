@@ -33,8 +33,8 @@ class AppDependencies {
     this.deliveryClients = const [],
   });
 
-  factory AppDependencies.create() {
-    final auth = AuthController(AuthRepository(AppConfig.authBaseUrl));
+  factory AppDependencies.create({String? googleHandoffCode}) {
+    final auth = AuthController(AuthRepository(AppConfig.authBaseUrl), googleHandoffCode: googleHandoffCode);
     // AI-001: every analysis request carries the access token issued by Auth.
     final api = ApiService(AppConfig.apiBaseUrl, tokens: auth);
     // Orders and tracking carry the same Bearer token; there are no other secrets in the app.

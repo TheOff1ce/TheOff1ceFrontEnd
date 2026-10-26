@@ -188,4 +188,55 @@ void main() {
       auth.dispose();
     });
   });
+
+  group('cross-site Google sign-in', () {
+    final code = 'a' * 43;
+
+    test('reads the one-time code only from the /auth/callback fragment', () {
+      expect(AuthController.googleHandoffCodeFrom(Uri.parse('http://localhost:5173/auth/callback#code=$code')), code);
+      expect(AuthController.googleHandoffCodeFrom(Uri.parse('http://localhost:5173/login#code=$code')), isNull);
+      expect(AuthController.googleHandoffCodeFrom(Uri.parse('http://localhost:5173/auth/callback?code=$code')), isNull);
+      expect(AuthController.googleHandoffCodeFrom(Uri.parse('http://localhost:5173/auth/callback#code=short')), isNull);
+      expect(AuthController.googleHandoffCodeFrom(Uri.parse('http://localhost:5173/auth/callback')), isNull);
+    });
+
+    test('restore exchanges the code instead of refreshing, and only once', () {
+      fakeAsync((async) {
+        final server = FakeAuthServer()
+          ..on('google/exchange', session)
+          ..on('me', me)
+          ..on('refresh', session)
+          ..on('me', me);
+        final auth = AuthController(
+          AuthRepository('https://auth.example', client: server.client, usesBrowserCookies: true),
+          googleHandoffCode: code,
+        );
+        auth.restore();
+        async.flushMicrotasks();
+        expect(auth.status, AuthStatus.authenticated);
+        expect(server.calls, ['google/exchange', 'me']);
+
+        auth.restore();
+        async.flushMicrotasks();
+        expect(server.calls.last, 'me');
+        expect(server.calls, contains('refresh'));
+        auth.dispose();
+      });
+    });
+
+    test('a rejected code ends on the signed-out state', () {
+      fakeAsync((async) {
+        final server = FakeAuthServer()..on('google/exchange', () => failure(401, 'SESSION_INVALID'));
+        final auth = AuthController(
+          AuthRepository('https://auth.example', client: server.client, usesBrowserCookies: true),
+          googleHandoffCode: code,
+        );
+        auth.restore();
+        async.flushMicrotasks();
+        expect(auth.status, AuthStatus.unauthenticated);
+        expect(server.calls, ['google/exchange']);
+        auth.dispose();
+      });
+    });
+  });
 }

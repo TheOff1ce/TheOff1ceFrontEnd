@@ -1,11 +1,17 @@
 import 'package:flutter/foundation.dart';
 
-/// Resolves service URLs from `--dart-define` first and then from safe,
-/// platform-aware defaults. It never touches `dart:io`, so it also works on
-/// Flutter Web (FE-001).
+/// Resolves service URLs from `--dart-define` first and then from defaults.
+/// Auth and AI default to their Azure App Service deployments; the delivery
+/// services still default to platform-aware localhost URLs. It never touches
+/// `dart:io`, so it also works on Flutter Web (FE-001).
 abstract final class AppConfig {
-  static const _aiUrl = String.fromEnvironment('API_BASE_URL');
-  static const _authUrl = String.fromEnvironment('AUTH_BASE_URL');
+  /// Deployed services (Azure App Service). Override with `--dart-define` to use local ones,
+  /// e.g. `--dart-define=AUTH_BASE_URL=http://localhost:3000`.
+  static const deployedAuthUrl = 'https://farmago-auth-jl.azurewebsites.net';
+  static const deployedAiUrl = 'https://farmago-ai-jl.azurewebsites.net';
+
+  static const _aiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: deployedAiUrl);
+  static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedAuthUrl);
   static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL');
   static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL');
 

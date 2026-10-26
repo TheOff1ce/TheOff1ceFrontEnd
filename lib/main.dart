@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'app/app.dart';
+import 'auth/auth_controller.dart';
 import 'errors/app_error.dart';
 import 'pages/system_pages.dart';
 
 void main() {
   if (kIsWeb) usePathUrlStrategy();
   installGlobalErrorHandling();
-  runApp(const FarmaGoApp());
+  // Read before the router replaces the URL: the code lives only in the fragment.
+  final googleHandoffCode = kIsWeb ? AuthController.googleHandoffCodeFrom(Uri.base) : null;
+  runApp(FarmaGoApp(googleHandoffCode: googleHandoffCode));
 }
 
 /// App-level "error boundary" (FE-006): build errors render a friendly

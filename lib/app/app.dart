@@ -7,17 +7,20 @@ import 'app_router.dart';
 import 'theme/app_theme.dart';
 
 class FarmaGoApp extends StatefulWidget {
-  const FarmaGoApp({super.key, this.dependencies});
+  const FarmaGoApp({super.key, this.dependencies, this.googleHandoffCode});
 
   /// Injected in tests; built from `AppConfig` otherwise.
   final AppDependencies? dependencies;
+
+  /// One-time Google sign-in code read from the launch URL (web only).
+  final String? googleHandoffCode;
 
   @override
   State<FarmaGoApp> createState() => _FarmaGoAppState();
 }
 
 class _FarmaGoAppState extends State<FarmaGoApp> {
-  late final AppDependencies _deps = widget.dependencies ?? AppDependencies.create();
+  late final AppDependencies _deps = widget.dependencies ?? AppDependencies.create(googleHandoffCode: widget.googleHandoffCode);
   late final AppRouter _router = AppRouter(_deps);
   String? _lastUserId;
 

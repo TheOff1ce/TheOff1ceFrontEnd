@@ -30,7 +30,13 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000 --dart-define=AUTH_B
 flutter run --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
 ```
 
-Sin `--dart-define`, en web se usa el mismo host que sirve la página (puertos 8000 y 3000), y en Android `10.0.2.2`.
+Sin `--dart-define`, **Auth y la IA apuntan a los servicios desplegados en Azure** (`https://farmago-auth-jl.azurewebsites.net` y `https://farmago-ai-jl.azurewebsites.net`). Para usar los locales, pásalos explícitamente (`--dart-define=AUTH_BASE_URL=http://localhost:3000 --dart-define=API_BASE_URL=http://localhost:8000`). Orders y Geolocation siguen por defecto en local: en web el mismo host que sirve la página (puertos 3002 y 3001) y en Android `10.0.2.2`.
+
+Atajo para usar los servicios de Azure (puerto 5173 obligatorio, es el origen permitido por CORS):
+
+```powershell
+flutter run -d web-server --web-hostname localhost --web-port 5173
+```
 
 En `TheOff1ceAuth`, `FRONTEND_URL` debe ser exactamente el origen del frontend (por ejemplo `http://localhost:5173`), y en `TheOff1ceAI`, `ALLOWED_ORIGINS` debe incluirlo. El redirect URI de Google es `http://localhost:3000/auth/google/callback`.
 

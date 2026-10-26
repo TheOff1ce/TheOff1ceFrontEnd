@@ -21,7 +21,23 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
     this._repository, {
     List<Duration>? retryDelays,
     this.refreshMargin = const Duration(seconds: 30),
-  }) : _retryDelays = retryDelays ?? _defaultRetryDelays;
+    String? googleHandoffCode,
+  })  : _retryDelays = retryDelays ?? _defaultRetryDelays,
+        _googleHandoffCode = googleHandoffCode;
+
+  static final _handoffCodePattern = RegExp(r'^[A-Za-z0-9_-]{40,64}$');
+
+  /// Reads the one-time code Auth puts in the fragment of `/auth/callback#code=…`
+  /// when the frontend lives on another site than the API (CROSS_SITE_COOKIES).
+  static String? googleHandoffCodeFrom(Uri uri) {
+    if (!uri.path.endsWith('/auth/callback') || uri.fragment.isEmpty) return null;
+    try {
+      final code = Uri.splitQueryString(uri.fragment)['code'];
+      return code != null && _handoffCodePattern.hasMatch(code) ? code : null;
+    } on FormatException {
+      return null;
+    }
+  }
 
   static const _defaultRetryDelays = [
     Duration(seconds: 5),
@@ -55,6 +71,7 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
   Future<void>? _refreshing;
   int _retryAttempt = 0;
   bool _disposed = false;
+  String? _googleHandoffCode;
 
   /// Access token kept only in memory, for future authenticated calls.
   String? get accessToken => _accessToken;
@@ -73,9 +90,14 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
   Future<void> restore() async {
     _setStatus(AuthStatus.checking);
     startupError = null;
+    // Single use: a reload after the exchange falls back to the refresh cookie.
+    final handoff = _googleHandoffCode;
+    _googleHandoffCode = null;
     await _repository.restoreStoredRefresh();
     try {
-      await _acceptSession(await _repository.refresh());
+      final session =
+          handoff != null ? await _repository.exchangeGoogleCode(handoff) : await _repository.refresh();
+      await _acceptSession(session);
     } on AppError catch (error) {
       if (error.isTransient) {
         ErrorReporter.report(error);
