@@ -14,6 +14,8 @@ import '../pages/landing_page.dart';
 import '../pages/login_page.dart';
 import '../pages/my_orders_page.dart';
 import '../pages/notifications_page.dart';
+import '../pages/pendiente_detail_page.dart';
+import '../pages/pendientes_page.dart';
 import '../pages/register_page.dart';
 import '../pages/request_delivery_page.dart';
 import '../pages/reset_password_page.dart';
@@ -22,6 +24,7 @@ import '../pages/system_pages.dart';
 import '../pages/tracking_page.dart';
 import '../pages/upload_page.dart';
 import '../pages/verify_email_page.dart';
+import '../utils/pendientes_rol.dart';
 import 'app_dependencies.dart';
 import 'app_routes.dart';
 
@@ -53,7 +56,10 @@ class AppRouter {
 
   /// Private paths, including the parameterized delivery routes.
   static bool isProtected(String path) =>
-      protectedRoutes.contains(path) || AppRoutes.isPatientDeliveryPath(path) || AppRoutes.isDriverPath(path);
+      protectedRoutes.contains(path) ||
+      AppRoutes.isPatientDeliveryPath(path) ||
+      AppRoutes.isDriverPath(path) ||
+      AppRoutes.isPendientesPath(path);
 
   late final GoRouter router = GoRouter(
     refreshListenable: _auth,
@@ -85,8 +91,10 @@ class AppRouter {
   }
 
   /// Delivery screens are role specific: patients request and track, drivers take and deliver.
+  /// Pendientes lo consultan los tres roles que acepta `pendientes-service`.
   String? _roleRedirect(String path) {
     final role = _auth.user?.role;
+    if (AppRoutes.isPendientesPath(path) && PendientesRol.fromCode(role) == null) return AppRoutes.home;
     if (AppRoutes.isDriverPath(path) && role != 'DELIVERY_DRIVER') return AppRoutes.home;
     if (AppRoutes.isPatientDeliveryPath(path) && role != 'PATIENT') return AppRoutes.home;
     return null;
@@ -219,8 +227,10 @@ class AppRouter {
             onRequestDelivery: () => context.push(AppRoutes.requestDelivery),
             onMyOrders: () => context.push(AppRoutes.myOrders),
             onDriverBoard: () => context.push(AppRoutes.driverBoard),
+            onPendientes: () => context.push(AppRoutes.pendientes),
           )),
         ),
+        ..._pendientesPages,
         ..._deliveryPages,
         GoRoute(
           path: AppRoutes.uploadPrescription,
@@ -280,6 +290,31 @@ class AppRouter {
             auth: _auth,
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
           )),
+        ),
+      ];
+
+  List<RouteBase> get _pendientesPages => [
+        GoRoute(
+          path: AppRoutes.pendientes,
+          builder: (context, state) => _gate(PendientesPage(
+            controller: _deps.pendientes,
+            rol: PendientesRol.fromCode(_auth.user?.role),
+            createDetailController: _deps.pendienteDetailFor,
+            onOpen: (pendiente) => context.push(AppRoutes.pendiente(pendiente.id)),
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.pendientePattern,
+          builder: (context, state) {
+            final id = state.pathParameters['pendienteId'] ?? '';
+            return _gate(PendienteDetailPage(
+              key: ValueKey(id),
+              rol: PendientesRol.fromCode(_auth.user?.role),
+              createController: () => _deps.pendienteDetailFor(id),
+              onBack: () => AppRoutes.backOrGo(context, AppRoutes.pendientes),
+            ));
+          },
         ),
       ];
 

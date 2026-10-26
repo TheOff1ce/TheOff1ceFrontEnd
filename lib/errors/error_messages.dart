@@ -87,6 +87,12 @@ abstract final class ErrorMessages {
   static const locationUnavailable =
       'No pudimos obtener tu ubicación. Revisa el GPS; lo intentaremos de nuevo.';
 
+  // Pendientes (plazo de 48 h)
+  static const pendienteNotFound =
+      'No encontramos este pendiente. Vuelve a la lista y actualízala.';
+  static const pendienteForbidden =
+      'No tienes acceso a este pendiente. Si crees que es un error, escribe a soporte.';
+
   // Local device
   static const imagePick =
       'No pudimos abrir la imagen. Revisa que la app tenga permiso para usar la cámara o la galería e inténtalo otra vez.';

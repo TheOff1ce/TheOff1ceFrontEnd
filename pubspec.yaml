@@ -38,3 +38,15 @@ flutter:
           weight: 700
         - asset: assets/fonts/Manrope-ExtraBold.ttf
           weight: 800
+    # Atkinson Hyperlegible Next (SIL OFL 1.1, see assets/fonts/atkinson/OFL.txt): tipografía del
+    # manual unificado FarmaGo (§4). Solo la usan las pantallas de pendientes por ahora.
+    - family: Atkinson Hyperlegible Next
+      fonts:
+        - asset: assets/fonts/atkinson/AtkinsonHyperlegibleNext-400.ttf
+          weight: 400
+        - asset: assets/fonts/atkinson/AtkinsonHyperlegibleNext-500.ttf
+          weight: 500
+        - asset: assets/fonts/atkinson/AtkinsonHyperlegibleNext-600.ttf
+          weight: 600
+        - asset: assets/fonts/atkinson/AtkinsonHyperlegibleNext-700.ttf
+          weight: 700

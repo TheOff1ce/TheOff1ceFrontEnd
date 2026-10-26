@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 /// Resolves service URLs from `--dart-define` first and then from defaults.
-/// Auth and AI default to their Azure App Service deployments; the delivery
-/// services still default to platform-aware localhost URLs. It never touches
+/// Auth and AI default to their Azure App Service deployments and Pendientes to
+/// its AWS Lambda deployment; the delivery services still default to
+/// platform-aware localhost URLs. It never touches
 /// `dart:io`, so it also works on Flutter Web (FE-001).
 abstract final class AppConfig {
   /// Deployed services (Azure App Service). Override with `--dart-define` to use local ones,
@@ -10,10 +11,14 @@ abstract final class AppConfig {
   static const deployedAuthUrl = 'https://farmago-auth-jl.azurewebsites.net';
   static const deployedAiUrl = 'https://farmago-ai-jl.azurewebsites.net';
 
+  /// `pendientes-service` on AWS Lambda (Function URL).
+  static const deployedPendientesUrl = 'https://ey4bd7llo4despvmqbmxof6pfi0zoifk.lambda-url.us-east-1.on.aws';
+
   static const _aiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: deployedAiUrl);
   static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedAuthUrl);
   static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL');
   static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL');
+  static const _pendientesUrl = String.fromEnvironment('PENDIENTES_BASE_URL', defaultValue: deployedPendientesUrl);
 
   /// Client key for Google Maps (browser/app key restricted by referrer or package),
   /// never the server key. Empty: the app shows a simplified map.
@@ -25,6 +30,10 @@ abstract final class AppConfig {
   static const authPort = 3000;
   static const geolocationPort = 3001;
   static const ordersPort = 3002;
+
+  /// En local `pendientes-service` escucha en 3000 por defecto (igual que Auth): se ejecuta con
+  /// `PORT=3003` y se indica con `--dart-define=PENDIENTES_BASE_URL=http://localhost:3003`.
+  static const pendientesPort = 3003;
 
   static String get apiBaseUrl => resolve(
         defined: _aiUrl,
@@ -47,6 +56,15 @@ abstract final class AppConfig {
   static String get ordersBaseUrl => resolve(
         defined: _ordersUrl,
         port: ordersPort,
+        isWeb: kIsWeb,
+        platform: defaultTargetPlatform,
+        pageUri: kIsWeb ? Uri.base : null,
+      );
+
+  /// `pendientes-service`: pendientes de medicamentos con plazo de 48 h.
+  static String get pendientesBaseUrl => resolve(
+        defined: _pendientesUrl,
+        port: pendientesPort,
         isWeb: kIsWeb,
         platform: defaultTargetPlatform,
         pageUri: kIsWeb ? Uri.base : null,
@@ -92,6 +110,7 @@ abstract final class NetworkTimeouts {
   /// Publishing an order geocodes addresses and computes a route in Geolocation.
   static const orders = Duration(seconds: 25);
   static const tracking = Duration(seconds: 15);
+  static const pendientes = Duration(seconds: 15);
 
   /// After this delay the analysis screen explains that it is taking longer.
   static const slowAnalysisHint = Duration(seconds: 12);

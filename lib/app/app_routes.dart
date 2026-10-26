@@ -30,6 +30,12 @@ abstract final class AppRoutes {
   static const trackingPattern = '/orders/tracking/:deliveryId';
   static String tracking(String deliveryId) => '/orders/tracking/${Uri.encodeComponent(deliveryId)}';
 
+  // Pendientes (plazo de 48 h)
+  static const pendientes = '/pendientes';
+  static const pendientePattern = '/pendientes/:pendienteId';
+  static String pendiente(String id) => '/pendientes/${Uri.encodeComponent(id)}';
+  static bool isPendientesPath(String path) => path == pendientes || path.startsWith('$pendientes/');
+
   // Home deliveries (driver)
   static const driverBoard = '/driver/orders';
   static const driverDeliveryPattern = '/driver/orders/:orderId';

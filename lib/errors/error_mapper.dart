@@ -69,6 +69,20 @@ abstract final class ErrorMapper {
   static AppError fromDelivery(int status, Map<String, dynamic> body) =>
       _fromCode(_deliveryCodes, status, body);
 
+  /// Error answered by `pendientes-service` (NestJS: `{statusCode, error, message, path, ...}`).
+  ///
+  /// Este servicio no envía códigos estables, solo el estado HTTP: el 403 y el 404 tienen frase
+  /// propia (acceso al pendiente) y el resto sigue la tabla general por estado.
+  static AppError fromPendientes(int status, Map<String, dynamic> body) {
+    final entry = switch (status) {
+      403 => (AppErrorKind.forbidden, ErrorMessages.pendienteForbidden, false),
+      404 => (AppErrorKind.notFound, ErrorMessages.pendienteNotFound, false),
+      _ => null,
+    };
+    if (entry == null) return _fromCode(const <String, _Entry>{}, status, body);
+    return AppError(kind: entry.$1, userMessage: entry.$2, retryable: entry.$3, code: 'HTTP_$status');
+  }
+
   /// Error answered by TheOff1ceAI (`{success:false, error:{code,message}}`).
   static AppError fromAi(int status, Map<String, dynamic> body) =>
       _fromCode(_aiCodes, status, body);
