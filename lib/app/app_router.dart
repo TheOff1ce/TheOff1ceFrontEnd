@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 
 import '../auth/auth_controller.dart';
 import '../pages/account_page.dart';
+import '../pages/admin_orders_page.dart';
+import '../pages/admin_users_page.dart';
 import '../pages/analysis_page.dart';
 import '../pages/driver_board_page.dart';
 import '../pages/driver_delivery_page.dart';
@@ -59,7 +61,8 @@ class AppRouter {
       protectedRoutes.contains(path) ||
       AppRoutes.isPatientDeliveryPath(path) ||
       AppRoutes.isDriverPath(path) ||
-      AppRoutes.isPendientesPath(path);
+      AppRoutes.isPendientesPath(path) ||
+      AppRoutes.isAdminPath(path);
 
   late final GoRouter router = GoRouter(
     refreshListenable: _auth,
@@ -90,10 +93,12 @@ class AppRouter {
     }
   }
 
-  /// Delivery screens are role specific: patients request and track, drivers take and deliver.
-  /// Pendientes lo consultan los tres roles que acepta `pendientes-service`.
+  /// Delivery screens are role specific: patients request and track, drivers take and deliver,
+  /// administrators manage users and every order. Pendientes lo consultan los tres roles que acepta
+  /// `pendientes-service`.
   String? _roleRedirect(String path) {
     final role = _auth.user?.role;
+    if (AppRoutes.isAdminPath(path) && role != 'ADMIN') return AppRoutes.home;
     if (AppRoutes.isPendientesPath(path) && PendientesRol.fromCode(role) == null) return AppRoutes.home;
     if (AppRoutes.isDriverPath(path) && role != 'DELIVERY_DRIVER') return AppRoutes.home;
     if (AppRoutes.isPatientDeliveryPath(path) && role != 'PATIENT') return AppRoutes.home;
@@ -228,10 +233,13 @@ class AppRouter {
             onMyOrders: () => context.push(AppRoutes.myOrders),
             onDriverBoard: () => context.push(AppRoutes.driverBoard),
             onPendientes: () => context.push(AppRoutes.pendientes),
+            onAdminUsers: () => context.push(AppRoutes.adminUsers),
+            onAdminOrders: () => context.push(AppRoutes.adminOrders),
           )),
         ),
         ..._pendientesPages,
         ..._deliveryPages,
+        ..._adminPages,
         GoRoute(
           path: AppRoutes.uploadPrescription,
           builder: (context, state) => _gate(UploadPage(
@@ -367,6 +375,36 @@ class AppRouter {
               order: order,
               createController: _deps.driverDeliveryFor,
               onBack: () => AppRoutes.backOrGo(context, AppRoutes.driverBoard),
+            ));
+          },
+        ),
+      ];
+
+  List<RouteBase> get _adminPages => [
+        GoRoute(
+          path: AppRoutes.adminUsers,
+          builder: (context, state) => _gate(AdminUsersPage(
+            controller: _deps.adminUsers,
+            currentUserId: _auth.user?.id,
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.adminOrders,
+          builder: (context, state) => _gate(AdminOrdersPage(
+            controller: _deps.adminOrders,
+            onTrack: (order) => context.push(AppRoutes.adminTracking(order.order.deliveryId)),
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.adminTrackingPattern,
+          builder: (context, state) {
+            final deliveryId = state.pathParameters['deliveryId'] ?? '';
+            return _gate(TrackingPage(
+              key: ValueKey('admin-$deliveryId'),
+              createController: () => _deps.trackingFor(deliveryId),
+              onBack: () => AppRoutes.backOrGo(context, AppRoutes.adminOrders),
             ));
           },
         ),

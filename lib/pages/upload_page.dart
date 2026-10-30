@@ -1,19 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/app_theme.dart';
 import '../components/analysis_widgets.dart';
+import '../components/camera_capture_page.dart';
 import '../components/feedback.dart';
 import '../components/ui.dart';
 import '../errors/app_error.dart';
 import '../services/image_service.dart';
 
 class UploadPage extends StatefulWidget {
-  const UploadPage({super.key, required this.onBack, required this.onAnalyze, this.images});
+  const UploadPage({super.key, required this.onBack, required this.onAnalyze, this.images, this.takePhoto});
 
   final VoidCallback onBack;
   final ValueChanged<XFile> onAnalyze;
   final ImageService? images;
+
+  /// In-app camera. On the web it defaults to [showCameraCapture], because the browser
+  /// file input that `image_picker` uses opens the file explorer on desktop.
+  final Future<XFile?> Function(BuildContext context)? takePhoto;
 
   @override
   State<UploadPage> createState() => _UploadPageState();
@@ -28,7 +34,7 @@ class _UploadPageState extends State<UploadPage> {
     if (_selecting) return;
     setState(() => _selecting = true);
     try {
-      final image = camera ? await _images.camera() : await _images.gallery();
+      final image = camera ? await _takePhoto() : await _images.gallery();
       if (mounted && image != null) setState(() => _image = image);
     } on AppError catch (error) {
       ErrorReporter.report(error);
@@ -36,6 +42,11 @@ class _UploadPageState extends State<UploadPage> {
     } finally {
       if (mounted) setState(() => _selecting = false);
     }
+  }
+
+  Future<XFile?> _takePhoto() {
+    final takePhoto = widget.takePhoto ?? (kIsWeb ? showCameraCapture : null);
+    return takePhoto != null ? takePhoto(context) : _images.camera();
   }
 
   /// "Quitar imagen" is reversible with "Deshacer" (frontend-guardian §2.6).

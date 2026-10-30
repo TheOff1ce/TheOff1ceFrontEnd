@@ -1,6 +1,8 @@
 import '../auth/auth_controller.dart';
 import '../auth/auth_repository.dart';
 import '../auth/password_reset_controller.dart';
+import '../hooks/admin_orders_controller.dart';
+import '../hooks/admin_users_controller.dart';
 import '../hooks/driver_board_controller.dart';
 import '../hooks/driver_delivery_controller.dart';
 import '../hooks/patient_orders_controller.dart';
@@ -10,6 +12,7 @@ import '../hooks/prescription_hook.dart';
 import '../hooks/tracking_controller.dart';
 import '../notifications/notification_controller.dart';
 import '../notifications/notification_repository.dart';
+import '../services/admin_service.dart';
 import '../services/api_service.dart';
 import '../services/authorized_json_client.dart';
 import '../services/delivery_service.dart';
@@ -33,6 +36,8 @@ class AppDependencies {
     required this.driverBoard,
     required this.deliveries,
     required this.trackingChannels,
+    required this.adminUsers,
+    required this.adminOrders,
     required this.location,
     required this.pendientesService,
     required this.pendientes,
@@ -57,6 +62,9 @@ class AppDependencies {
     final pendientesService = PendientesService(pendientesClient);
     final orders = OrderService(ordersClient);
     final deliveries = DeliveryService(trackingClient);
+    // Administrator back-office: Auth's user directory with the same Bearer token.
+    final authClient = AuthorizedJsonClient(AppConfig.authBaseUrl, tokens: auth, timeout: NetworkTimeouts.auth);
+    final admin = AdminService(auth: authClient, orders: ordersClient);
     return AppDependencies(
       api: api,
       prescriptions: PrescriptionController(PrescriptionService(api)),
@@ -71,7 +79,9 @@ class AppDependencies {
       location: GeolocatorLocationSource(),
       pendientesService: pendientesService,
       pendientes: PendientesListController(pendientesService),
-      deliveryClients: [ordersClient, trackingClient, pendientesClient],
+      adminUsers: AdminUsersController(admin),
+      adminOrders: AdminOrdersController(admin, deliveries),
+      deliveryClients: [ordersClient, trackingClient, pendientesClient, authClient],
     );
   }
 
@@ -84,6 +94,8 @@ class AppDependencies {
   final DriverBoardController driverBoard;
   final DeliveryService deliveries;
   final TrackingChannelFactory trackingChannels;
+  final AdminUsersController adminUsers;
+  final AdminOrdersController adminOrders;
   final LocationSource location;
   final PendientesService pendientesService;
   final PendientesListController pendientes;
@@ -111,6 +123,8 @@ class AppDependencies {
     patientOrders.dispose();
     driverBoard.dispose();
     pendientes.dispose();
+    adminUsers.dispose();
+    adminOrders.dispose();
     for (final client in deliveryClients) {
       client.dispose();
     }

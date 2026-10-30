@@ -17,6 +17,7 @@ dependencies:
   socket_io_client: ^3.1.2
   geolocator: ^14.0.0
   web: ^1.1.0
+  camera: ^0.12.2
 dev_dependencies:
   flutter_test: {sdk: flutter}
   flutter_lints: ^4.0.0

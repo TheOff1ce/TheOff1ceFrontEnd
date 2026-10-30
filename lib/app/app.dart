@@ -51,6 +51,8 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
         _deps.patientOrders.clear();
         _deps.driverBoard.clear();
         _deps.pendientes.clear();
+        _deps.adminUsers.clear();
+        _deps.adminOrders.clear();
       }
       _lastUserId = user.id;
       _deps.notifications.loadForUser(user.id);
@@ -59,6 +61,8 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
       _deps.patientOrders.clear();
       _deps.driverBoard.clear();
       _deps.pendientes.clear();
+      _deps.adminUsers.clear();
+      _deps.adminOrders.clear();
     }
   }
 
