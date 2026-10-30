@@ -1,129 +1,202 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
-import '../app/theme/app_theme.dart';
-import '../components/auth_ui.dart';
+import '../app/theme/farmago_tokens.dart';
+import '../components/landing/landing_sections.dart';
 
-class LandingPage extends StatelessWidget {
-  const LandingPage({super.key, required this.onLogin, required this.onRegister});
+/// Landing pública de FarmaGo. Presenta el módulo de pendientes con el reloj de 48 h como gesto principal.
+///
+/// Las secciones se reparten en bandas de color alternadas (fondo, superficie, fondo hundido) en
+/// lugar de tarjetas: el ritmo lo marca el cambio de superficie.
+class LandingPage extends StatefulWidget {
+  const LandingPage(
+      {super.key, required this.onLogin, required this.onRegister});
 
   final VoidCallback onLogin, onRegister;
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 560),
-              child: ListView(padding: const EdgeInsets.all(AppSpacing.xl), children: [
-                const FarmaGoMark(),
-                const SizedBox(height: AppSpacing.xl),
-                const _NetworkVisual(),
-                const SizedBox(height: AppSpacing.xl),
-                Semantics(
-                  header: true,
-                  child: Text('Medicamentos a tiempo,\ncon trazabilidad.', style: context.text.displaySmall),
-                ),
-                const SizedBox(height: AppSpacing.m),
-                Text(
-                  'FARMA GO conecta EPS, gestores farmacéuticos, droguerías, repartidores y pacientes para coordinar la entrega oportuna de medicamentos.',
-                  style: context.text.bodyLarge,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                FilledButton(onPressed: onLogin, child: const Text('Iniciar sesión')),
-                const SizedBox(height: AppSpacing.m),
-                OutlinedButton(onPressed: onRegister, child: const Text('Crear cuenta')),
-                const SizedBox(height: AppSpacing.xl),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.l),
-                  decoration: BoxDecoration(
-                    color: context.status.brandSurface,
-                    borderRadius: BorderRadius.circular(AppRadii.l),
-                  ),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Una misma red para cada solicitud', style: context.text.titleMedium),
-                    const SizedBox(height: AppSpacing.s),
-                    Text(
-                      'Las fórmulas y solicitudes se canalizan por la misma operación logística para dar visibilidad del proceso de dispensación y entrega.',
-                      style: context.text.bodyLarge,
-                    ),
-                  ]),
-                ),
-                const SizedBox(height: AppSpacing.l),
-                const Wrap(spacing: AppSpacing.s, runSpacing: AppSpacing.s, children: [
-                  _Benefit(icon: Icons.route_outlined, text: 'Seguimiento del proceso'),
-                  _Benefit(icon: Icons.storefront_outlined, text: 'Red de dispensación'),
-                  _Benefit(icon: Icons.local_shipping_outlined, text: 'Entrega coordinada'),
-                ]),
-              ]),
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  // Flutter web no crea el árbol de accesibilidad hasta que alguien lo activa ("Enable accessibility").
+  // Mientras la landing esté visible lo mantenemos activo, para que el texto llegue a los lectores de
+  // pantalla y el teclado no tropiece con ese botón al inicio. Se libera al salir de la pantalla.
+  SemanticsHandle? _semantica;
+
+  @override
+  void initState() {
+    super.initState();
+    _semantica = SemanticsBinding.instance.ensureSemantics();
+  }
+
+  @override
+  void dispose() {
+    _semantica?.dispose();
+    super.dispose();
+  }
+
+  VoidCallback get onLogin => widget.onLogin;
+  VoidCallback get onRegister => widget.onRegister;
+
+  @override
+  Widget build(BuildContext context) {
+    final ancha = landingAncha(context);
+    final margen = ancha ? FgSpace.sp6 : FgSpace.sp4;
+    final aire = ancha ? FgSpace.sp9 : FgSpace.sp7;
+    return Scaffold(
+      backgroundColor: FgColors.fondo,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Franja decorativa de marca: 8 px, permitida en cabeceras (manual §3.4).
+              const DecoratedBox(
+                decoration: BoxDecoration(gradient: FgGradients.marca),
+                child:
+                    SizedBox(height: FgBorder.w4 * 2, width: double.infinity),
+              ),
+              _Banda(
+                margen: margen,
+                aire: aire,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const _Cabecera(),
+                      SizedBox(height: ancha ? FgSpace.sp8 : FgSpace.sp6),
+                      LandingHero(onLogin: onLogin, onRegister: onRegister),
+                    ]),
+              ),
+              _Banda(
+                margen: margen,
+                aire: aire,
+                color: FgColors.superficie,
+                child: const LandingCaminos(),
+              ),
+              _Banda(
+                  margen: margen, aire: aire, child: const LandingTrayecto()),
+              _Banda(
+                  margen: margen,
+                  aire: aire,
+                  color: FgColors.superficie,
+                  child: const LandingRoles()),
+              _Banda(
+                  margen: margen,
+                  aire: aire,
+                  child: LandingCierre(onRegister: onRegister)),
+              _Banda(
+                  margen: margen,
+                  aire: aire,
+                  color: FgColors.fondoHundido,
+                  child: const LandingNoHace()),
+              _Banda(
+                  margen: margen,
+                  aire: FgSpace.sp7,
+                  color: FgColors.superficie,
+                  child: const _Pie()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Banda de página: su color de fondo ocupa todo el ancho y el contenido se centra con el
+/// ancho máximo del manual (1280 px).
+class _Banda extends StatelessWidget {
+  const _Banda(
+      {required this.margen,
+      required this.aire,
+      required this.child,
+      this.color = FgColors.fondo});
+
+  final double margen, aire;
+  final Widget child;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+        color: color,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: FgSize.contenido),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: margen, vertical: aire),
+              child: child,
             ),
           ),
         ),
       );
 }
 
-/// Decorative illustration; it adapts to the width and is hidden from screen readers.
-class _NetworkVisual extends StatelessWidget {
-  const _NetworkVisual();
+/// Cabecera: solo la marca. El inicio de sesión ya tiene su acción principal en el hero; repetirlo
+/// en la cabecera duplicaba la misma acción en tablet y escritorio.
+class _Cabecera extends StatelessWidget {
+  const _Cabecera();
 
   @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l, vertical: AppSpacing.l + 4),
-          decoration: BoxDecoration(
-            color: context.status.decorative,
-            borderRadius: BorderRadius.circular(AppRadii.xl + 8),
-          ),
-          child: Column(children: [
-            Row(children: [
-              const _NetworkNode(icon: Icons.account_balance_outlined, label: 'EPS'),
-              Expanded(child: Divider(color: context.colors.surface, thickness: 2)),
-              const _NetworkNode(icon: Icons.local_pharmacy_outlined, label: 'Dispensación'),
-            ]),
-            const SizedBox(height: AppSpacing.s),
-            Icon(Icons.local_shipping_outlined, color: context.colors.primary, size: 28),
-            const SizedBox(height: AppSpacing.s),
-            const _NetworkNode(icon: Icons.person_outline_rounded, label: 'Paciente'),
+  Widget build(BuildContext context) => const Row(children: [_Marca()]);
+}
+
+/// Marca tipográfica con el mismo símbolo de la app (manual §2): sin lema, sin recoloreo.
+class _Marca extends StatelessWidget {
+  const _Marca();
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: 'FARMA GO',
+        header: true,
+        child: ExcludeSemantics(
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: FgSize.tapMin,
+              height: FgSize.tapMin,
+              decoration: BoxDecoration(
+                color: FgColors.azul600,
+                borderRadius: BorderRadius.circular(FgRadius.sm),
+              ),
+              child: const Icon(Icons.local_pharmacy_rounded,
+                  color: FgColors.blanco),
+            ),
+            const SizedBox(width: FgSpace.sp3),
+            Flexible(
+              child: Text(
+                'FARMA GO',
+                overflow: TextOverflow.ellipsis,
+                style: FgText.label.copyWith(
+                    color: FgColors.azul800, fontWeight: FontWeight.w800),
+              ),
+            ),
           ]),
         ),
       );
 }
 
-class _NetworkNode extends StatelessWidget {
-  const _NetworkNode({required this.icon, required this.label});
-
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Column(mainAxisSize: MainAxisSize.min, children: [
-        CircleAvatar(
-          radius: 21,
-          backgroundColor: context.colors.surface,
-          child: Icon(icon, color: context.colors.primary, size: 21),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(label, style: context.text.labelSmall?.copyWith(color: context.colors.primary)),
-      ]);
-}
-
-class _Benefit extends StatelessWidget {
-  const _Benefit({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
+/// Pie de cierre centrado: una línea divisoria, el logo oficial (su lema va dentro del arte) y el
+/// aviso de alcance debajo, en el mismo eje.
+class _Pie extends StatelessWidget {
+  const _Pie();
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m, vertical: AppSpacing.s + 2),
-        decoration: BoxDecoration(
-          color: context.colors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.s),
-          border: Border.all(color: context.status.decorative),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          ExcludeSemantics(child: Icon(icon, size: 18, color: context.colors.primary)),
-          const SizedBox(width: AppSpacing.s),
-          Text(text, style: context.text.bodySmall?.copyWith(fontWeight: FontWeight.w700, color: context.colors.onSurface)),
-        ]),
+  Widget build(BuildContext context) => const Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Divider(height: 1, color: FgColors.linea),
+          SizedBox(height: FgSpace.sp6),
+          Column(
+            children: [
+              // Centrado por el eje de la rueda, igual que en el hero.
+              LogoOficial(ancho: 200),
+              SizedBox(height: FgSpace.sp4),
+              Text(
+                'Esta información no reemplaza a tu médico ni a tu EPS.',
+                style: FgText.body,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ],
       );
 }
