@@ -4,6 +4,7 @@ import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../components/ui.dart';
 import '../notifications/notification_controller.dart';
+import '../utils/pendientes_rol.dart';
 import 'notifications_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -17,6 +18,7 @@ class HomePage extends StatelessWidget {
     this.onRequestDelivery,
     this.onMyOrders,
     this.onDriverBoard,
+    this.onPendientes,
     this.onAdminUsers,
     this.onAdminOrders,
   });
@@ -32,14 +34,27 @@ class HomePage extends StatelessWidget {
   final VoidCallback? onAdminUsers;
   final VoidCallback? onAdminOrders;
 
+  /// Entrada a los pendientes con plazo de 48 h (paciente, EPS y repartidor).
+  final VoidCallback? onPendientes;
+
   static const _upcoming = [
-    (Icons.medication_outlined, 'Medicamentos pendientes', 'Revisa lo que tienes por gestionar.'),
     (Icons.inventory_2_outlined, 'Mis medicamentos', 'Consulta tu historial de medicamentos.'),
   ];
 
   bool get _isDriver => auth.user?.role == 'DELIVERY_DRIVER';
   bool get _isPatient => auth.user?.role == 'PATIENT';
   bool get _isAdmin => auth.user?.role == 'ADMIN';
+  PendientesRol? get _rolPendientes => PendientesRol.fromCode(auth.user?.role);
+
+  Widget _pendientesCard() {
+    final rol = _rolPendientes!;
+    return HomeActionCard(
+      icon: Icons.medication_outlined,
+      title: rol.tituloEntrada,
+      description: rol.descripcionEntrada,
+      onTap: onPendientes,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +133,10 @@ class HomePage extends StatelessWidget {
                     description: 'Toma un pedido, recógelo en la farmacia y compártelo en el mapa.',
                     onTap: onDriverBoard,
                   ),
+                  if (onPendientes != null && _rolPendientes != null) ...[
+                    const SizedBox(height: AppSpacing.m),
+                    _pendientesCard(),
+                  ],
                 ] else ...[
                   HomeActionCard(
                     featured: true,
@@ -141,6 +160,10 @@ class HomePage extends StatelessWidget {
                       description: 'Sigue el estado de tus pedidos en tiempo real.',
                       onTap: onMyOrders,
                     ),
+                  ],
+                  if (onPendientes != null && _rolPendientes != null) ...[
+                    const SizedBox(height: AppSpacing.m),
+                    _pendientesCard(),
                   ],
                 ],
                 if (!_isDriver && !_isAdmin) ...[

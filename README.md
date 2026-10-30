@@ -30,7 +30,7 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000 --dart-define=AUTH_B
 flutter run --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
 ```
 
-Sin `--dart-define`, **Auth y la IA apuntan a los servicios desplegados en Azure** (`https://farmago-auth-jl.azurewebsites.net` y `https://farmago-ai-jl.azurewebsites.net`). Para usar los locales, pásalos explícitamente (`--dart-define=AUTH_BASE_URL=http://localhost:3000 --dart-define=API_BASE_URL=http://localhost:8000`). Orders y Geolocation siguen por defecto en local: en web el mismo host que sirve la página (puertos 3002 y 3001) y en Android `10.0.2.2`.
+Sin `--dart-define`, **Auth y la IA apuntan a los servicios desplegados en Azure** (`https://farmago-auth-jl.azurewebsites.net` y `https://farmago-ai-jl.azurewebsites.net`). Pendientes apunta a su despliegue en AWS Lambda (`https://ey4bd7llo4despvmqbmxof6pfi0zoifk.lambda-url.us-east-1.on.aws`). Para usar los locales, pásalos explícitamente (`--dart-define=AUTH_BASE_URL=http://localhost:3000 --dart-define=API_BASE_URL=http://localhost:8000`). Orders y Geolocation siguen por defecto en local: en web el mismo host que sirve la página (puertos 3002 y 3001) y en Android `10.0.2.2`.
 
 Atajo para usar los servicios de Azure (puerto 5173 obligatorio, es el origen permitido por CORS):
 
@@ -47,6 +47,10 @@ flutter build web --release --dart-define=API_BASE_URL=https://ai.tu-dominio --d
 node tool/local_web_server.js   # prueba local de build/web con rutas directas (SPA) en el puerto 5173
 ```
 
+### Vercel
+
+`vercel.json` deja el proyecto listo: `scripts/vercel-build.sh` descarga Flutter (`FLUTTER_VERSION`, por defecto 3.47.8), compila a `build/web` y todas las rutas reescriben a `index.html`. Cada push a `main` despliega producción y cada rama o PR un preview. Las variables de entorno del proyecto en Vercel (`API_BASE_URL`, `AUTH_BASE_URL`, `PENDIENTES_BASE_URL`, `ORDERS_BASE_URL`, `GEOLOCATION_BASE_URL`, `MAPS_API_KEY`) se pasan como `--dart-define` solo si existen. El dominio de Vercel debe estar en `FRONTEND_URL` de Auth y Pendientes y en `ALLOWED_ORIGINS` de la IA.
+
 Publica `build/web` en cualquier hosting estático con *fallback* a `index.html`. Para que la cookie de refresh funcione, el frontend y Auth deben compartir dominio (por ejemplo `app.tu-dominio` y `auth.tu-dominio`).
 
 ## Estructura
@@ -62,6 +66,26 @@ lib/
 assets/fonts/       Manrope (OFL)
 tool/               servidor local para probar build/web
 ```
+
+## Pendientes (plazo de 48 h)
+
+Pantallas del microservicio `pendientes-service` (`/pendientes` y `/pendientes/:id`), con el access token de Auth en `Authorization: Bearer`:
+
+- **Paciente**: *Mis pendientes* (solo los suyos). **EPS**: los pendientes que tiene asignados. **Repartidor**: todos (el backend aún debe acotarlo a sus entregas).
+- Lista con filtros (Todos / Pendientes / Entregados), búsqueda por código de orden y paginación. En móvil son tarjetas; desde 768 px, una tabla cuyo detalle se abre en un panel lateral.
+- Detalle: reloj de 48 h, sello de estado, datos, medicamentos (habilitación y entrega) y novedades. EPS y repartidor pueden **registrar novedades**.
+- El estado (`VIGENTE`/`CUMPLIDO`/`INCUMPLIDO`) y la fecha límite los calcula el backend; el frontend solo los presenta y ancla el reloj a `evaluadoEn` (hora del servidor), no al reloj del dispositivo.
+
+```powershell
+# Contra el servicio desplegado (por defecto)
+flutter run -d web-server --web-hostname localhost --web-port 5173
+
+# Contra un pendientes-service local
+flutter run -d web-server --web-hostname localhost --web-port 5173 `
+  --dart-define=PENDIENTES_BASE_URL=http://localhost:3003
+```
+
+`pendientes-service` debe permitir el origen del frontend (`FRONTEND_URL=http://localhost:5173`, en el despliegue la variable `FRONTEND_URL` del entorno `production` del repositorio) y compartir `JWT_SECRET` con Auth. Sin `PENDIENTES_BASE_URL`, usa el despliegue en AWS Lambda. Estas pantallas siguen el **manual unificado de identidad FarmaGo** (tokens en `lib/app/theme/farmago_tokens.dart`, componentes `Fg*` en `lib/components/farmago/`, fuente Atkinson Hyperlegible Next); el resto de la app conserva por ahora el tema anterior (Manrope).
 
 ## Domicilios y seguimiento
 

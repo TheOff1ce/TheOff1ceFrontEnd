@@ -48,3 +48,6 @@ app.*.map.json
 .widget_preview/
 
 *.claude
+
+# Contexto de producto (documento local de trabajo)
+/PRODUCT.md
