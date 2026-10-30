@@ -6,6 +6,10 @@
 	<true/>
 	<key>GMSApiKey</key>
 	<string>$(MAPS_API_KEY)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>FARMA GO usa la cámara para tomar la foto de tu fórmula médica.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FARMA GO necesita acceso a tus fotos para que elijas la imagen de tu fórmula médica.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>FARMA GO usa tu ubicación para que el paciente siga su domicilio mientras lo llevas.</string>
 	<key>CFBundleDevelopmentRegion</key>
