@@ -114,9 +114,9 @@ class _PendientesPageState extends State<PendientesPage> {
                     title: 'No pudimos cargar los pendientes',
                     message: c.error!.userMessage,
                     referencia: c.error!.showsReference ? c.error!.referenceId : null,
-                    actionLabel: 'Reintentar',
-                    onAction: c.recargar,
                   ),
+                  const SizedBox(height: FgSpace.sp4),
+                  FgButton(label: 'Reintentar', variant: FgButtonVariant.secondary, onPressed: c.recargar),
                   const SizedBox(height: FgSpace.sp5),
                 ],
                 if (pagina == null && c.error == null)

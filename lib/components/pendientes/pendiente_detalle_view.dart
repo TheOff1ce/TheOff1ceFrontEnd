@@ -6,6 +6,7 @@ import '../../types/pendiente.dart';
 import '../../utils/pendiente_format.dart';
 import '../../utils/pendientes_rol.dart';
 import '../../utils/plazo_vista.dart';
+import '../farmago/buttons.dart';
 import '../farmago/deadline_ring.dart';
 import '../farmago/feedback.dart';
 import '../farmago/layout.dart';
@@ -28,13 +29,20 @@ class PendienteDetalleCuerpo extends StatelessWidget {
           final error = controller.error;
           if (detalle == null) {
             if (error != null) {
-              return FgBanner(
-                kind: FgBannerKind.error,
-                title: 'No pudimos cargar el pendiente',
-                message: error.userMessage,
-                referencia: error.showsReference ? error.referenceId : null,
-                actionLabel: error.retryable ? 'Reintentar' : null,
-                onAction: error.retryable ? controller.load : null,
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FgBanner(
+                    kind: FgBannerKind.error,
+                    title: 'No pudimos cargar el pendiente',
+                    message: error.userMessage,
+                    referencia: error.showsReference ? error.referenceId : null,
+                  ),
+                  if (error.retryable) ...[
+                    const SizedBox(height: FgSpace.sp4),
+                    FgButton(label: 'Reintentar', variant: FgButtonVariant.secondary, onPressed: controller.load),
+                  ],
+                ],
               );
             }
             return const _EsqueletoDetalle();
@@ -51,8 +59,12 @@ class PendienteDetalleCuerpo extends StatelessWidget {
                     kind: FgBannerKind.error,
                     message: error.userMessage,
                     referencia: error.showsReference ? error.referenceId : null,
-                    actionLabel: 'Reintentar',
-                    onAction: () => controller.load(silencioso: true),
+                  ),
+                  const SizedBox(height: FgSpace.sp4),
+                  FgButton(
+                    label: 'Reintentar',
+                    variant: FgButtonVariant.secondary,
+                    onPressed: () => controller.load(silencioso: true),
                   ),
                   const SizedBox(height: FgSpace.sp5),
                 ],
