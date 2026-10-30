@@ -194,7 +194,7 @@ class _Filtros extends StatelessWidget {
       controller: busqueda,
       iconoInicial: Icons.search_rounded,
       limpiable: true,
-      ayuda: 'Escribe el código completo de la orden y presiona Intro.',
+      ayuda: 'Escribe el código y presiona Intro.',
       textInputAction: TextInputAction.search,
       onSubmitted: controller.buscar,
       onChanged: (valor) {
@@ -227,7 +227,7 @@ class _Filtros extends StatelessWidget {
           ),
         ),
         const SizedBox(width: FgSpace.sp4),
-        SizedBox(width: 320, child: campo),
+        SizedBox(width: FgSize.buscador, child: campo),
       ],
     );
   }

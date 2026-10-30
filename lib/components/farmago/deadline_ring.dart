@@ -149,14 +149,14 @@ class DeadlineRing extends StatelessWidget {
     final conTiempo = estado == CumplimientoPlazo.vigente && !vista.vencidoSinActualizar;
     switch (size) {
       case DeadlineRingSize.xs:
-        return Icon(estado.simbolo, size: 16, color: estado.solido);
+        return Icon(estado.simbolo, size: FgSize.simboloXs, color: estado.solido);
       case DeadlineRingSize.s:
-        return Icon(estado.simbolo, size: 28, color: estado.solido);
+        return Icon(estado.simbolo, size: FgSize.simboloS, color: estado.solido);
       case DeadlineRingSize.m:
-        if (!conTiempo) return Icon(estado.simbolo, size: 40, color: estado.solido);
-        return _TextoCentro(principal: vista.centroPrincipal ?? '', estilo: FgText.h2.copyWith(fontSize: 28));
+        if (!conTiempo) return Icon(estado.simbolo, size: FgSize.simboloM, color: estado.solido);
+        return _TextoCentro(principal: vista.centroPrincipal ?? '', estilo: FgText.cifra);
       case DeadlineRingSize.l:
-        if (!conTiempo) return Icon(estado.simbolo, size: 56, color: estado.solido);
+        if (!conTiempo) return Icon(estado.simbolo, size: FgSize.simboloL, color: estado.solido);
         return _TextoCentro(
           principal: vista.centroPrincipal ?? '',
           secundario: vista.centroSecundario,
@@ -201,7 +201,7 @@ class _TextoCentro extends StatelessWidget {
             children: [
               Text(principal, style: FgText.num(estilo)),
               if (secundario != null)
-                Text(secundario!, style: FgText.num(FgText.h2.copyWith(fontSize: 24, fontWeight: FontWeight.w600))),
+                Text(secundario!, style: FgText.num(FgText.minutos)),
             ],
           ),
         ),

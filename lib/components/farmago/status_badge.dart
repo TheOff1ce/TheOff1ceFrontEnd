@@ -25,18 +25,18 @@ class StatusBadge extends StatelessWidget {
         label: 'Estado: $palabra',
         excludeSemantics: true,
         child: Container(
-          height: 40,
+          height: FgSize.selloDestacadoAlto,
           padding: const EdgeInsets.only(left: FgSpace.sp2, right: FgSpace.sp4),
           decoration: BoxDecoration(color: FgColors.ink, borderRadius: BorderRadius.circular(FgRadius.pill)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 24,
-                height: 24,
+                width: FgSize.anilloSello,
+                height: FgSize.anilloSello,
                 decoration: BoxDecoration(color: estado.solido, shape: BoxShape.circle),
                 alignment: Alignment.center,
-                child: Icon(estado.simbolo, size: 14, color: FgColors.blanco),
+                child: Icon(estado.simbolo, size: FgSize.simboloSm, color: FgColors.blanco),
               ),
               const SizedBox(width: FgSpace.sp2),
               Flexible(
@@ -54,11 +54,17 @@ class StatusBadge extends StatelessWidget {
       label: 'Estado: $palabra',
       excludeSemantics: true,
       child: SizedBox(
-        height: 32,
+        height: FgSize.selloAlto,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            EstadoAnillo(estado: estado, diametro: 24, trazo: 3, fraccion: fraccion, tamanoSimbolo: 12),
+            EstadoAnillo(
+              estado: estado,
+              diametro: FgSize.anilloSello,
+              trazo: 3,
+              fraccion: fraccion,
+              tamanoSimbolo: FgSize.simboloMini,
+            ),
             const SizedBox(width: FgSpace.sp2),
             Flexible(
               child: Text(

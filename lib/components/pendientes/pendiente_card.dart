@@ -59,7 +59,7 @@ class _PendienteCardState extends State<PendienteCard> {
             hoverColor: FgColors.fondo,
             highlightColor: FgColors.fondo,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 96),
+              constraints: const BoxConstraints(minHeight: FgSize.tarjetaInteractivaMin),
               child: Padding(
                 padding: const EdgeInsets.all(FgSpace.sp4h),
                 child: Column(
@@ -97,8 +97,7 @@ class _PendienteCardState extends State<PendienteCard> {
                             children: [
                               Text(
                                 vista.titular,
-                                style: FgText.num(FgText.h2.copyWith(
-                                  fontSize: 28,
+                                style: FgText.num(FgText.cifra.copyWith(
                                   color: enVigente ? FgColors.ink : vista.estado.texto,
                                 )),
                               ),
@@ -108,12 +107,14 @@ class _PendienteCardState extends State<PendienteCard> {
                                   style: FgText.caption.copyWith(color: vista.estado.texto, fontWeight: FontWeight.w700),
                                 ),
                               if (vista.subtitulo != null) Text(vista.subtitulo!, style: FgText.caption),
-                              Text(vista.fecha, style: FgText.num(FgText.caption)),
                             ],
                           ),
                         ),
                       ],
                     ),
+                    // Fecha a ancho completo: en la columna del anillo se partía en 2–3 líneas.
+                    const SizedBox(height: FgSpace.sp3),
+                    Text(vista.fecha, style: FgText.num(FgText.caption)),
                   ],
                 ),
               ),

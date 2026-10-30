@@ -115,6 +115,11 @@ abstract final class FgSize {
   static const filaTabla = 56.0;
   static const encabezadoTabla = 48.0;
   static const pieTabla = 64.0;
+  static const selloAlto = 32.0; // sello de estado (§8.8)
+  static const selloDestacadoAlto = 40.0; // sello destacado (§8.8)
+  static const anilloSello = 24.0; // anillo de 24 px dentro del sello (§8.8)
+  static const tarjetaInteractivaMin = 96.0; // §8.9 / §8.10
+  static const buscador = 320.0; // campo de búsqueda sobre la tabla (§8.11)
   static const dialogSm = 480.0;
   static const dialogMd = 640.0;
   static const panel = 480.0;
@@ -125,6 +130,14 @@ abstract final class FgSize {
   static const iconoSm = 20.0;
   static const iconoMd = 24.0;
   static const iconoLg = 32.0;
+
+  /// Símbolos dentro del reloj (§8.13) y del sello (§8.8).
+  static const simboloXs = 16.0;
+  static const simboloMini = 12.0;
+  static const simboloSm = 14.0;
+  static const simboloS = 28.0;
+  static const simboloM = 40.0;
+  static const simboloL = 56.0;
 }
 
 /// Breakpoints: móvil < 768 · tablet 768–1199 · desktop >= 1200.
@@ -184,6 +197,14 @@ abstract final class FgText {
       fontFamily: family, fontSize: 17, fontWeight: FontWeight.w400, height: 1.4, color: FgColors.ink);
   static const caption = TextStyle(
       fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400, height: 1.5, color: FgColors.inkSoft);
+
+  /// Cifra del plazo junto al reloj (§8.10 y §8.13 tamaño `m`): 28 / 700.
+  static const cifra = TextStyle(
+      fontFamily: family, fontSize: 28, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
+
+  /// Minutos del reloj tamaño `l` (§8.13): 24 / 600.
+  static const minutos = TextStyle(
+      fontFamily: family, fontSize: 24, fontWeight: FontWeight.w600, height: 1.2, color: FgColors.ink);
 
   /// Texto de botón: 20 (lg) · 18 (md) · 16 (sm), siempre 700.
   static TextStyle boton(double size) =>

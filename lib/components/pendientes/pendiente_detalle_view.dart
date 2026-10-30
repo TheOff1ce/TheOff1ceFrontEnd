@@ -161,8 +161,7 @@ class _Hero extends StatelessWidget {
             const SizedBox(height: FgSpace.sp3),
             Text(
               vista.titular,
-              style: FgText.num(FgText.h2.copyWith(
-                fontSize: 28,
+              style: FgText.num(FgText.cifra.copyWith(
                 color: vista.estado == CumplimientoPlazo.vigente ? FgColors.ink : vista.estado.texto,
               )),
             ),
