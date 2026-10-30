@@ -24,6 +24,9 @@ dev_dependencies:
   fake_async: ^1.3.1
 flutter:
   uses-material-design: true
+  # Logo oficial FarmaGo con fondo transparente, 640 px. El original vive en docs/logo/logo.png.
+  assets:
+    - assets/images/logo_farmago.png
   # Manrope (SIL OFL 1.1, see assets/fonts/OFL.txt) is bundled so text never
   # depends on a runtime download (FE-018).
   fonts:

@@ -57,6 +57,30 @@ abstract final class FgColors {
 
   /// Enlace de acción dentro del toast oscuro (manual §7.8).
   static const enlaceSobreOscuro = Color(0xFF8CC8EA);
+
+  /// Acentos de marca del logo (Anexo A). Solo decorativos: estelas y `FgGradients.marca`.
+  /// Nunca texto, estados ni datos (manual §3.1). Verde de marca ≠ verde de éxito.
+  static const verde700 = Color(0xFF2F6F2F);
+  static const cian500 = Color(0xFF0488B4);
+  static const verde400 = Color(0xFF8CBC4C);
+}
+
+/// Degradado de marca (Anexo A, `--grad-marca`: 100deg, azul 0 % → cian 45 % → verde 100 %).
+/// Solo en la pantalla de bienvenida y como franja de 8 px en cabeceras (manual §3.4).
+abstract final class FgGradients {
+  static const marca = LinearGradient(
+    // 100deg en CSS: dirección casi horizontal, ligeramente descendente.
+    begin: Alignment(-.985, -.174),
+    end: Alignment(.985, .174),
+    colors: [FgColors.azul600, FgColors.cian500, FgColors.verde400],
+    stops: [0, .45, 1],
+  );
+}
+
+/// Opacidad máxima de las estelas del logo (manual §13.2): nunca por encima de .55 y
+/// nunca detrás de datos o texto.
+abstract final class FgOpacity {
+  static const estela = .55;
 }
 
 /// Espaciado (base 4 px). Solo estos valores.
