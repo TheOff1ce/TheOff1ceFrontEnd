@@ -37,7 +37,13 @@ class FarmaGoMark extends StatelessWidget {
 
 /// Layout shared by every public authentication screen.
 class AuthShell extends StatelessWidget {
-  const AuthShell({super.key, required this.title, required this.subtitle, required this.child, this.onBack});
+  const AuthShell({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.onBack,
+  });
 
   final String title, subtitle;
   final Widget child;
@@ -50,18 +56,37 @@ class AuthShell extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.l, AppSpacing.xl, AppSpacing.xxl),
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.l,
+                  AppSpacing.xl,
+                  AppSpacing.xxl,
+                ),
                 children: [
                   if (onBack != null)
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: IconButton(tooltip: 'Volver', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
+                      child: IconButton(
+                        tooltip: 'Volver',
+                        onPressed: onBack,
+                        icon: const Icon(Icons.arrow_back),
+                      ),
                     ),
                   const FarmaGoMark(),
                   const SizedBox(height: AppSpacing.xxl),
-                  Semantics(header: true, child: Text(title, style: context.text.displaySmall)),
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      title,
+                      style: context.text.displaySmall,
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.s),
-                  Text(subtitle, style: context.text.bodyLarge),
+                  Text(
+                    subtitle,
+                    style: context.text.bodyLarge,
+                  ),
                   const SizedBox(height: AppSpacing.xxl - 2),
                   child,
                 ],
