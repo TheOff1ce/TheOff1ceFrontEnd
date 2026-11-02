@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  Widget build(BuildContext context) => AuthShell(
+  Widget build(BuildContext context) =>  LoginLayout(
         onBack: widget.onBack,
         title: 'Qué bueno verte.',
         subtitle: 'Ingresa para continuar con tus fórmulas y medicamentos.',
