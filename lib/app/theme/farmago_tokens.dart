@@ -58,15 +58,17 @@ abstract final class FgColors {
   /// Enlace de acción dentro del toast oscuro (manual §7.8).
   static const enlaceSobreOscuro = Color(0xFF8CC8EA);
 
-  /// Acentos de marca del logo (Anexo A). Solo decorativos: estelas y `FgGradients.marca`.
-  /// Nunca texto, estados ni datos (manual §3.1). Verde de marca ≠ verde de éxito.
+  /// Acentos de marca del logo (Anexo A). Son identidad, no datos: las estelas solo dentro del logo
+  /// y `FgGradients.marca` solo en la bienvenida (manual §22). Nunca texto, estados ni datos
+  /// (manual §3.1). Verde de marca ≠ verde de éxito.
   static const verde700 = Color(0xFF2F6F2F);
   static const cian500 = Color(0xFF0488B4);
   static const verde400 = Color(0xFF8CBC4C);
 }
 
 /// Degradado de marca (Anexo A, `--grad-marca`: 100deg, azul 0 % → cian 45 % → verde 100 %).
-/// Solo en la pantalla de bienvenida y como franja de 8 px en cabeceras (manual §3.4).
+/// Solo en la pantalla de bienvenida y, si tiene sentido para la identidad, en splash y login
+/// (manual §3.4 y §22). No se usa como franja decorativa en cabeceras de la app.
 abstract final class FgGradients {
   static const marca = LinearGradient(
     // 100deg en CSS: dirección casi horizontal, ligeramente descendente.
@@ -81,6 +83,12 @@ abstract final class FgGradients {
 /// nunca detrás de datos o texto.
 abstract final class FgOpacity {
   static const estela = .55;
+
+  /// Opacidad del estampado de figuras de marca en el fondo de la home: apenas visible (manual §22).
+  static const estampado = .6;
+
+  /// Opacidad del estampado en móvil: más discreta, para que no compita con el texto en 360 px.
+  static const estampadoMovil = .4;
 }
 
 /// Espaciado (base 4 px). Solo estos valores.
@@ -136,6 +144,12 @@ abstract final class FgSize {
   static const headerMovil = 56.0;
   static const barraAccion = 88.0;
   static const topbar = 64.0;
+  static const sidebar = 264.0; // barra lateral (≥ 1200 px, manual §5.3)
+  static const sidebarColapsado = 72.0; // barra lateral colapsada (768–1199 px)
+  static const navMovil = 72.0; // barra inferior de navegación (móvil)
+  static const logoBarraLateral = 168.0; // logo en la cabecera de la barra lateral (manual §2)
+  static const navIndicadorAncho = 64.0; // indicador del destino activo (§8.12)
+  static const navIndicadorAlto = 32.0;
   static const filaTabla = 56.0;
   static const encabezadoTabla = 48.0;
   static const pieTabla = 64.0;
@@ -150,7 +164,8 @@ abstract final class FgSize {
   static const panelLg = 640.0;
   static const toast = 480.0;
   static const contenido = 1280.0;
-  static const lectura = 720.0; // aprox. 66 caracteres (--w-lectura)
+  static const lectura = 720.0; // ancho de la columna de lectura de la home
+  static const medidaTexto = 600.0; // ~66 caracteres a 18 px (--w-lectura, manual §4)
   static const iconoSm = 20.0;
   static const iconoMd = 24.0;
   static const iconoLg = 32.0;
@@ -229,6 +244,10 @@ abstract final class FgText {
   /// Minutos del reloj tamaño `l` (§8.13): 24 / 600.
   static const minutos = TextStyle(
       fontFamily: family, fontSize: 24, fontWeight: FontWeight.w600, height: 1.2, color: FgColors.ink);
+
+  /// Etiqueta de la barra inferior en móvil: 14 / 600 (manual §8.12).
+  static const navMovil = TextStyle(
+      fontFamily: family, fontSize: 14, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
 
   /// Texto de botón: 20 (lg) · 18 (md) · 16 (sm), siempre 700.
   static TextStyle boton(double size) =>

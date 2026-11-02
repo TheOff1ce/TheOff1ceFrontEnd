@@ -226,6 +226,9 @@ class AppRouter {
           builder: (context, state) => _gate(HomePage(
             auth: _auth,
             notifications: _deps.notifications,
+            inicio: _deps.patientHome,
+            onTracking: (deliveryId) => context.push(AppRoutes.tracking(deliveryId)),
+            onPendienteDetalle: (pendienteId) => context.push(AppRoutes.pendiente(pendienteId)),
             onAnalyze: () => context.push(AppRoutes.uploadPrescription),
             onNotifications: () => context.push(AppRoutes.notifications),
             onAccount: () => context.push(AppRoutes.account),

@@ -17,13 +17,14 @@ Este documento define la imagen de marca de FarmaGo y las reglas para mantenerla
 5. **Mobile-first:** se diseña primero a 360 px de ancho y luego se amplía. Móvil < 768 px · tablet 768–1199 px · desktop ≥ 1200 px.
 6. **Antes de entregar una pantalla:** recorre la lista de §18.
 7. **Mismo nombre, mismo comportamiento:** los componentes se llaman como en §16 y se reutilizan; no se duplican con variantes propias.
+8. **Tratamientos visuales justificados:** fotos, ilustraciones, formas de identidad, degradados y sombras se usan solo según la sección 22. Un recurso nuevo se registra allí, con su categoría, su condición y su función, antes de usarse como token o componente.
 
 ## 1. Esencia de la marca
 
 - **Qué es FarmaGo:** plataforma que orquesta la logística y el cumplimiento de medicamentos pendientes (plazo máximo de 48 h) y el domicilio voluntario, conectando EPS, farmacias, repartidores y pacientes.
 - **Qué NO es:** no toma decisiones clínicas, no define cobertura ni autorización, no consulta inventario. La interfaz NO DEBE sugerir lo contrario.
-- **Personalidad:** confiable (muestra fechas y estados con claridad), clara (letra grande, una acción principal), en movimiento (la rueda y las estelas del logo).
-- **Un solo gesto atrevido:** el **reloj de 48 h** (§8.13), un anillo con la forma de la rueda del logo. Todo lo demás es sobrio: no añadas adornos, gradientes ni ilustraciones decorativas fuera de lo que este manual permite.
+- **Personalidad:** confiable (muestra fechas y estados con claridad), clara (letra grande, una acción principal), en movimiento (el trayecto de una entrega real y el arco de un plazo real; la rueda y las estelas son la marca, no ornamento).
+- **Gestos de marca con función (§20):** el **arco de tiempo** (§8.13), solo para plazos reales, y el **trayecto** (§8.14), solo para secuencias reales de estados. Cualquier otra forma gráfica debe tener una función identificable; si no la tiene, no se usa.
 - **Públicos y dispositivos:**
 
 | Público | Dispositivo | Prioridad de diseño |
@@ -52,6 +53,7 @@ Este documento define la imagen de marca de FarmaGo y las reglas para mantenerla
 | Encabezado móvil | No se muestra el logo; se muestra el título de la pantalla | — |
 
 - **Favicon / ícono de app:** pendiente (requiere el ícono de la rueda solo).
+- **Representación tipográfica de la marca (`FgWordmark`, decisión aprobada, §20):** para encabezados de la app, cuando el logo no cabe (por debajo de 160 px). Es texto, no un logo nuevo: "Farma" en `--azul-600` y "Go" en `--verde-700`, mismo tamaño y peso (`.t-h3`, 20 / 700). Los colores salen del logo: el azul del logo se aproxima a `--azul-600`, y el verde más claro del degradado no alcanza el contraste para texto. No reemplaza el logo en splash, login ni en material de comunicación.
 
 ## 3. Color
 
@@ -83,8 +85,7 @@ Todos los colores salen del logo y se ajustaron por cálculo: el texto cumple **
 | `--linea-control` | #6B8795 | Borde de controles: input, checkbox, radio, switch apagado, chip (3.8:1) |
 | `--deshabilitado-bg` / `-fg` | #E3ECF0 / #4B6573 | Controles deshabilitados |
 | `--track` | #C3D6DE | Pista del reloj de 48 h |
-| `--skeleton` | #DDE8ED | Esqueletos de carga |
-| `--scrim` / `--scrim-suave` | rgb(18 48 63 / .56) / rgb(18 48 63 / .32) | Fondo detrás de diálogos y hojas / detrás del panel lateral |
+| `--skeleton` | #DDE8ED | Esqueletos de carga || `--scrim` / `--scrim-suave` | rgb(18 48 63 / .56) / rgb(18 48 63 / .32) | Fondo detrás de diálogos y hojas / detrás del panel lateral |
 
 ### 3.3 Estados del plazo y avisos
 
@@ -104,8 +105,8 @@ Todos los colores salen del logo y se ajustaron por cálculo: el texto cumple **
 ### 3.4 Proporciones y reglas
 
 - ~85 % neutros, ~12 % azul, ~3 % verde/degradado.
-- El degradado `--grad-marca` solo se usa en la pantalla de bienvenida y como franja decorativa ≤ 8 px de alto en cabeceras; nunca en botones, fondos de datos ni texto.
-- Fondos de pantalla: `--fondo`. Tarjetas y ventanas: `--superficie`. No uses otros fondos.
+- El degradado `--grad-marca` se usa solo en la bienvenida (landing) y, si tiene sentido para la identidad, en splash y login. No se usa como franja decorativa en cabeceras de la app (decisión aprobada, §20). Nunca en botones, fondos de datos ni texto. Excepción aprobada (§22): una barra de 4 px en el borde superior del panel del estado principal de la home, sin texto encima.
+- Fondos de pantalla: `--fondo`. Tarjetas y ventanas: `--superficie`. No uses otros fondos. Excepción aprobada (§22): el panel del estado activo de la home usa `--azul-100` como estado de foco; la banda "Próximamente" usa `--fondo-hundido`. El fondo de la página sigue en `--fondo`.
 - Sin modo oscuro (pendiente de definir).
 
 ## 4. Tipografía (prioridad: legibilidad para personas con discapacidad)
@@ -128,7 +129,7 @@ Todos los colores salen del logo y se ajustaron por cálculo: el texto cumple **
 | Meta / caption | `.t-caption` | 16 px (mínimo absoluto) | 400 | 1.5 | Fechas secundarias, ayudas |
 
 - `letter-spacing: normal` siempre. Sin mayúsculas sostenidas, sin cursivas largas, sin subrayado fuera de enlaces.
-- **Párrafos:** interlineado 1.6; separación entre párrafos 24 px; ≤ 3 líneas en pantallas del paciente; línea ≤ 66 caracteres (`--w-lectura`). Alineado a la izquierda: NO justificar. NO texto sobre imágenes.
+- **Párrafos:** interlineado 1.6; separación entre párrafos 24 px; ≤ 3 líneas en pantallas del paciente; línea ≤ 66 caracteres (`--w-lectura`, en código `FgSize.medidaTexto` = 600 px a 18 px). Alineado a la izquierda: NO justificar. NO texto sobre imágenes.
 - **Enlaces:** color `--azul-800`, subrayado siempre (2 px, offset 3 px; hover 3 px). No se distinguen solo por color.
 - **Números:** fechas, horas, contadores, cifras y columnas numéricas con `.num` (`font-variant-numeric: tabular-nums`).
 - El sistema debe reflujar a 200 % de zoom y a 320 px de ancho sin scroll horizontal.
@@ -386,7 +387,7 @@ Radio `--r-md` (14). Ancho: móvil `lg` primario = 100 %; desktop = según conte
 | Variante | Reposo | Hover | Pressed | Foco |
 |---|---|---|---|---|
 | **Primario** | fondo `--azul-600`, texto blanco | `--azul-700` | `--azul-800` | outline 3 px `--azul-800`, offset 2 |
-| **Secundario** | fondo transparente, borde 2 px `--azul-600`, texto `--azul-800` | fondo `--azul-100` | fondo `--azul-200` | igual |
+| **Secundario** | fondo `--superficie` (opaco: el fondo de la pantalla no se ve a través del botón), borde 2 px `--azul-600`, texto `--azul-800` | fondo `--azul-100` | fondo `--azul-200` | igual |
 | **Terciario (ghost)** | sin borde, texto `--azul-800` | fondo `--azul-100` | fondo `--azul-200` | igual |
 | **Peligro** | fondo `--peligro`, texto blanco | `--peligro-hover` | `--peligro-pressed` | igual |
 
@@ -466,6 +467,7 @@ Anillo por estado (mismo trazo en ambas variantes): Vigente = arco parcial `--vi
 - **Interactiva** (toda la tarjeta es un enlace/botón): alto mínimo 96; hover (solo desktop) `--e2` + borde `--azul-200`; pressed: `--e1` + fondo `--fondo`; foco: outline 3 px; chevron de 24 px al extremo derecho.
 - **Nunca una tarjeta dentro de otra.** Las subáreas usan un bloque `--fondo-hundido`, `--r-sm`, padding 12–16.
 - Gap entre tarjetas: 16 móvil / 24 desktop.
+- **Cuándo usar tarjeta, lista o composición libre:** ver §20.
 - **Variantes:** *aislada* (borde 1 px + `--e1`) para una tarjeta sola (héroe del detalle); *plana* (solo borde 1 px, sin sombra) para listas de 2 o más tarjetas, KPIs y paneles densos. Solo el hover de una tarjeta interactiva en desktop sube a `--e2`.
 
 ### 8.10 Tarjeta de pendiente (`PendienteCard`, móvil)
@@ -509,6 +511,7 @@ Anillo por estado (mismo trazo en ambas variantes): Vigente = arco parcial `--vi
 - Alto 72 + safe-area, fondo `--superficie`, borde superior 1 `--linea`, `--e-arriba`, capa `--z-nav`. Máx. **4 destinos**, ancho igual.
 - Ítem: icono 24 dentro de un indicador 64×32 `--r-pill`; etiqueta 16/600 debajo (gap 4). Activo: indicador `--azul-100`, etiqueta `--azul-800` 700. Inactivo: `--ink-soft`. Área tocable 72×72. `aria-current="page"`.
 - En flujos de una sola tarea no se usa barra inferior: se usa encabezado + barra de acción fija.
+- **Shell de la aplicación (barra lateral de 264 px en escritorio, barra inferior de 72 px en móvil):** ver §21.
 
 **Encabezado móvil (`AppHeader`)**: 56 px, `--superficie`, borde inferior 1 `--linea` (al hacer scroll: `--e2`), botón atrás 48×48 a la izquierda (si no es raíz), título 20/700 a una línea, ≤ 2 botones icono a la derecha. `--z-sticky`.
 
@@ -536,11 +539,14 @@ Anillo que se vacía hasta la fecha límite. Tiene la forma de la rueda del logo
 - **Texto de tiempo** (junto al anillo, en una línea; dentro de `m` y `l` solo caben las horas y minutos como arriba): `N h M min` (≥ 1 h), `N min` (< 1 h), vencido: "Venció hace N h M min", cumplido: "Entregado 25 oct 2026, 4:40 p. m.". Se actualiza **cada minuto**; no se anuncia cada actualización con `aria-live`, solo los cambios de estado.
 - **Accesibilidad:** `role="img"` con `aria-label` completo: "Quedan 31 horas y 20 minutos para la fecha límite, 26 de octubre de 2026, 9:15 a. m. Estado: vigente."
 - **La fecha viene del backend.** Una notificación tardía no reinicia el reloj. Nunca calcules la fecha límite en el frontend.
+- **Uso (decisión aprobada, §20):** el arco solo aparece cuando representa un plazo real respaldado por datos del sistema (fecha límite y fecha del evento). Sin ese dato no se muestra, y nunca como decoración ni en pantallas sin plazo.
 - **Animación:** al cargar, el arco se dibuja en 600 ms (`--ease`); con movimiento reducido aparece directo.
 
 ### 8.14 Seguimiento de entrega (`TrackingStepper`)
 
-Secuencia: **Recibido → Asignado → En camino → Entregado**. Único lugar donde se permiten pasos numerados/secuenciales.
+Secuencia real de estados del domicilio: **Buscando repartidor → Repartidor asignado → Pedido recogido → En camino → Llegando → Entregado**. Los estados terminales (**Cancelado**, **No se pudo entregar**) no forman parte de la secuencia: se muestran como aviso. Implementado como `FgTrail` (`lib/components/farmago/trail.dart`).
+
+**Uso (decisión aprobada, §20):** solo para procesos con estados que ocurren en orden. Hoy: el seguimiento del domicilio. No es un patrón de navegación: no se usa en la home, en listas ni en admin.
 - **Vertical** (móvil y detalles): nodo 32×32, conector vertical 4 px, 48 px entre nodos; etiqueta 18/700 a la derecha (gap 16) y hora debajo 16/400 `--ink-soft`.
 - **Horizontal** (desktop): nodos unidos por línea de 4 px; etiqueta debajo, centrada.
 - **Completado:** nodo `--azul-600` con check blanco 20, conector `--azul-600`. **Actual:** nodo blanco con borde 4 `--azul-600` y punto interno de 12; etiqueta `--azul-800` 700. **Futuro:** nodo blanco con borde 2 `--linea-control`, etiqueta `--ink-soft`, conector `--linea`.
@@ -548,7 +554,7 @@ Secuencia: **Recibido → Asignado → En camino → Entregado**. Único lugar d
 
 ### 8.15 Estados vacíos, carga y error
 
-- **Vacío (`EmptyState`):** centrado, padding 64 vertical; ilustración simple de 160 px (la rueda con una estela, en `--linea-control` y `--azul-200`; **pendiente** de diseñar); título `.t-h2`; texto 18 `--ink-soft` (máx. 2 líneas) que dice qué falta y qué hacer; botón opcional `md`. Ej.: "No tienes pendientes. Cuando una entrega quede incompleta, la verás aquí."
+- **Vacío (`EmptyState`):** centrado, padding 64 vertical; el vacío se resuelve primero con texto y una acción; una ilustración es opcional solo para situaciones sin datos y según la sección 22 (nunca reemplaza el texto ni la acción); título `.t-h2`; texto 18 `--ink-soft` (máx. 2 líneas) que dice qué falta y qué hacer; botón opcional `md`. Ej.: "No tienes pendientes. Cuando una entrega quede incompleta, la verás aquí."
 - **Carga (`Skeleton`):** bloques `--skeleton` con el mismo radio y tamaño que el contenido final; brillo que recorre en 1400 ms (movimiento reducido: sin brillo). No uses spinners de pantalla completa. Si tarda > 10 s, muestra un mensaje.
 - **Error de pantalla:** banner de error + botón "Reintentar"; conserva el contenido anterior si existe. Mensaje: qué pasó + qué hacer, sin culpar ni disculparse.
 - **Sin conexión:** banner de sistema (§7.9).
@@ -639,13 +645,13 @@ Probar siempre en **360 px**, **768 px** y **1280 px**, y con el texto al 150 %.
 ## 13. Iconografía, imágenes y movimiento
 
 ### 13.1 Iconos
-- Un solo conjunto de iconos coherente, de la librería que elija el equipo. Trazo 2 px, extremos redondeados, `currentColor`. Tamaños: 20 (`--icono-sm`, en badges, tablas, mensajes), 24 (`--icono-md`, estándar), 32 (`--icono-lg`, vacíos).
+- Conjunto Material en contorno (decisión aprobada, §20): trazo consistente, `currentColor`, sin cuadros tintados detrás de los iconos. No se desarrolla librería propia por ahora. Tamaños: 20 (`--icono-sm`, en badges, tablas, mensajes), 24 (`--icono-md`, estándar), 32 (`--icono-lg`, vacíos).
 - Los iconos que comunican algo llevan texto al lado; los que van solos (botón icono) llevan `aria-label` y tooltip en desktop. Iconos decorativos: `aria-hidden="true"`.
 - Símbolos de estado del reloj y los sellos: reloj, "!", "x", check (§3.3).
 
 ### 13.2 Imágenes
-- Solo con contenido útil (fotos de prueba de entrega, mapas). Radio `--r-sm`; proporción 4:3; `alt` descriptivo. Sin fotos de stock decorativas.
-- **Estelas del logo** (curvas azul/cian/verde, opacidad ≤ .55): solo decoración en bienvenida, inicio de sesión y estados vacíos; nunca detrás de datos o texto.
+- Solo con contenido útil y según la sección 22. Fotos permitidas: medicamentos, empaques y fórmulas en un flujo funcional (enmascaradas por defecto, sección 22); fotos de entrega como evidencia; mapas del seguimiento. Radio `--r-sm`; proporción 4:3; `alt` descriptivo que dice lo que la imagen muestra o prueba. Sin fotos de stock ni decorativas.
+- **Estelas del logo** (curvas azul/cian/verde, opacidad ≤ .55): solo dentro del logo. No son ornamento de estados vacíos, separadores ni fondos (decisión aprobada, §20).
 
 ### 13.3 Movimiento
 
@@ -698,7 +704,8 @@ El stack lo define cada equipo para su servicio. Este manual solo fija lo que se
 | `StatusBadge`, `Card`, `PendienteCard` | 8.8–8.10 |
 | `DataTable` | 8.11 |
 | `AppShell`, `AppHeader`, `BottomNav`, `SideNav`, `TopBar`, `Breadcrumb`, `Avatar` | 8.12 |
-| `DeadlineRing`, `TrackingStepper` | 8.13, 8.14 |
+| `DeadlineRing`, `TrackingStepper` (implementado como `FgTrail`), `FgWordmark` | 8.13, 8.14, §2 |
+| Fila de opción de lista (`HomeOptionRow`), botón principal de pantalla (`HomePrimaryAction`, usa `FgButton lg`) | §20 |
 | `EmptyState`, `Skeleton`, `Spinner` (rueda) | 8.15, 8.1 |
 | `Dialog`, `AlertDialog`, `BottomSheet`, `SidePanel`, `Popover/Menu`, `Tooltip`, `Toast`, `Banner`, `Nota` | 7 |
 | `ChatBubble`, `KpiCard`, `SignaturePad` | 8.16–8.18 |
@@ -724,10 +731,138 @@ El stack lo define cada equipo para su servicio. Este manual solo fija lo que se
 
 - **Logo:** SVG, variante sin lema, variante horizontal (ícono + nombre), ícono de la rueda solo y versión para fondo oscuro; favicon e ícono de app.
 - **Umbral de "por vencer"** y **tipos de `Novedad`** (para iconos y colores).
-- **Ilustración** de los estados vacíos.
+- **Ilustración** de los estados vacíos: permitida con condiciones (sección 22). Pendiente: quién la dibuja, su estilo y en qué situaciones se usa.
 - **Gráficos:** si se añaden, usar solo los colores de estado y el mismo texto AAA.
 - **Modo oscuro.**
-- **Fuente tipográfica:** cómo se carga (lo define cada equipo) y qué librería de iconos se usa.
+- **Fuente tipográfica:** cómo se carga (lo define cada equipo). Librería de iconos: Material, decidido (§20).
+- **Pedido activo en la home:** no se implementa. Requeriría justificarse desde una necesidad del paciente y pasaría por el backend; queda fuera de esta dirección.
+
+---
+
+## 20. Dirección de arte aprobada: «Lo que se mueve»
+
+Esta sección tiene prioridad sobre las secciones anteriores cuando hay contradicción. Las decisiones de **identidad de marca** son las que deben mantenerse en toda la app. Las de **interfaz** se revisan pantalla por pantalla con criterio de uso.
+
+**Identidad de marca**
+1. **Wordmark tipográfico** en encabezados (§2): "Farma" en `--azul-600`, "Go" en `--verde-700`. No es un logo nuevo.
+2. **Trayecto** solo para secuencias reales de estados. Hoy: seguimiento del domicilio. No es un patrón de navegación.
+3. **Arco de tiempo** solo para plazos reales respaldados por datos del sistema.
+4. **Degradado** fuera de las cabeceras: bienvenida, y splash y login si tienen sentido. No hay franja en el resto de la app.
+5. **Estelas** solo dentro del logo. La rueda, el arco de tiempo y el trayecto son formas de identidad con función (sección 22); no son ornamento.
+6. **Voz** (§11) sin cambios.
+
+**Decisiones de interfaz**
+7. **Composición.** La columna de lectura tiene ancho máximo de `--lectura` (720 px) en la home. No se fuerzan columnas para llenar el escritorio. Dos columnas de texto solo si hay al menos cuatro opciones independientes; hoy ninguna pantalla cumple esa condición.
+8. **Tarjeta, lista o composición libre:**
+   - *Composición libre:* saludo, texto y una sola acción principal, sin caja.
+   - *Lista* (filas con línea de 1 px, sin caja ni sombra): conjuntos homogéneos que se escanean o comparan. Altura mínima de fila 56 px.
+   - *Tarjeta:* una unidad con datos y acción o estado propios, como un pedido o un pendiente. Nunca tarjeta dentro de tarjeta, ni tarjeta para una sola opción de navegación.
+   - *Trayecto:* solo secuencias reales.
+9. **Acción principal.** Un botón primario `lg` (56 px) con su texto explicativo encima. No es un bloque de color.
+10. **Iconos.** Material en contorno, sin cuadros tintados. Sin librería propia por ahora.
+11. **Estados vacíos.** Texto que dice qué falta y qué pasará, con una sola acción si la hay. Ilustración solo según la sección 22.
+12. **Estados del trayecto.** Completado: nodo relleno con check. En curso: anillo grueso con punto y texto destacado. Pendiente: nodo de contorno fino y texto atenuado. Cada paso dice su estado con palabra (`Completado`, `En curso`, `Pendiente`).
+
+**Restricciones que se mantienen**
+- Ningún dato se inventa. El trayecto usa solo los estados que entrega el backend; no hay horas por estado porque la respuesta no las incluye.
+- Sin cambios en contratos, endpoints, modelos ni lógica de negocio para conseguir efectos visuales.
+- Accesibilidad sin concesiones: estado por palabra, objetivos ≥ 48 px, lectura del estado por lectores de pantalla.
+
+**Pendientes de decidir:** modo oscuro (§19) y el pedido activo en la home (§19).
+
+---
+
+## 21. Shell, navegación e inicio (decisión aprobada)
+
+**Shell de la aplicación (`FgAppShell`, `lib/components/farmago/shell.dart`).** La navegación vive en el shell y nunca en el contenido. Una pantalla no repite la lista de destinos como menú.
+
+| Ancho | Navegación | Barra superior | Contenido |
+|---|---|---|---|
+| ≥ 1200 px | Barra lateral de `--w-sidebar` (264 px): logo, todos los destinos reales del rol, cuenta | 64 px: título de la sección, notificaciones y cuenta a la derecha | Resto del ancho |
+| 768–1199 px | Barra lateral colapsada de 72 px: solo iconos, con etiqueta al pasar el puntero | Igual que escritorio | Resto del ancho |
+| < 768 px | Barra inferior de 72 px + safe-area, máximo cuatro destinos, a ancho igual | Sin barra superior: el encabezado lo pone la pantalla (marca y notificaciones) | Ancho completo |
+
+- Destinos en la barra inferior: solo texto, sin iconos. Etiqueta de 14 / 600 en móvil (16 / 600 solo fuera de la barra inferior, para evitar que las etiquetas se toquen a 360 px) y, para el destino activo, una línea de marca de 64 × 4 px sobre la etiqueta en `--azul-600`; el texto activo va en `--azul-800` en 700. Área tocable de 72 px de alto. Los destinos inactivos usan iconos en `--verde-700` como acento de marca (§22); el destino activo usa `--azul-800`.
+- Las etiquetas de la barra lateral pueden partirse en dos líneas. Nunca se truncan con puntos suspensivos.
+- Escritorio y barra inferior: solo texto, sin iconos. La barra lateral colapsada (768–1199 px) muestra solo iconos, cada uno con su etiqueta al pasar el puntero.
+
+**Inicio (`HomePage`).** Es la entrada al estado real del paciente, no un menú. Muestra, en este orden de prioridad:
+
+1. **Domicilio en curso** (solo estados no terminales con datos del backend): estado como encabezado, llegada estimada y distancia si Geolocation las entrega, el trayecto de seis estados (`FgTrail`) y el botón "Ver seguimiento".
+2. **Pendiente que conviene mirar**: el vigente con la fecha límite más cercana, o el más reciente si no hay vigentes. Arco de tiempo real (`DeadlineRing`), sello de estado, medicamentos entregados y botón "Ver pendiente".
+3. **Sin actividad**: qué falta y qué hacer, con la acción "Analizar fórmula" como primaria. "Pedir medicamento a casa" queda como secundaria.
+
+Los roles que no son paciente no consultan datos del paciente: muestran solo su acción principal.
+
+**Reglas de composición que se derivan de esta decisión**
+
+- **Dos columnas** solo cuando el contenido tiene dos grupos distintos (estado y acciones) y el ancho lo permite (≥ 880 px de contenido). Nunca para llenar el escritorio. Sin foco activo, la pantalla usa una sola columna y queda honestamente vacía.
+- **Un botón primario por pantalla.** Las acciones secundarias son `secondary` (borde de 2 px), no `ghost`: el ghost tiene padding interno y su texto no se alinea con el resto de la columna.
+- **Sin texto duplicado.** Un encabezado y un botón no repiten la misma frase; un sello de estado no repite la palabra del título; el anillo muestra el tiempo y su descripción completa va como etiqueta para lectores de pantalla.
+- **Espacios vacíos artificiales no.** Si un rol tiene una sola acción, la pantalla es una columna corta. No se añaden bloques para compensar.
+- **Trayecto solo para el domicilio** (§8.14) y **arco solo para plazos reales** (§8.13), sin cambios.
+
+**Tokens añadidos (`FgSize`).** `sidebar` 264, `sidebarColapsado` 72, `navMovil` 72, `navIndicadorAncho` 64, `navIndicadorAlto` 32.
+
+**Pendientes:** la pantalla de inicio de un rol sin datos propios (administrador, repartidor) queda sin contenido de estado; si producto quiere más información para esos roles, debe definirse qué datos existen para ellos.
+
+---
+
+## 22. Imágenes, ilustraciones y decoración
+
+Esta sección implementa la política de `PRODUCT.md` (sección "Imágenes, ilustraciones y decoración"). La decisión depende del contenido y de la función de cada pantalla. Ninguna pantalla está obligada a tener una imagen, una ilustración, una forma decorativa o un degradado.
+
+**Categorías.** Cada recurso pertenece a una categoría, y la categoría determina su uso:
+
+- **Informativo:** transmite un dato real del sistema (un plazo, una posición en el mapa, el trayecto de una entrega).
+- **Funcional:** ayuda a actuar o a verificar algo (una foto de empaque que el paciente reconoce, una foto de entrega como evidencia, un icono que desambigua una acción).
+- **De identidad:** forma la marca (wordmark, rueda, arco de tiempo, trayecto).
+- **Decorativo:** no transmite nada. Es excepcional: no sustituye contenido, no compite con un dato y no añade ruido visual.
+
+**Recursos permitidos y condiciones**
+
+1. **Fotos de medicamentos, empaques y fórmulas** dentro de un flujo funcional. Se enmascaran por defecto: nombre, documento, dirección y cualquier otro dato del paciente quedan fuera de cuadro o cubiertos. Si la foto no es necesaria para la tarea, no se muestra. Sin texto sobre la foto (§4). Radio `--r-sm`; proporción 4:3.
+2. **Fotos de entrega** cuando aportan evidencia o información al paciente. No muestran rostros de terceros sin consentimiento. Su texto alternativo describe lo que la foto prueba.
+3. **Mapas y representaciones geográficas** del seguimiento de una entrega (`DeliveryMap`).
+4. **Ilustraciones originales** para explicar un proceso, un estado o una situación sin datos (por ejemplo, un estado vacío sin actividad). Son propias, no de stock; usan solo tokens de color y trazo; no contienen información indispensable que solo esté en la imagen; ocupan como máximo 160 px; y siempre van acompañadas del texto que dice qué falta y qué hacer.
+5. **Formas de identidad** derivadas de la rueda y del trayecto: el arco de tiempo (§8.13), el trayecto de estados (§8.14) y el wordmark (§2). Las estelas quedan dentro del logo.
+6. **Jerarquía:** separadores `--linea`, superficies `--superficie` y `--fondo-hundido`, y la escala tipográfica.
+7. **Degradados, sombras y tratamientos**, solo con una justificación concreta de estado o de identidad, registrada en esta sección antes de usarse. Hoy están definidos y justificados `--grad-marca` (bienvenida y, si tiene sentido, splash y login) y las sombras `--e1` a `--e4` (§6.3). No hay sombras de color ni degradados de texto.
+
+**Reglas de aplicación**
+
+- Una imagen nunca sustituye un dato, un estado ni una acción. Lo que una imagen transmite también aparece en texto.
+- Todo contenido visual con información tiene texto alternativo. Lo puramente decorativo se oculta a los lectores de pantalla.
+- La privacidad prevalece: un recurso que exponga datos personales no se muestra, aunque esté permitido.
+- Un recurso nuevo entra por la tabla de registro antes de usarse como token o componente. Sin registro, no se usa.
+
+**Registro de recursos**
+
+| Recurso | Categoría | Condición principal | Estado |
+|---|---|---|---|
+| Foto de medicamento, empaque o fórmula | Funcional | Enmascarada por defecto | Pendiente: regla de enmascarado y retención (ver pendientes) |
+| Foto de entrega | Funcional | Sin rostros de terceros sin consentimiento | Pendiente: consentimiento y origen de la foto |
+| Mapa del seguimiento | Informativo | Dato real del backend | En uso (`DeliveryMap`) |
+| Ilustración de estado vacío | Funcional | Propia, solo tokens, con texto y acción | Pendiente: no existe ninguna |
+| Arco de tiempo | Identidad | Plazo real con fecha límite del backend | En uso (`DeadlineRing`) |
+| Trayecto de estados | Identidad e informativo | Secuencia real de estados | En uso (`FgTrail`) |
+| Wordmark tipográfico | Identidad | Encabezados de la app | En uso (`FgWordmark`) |
+| Estelas | Identidad | Solo dentro del logo | No hay forma propia en la app |
+| Degradado `--grad-marca` | Identidad | Bienvenida; splash y login si aplica | En uso en la bienvenida |
+| Verde-700 en botón secundario de marca | Identidad | Acción secundaria de la pantalla vacía; nunca indica estado. En paneles de estado, el secundario es azul (`secondary`) | En uso (`FgButtonVariant.marca` en la pantalla vacía) |
+| Verde-700 en iconos de navegación inactivos | Identidad | Acento de marca; el destino activo va en `--azul-800`; nunca indica estado | En uso (shell) |
+| Estampado de ocho figuras de marca (cruz, cápsula, gota, trayecto, pin, reloj, rueda, paquete) en `--azul-200` al 60 %, dispuestas a lo largo de ondas de amplitud y longitud variables, con huecos y grupos, por debajo de todos los elementos y recortadas a la zona de contenido de la home. En móvil usa una opacidad menor (`FgOpacity.estampadoMovil`, 0,4) | Decorativo (identidad) | Apenas visible, detrás del contenido, sin texto, sin semántica ni movimiento; nunca entra a la barra lateral ni a la superior | En uso (home, `FgEstampado`) |
+| Panel del estado activo `--azul-100` | Estado | Foco del estado principal de la home; el color marca el foco, no decora la página | En uso (home) |
+| Barra de 4 px con `--grad-marca` en el borde superior del panel de estado | Identidad | Sin texto encima; el degradado nunca indica estado | En uso (home) || Sombras `--e1` a `--e4` | Jerarquía | Elevación real de elementos | En uso |
+
+**Pendientes de decidir**
+
+1. **Privacidad de las fotos:** qué se enmascara exactamente en una fórmula o un empaque, cuánto tiempo se conservan, y si el backend guarda esas fotos (eso no se puede verificar desde el frontend).
+2. **Ilustraciones:** quién las dibuja, su trazo y sus situaciones de uso.
+3. **Fotos de entrega:** cuándo muestran rostros, cómo se obtiene el consentimiento y qué texto alternativo llevan.
+4. **Versión pequeña de la marca** (rueda simplificada), pendiente en §19.
+5. **Lista de tratamientos justificados** (degradados y sombras adicionales), con su contexto de uso.
+6. **Modo oscuro**, pendiente en §19.
 
 ---
 
