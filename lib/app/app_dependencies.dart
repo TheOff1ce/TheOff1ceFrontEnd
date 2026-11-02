@@ -5,6 +5,7 @@ import '../hooks/admin_orders_controller.dart';
 import '../hooks/admin_users_controller.dart';
 import '../hooks/driver_board_controller.dart';
 import '../hooks/driver_delivery_controller.dart';
+import '../hooks/patient_home_controller.dart';
 import '../hooks/patient_orders_controller.dart';
 import '../hooks/pendiente_detail_controller.dart';
 import '../hooks/pendientes_list_controller.dart';
@@ -41,6 +42,7 @@ class AppDependencies {
     required this.location,
     required this.pendientesService,
     required this.pendientes,
+    required this.patientHome,
     this.deliveryClients = const [],
   });
 
@@ -65,6 +67,7 @@ class AppDependencies {
     // Administrator back-office: Auth's user directory with the same Bearer token.
     final authClient = AuthorizedJsonClient(AppConfig.authBaseUrl, tokens: auth, timeout: NetworkTimeouts.auth);
     final admin = AdminService(auth: authClient, orders: ordersClient);
+    final patientOrders = PatientOrdersController(orders, deliveries);
     return AppDependencies(
       api: api,
       prescriptions: PrescriptionController(PrescriptionService(api)),
@@ -72,7 +75,8 @@ class AppDependencies {
       // Password recovery uses its own client so it never shares session state.
       passwordReset: PasswordResetController(AuthRepository(AppConfig.authBaseUrl)),
       notifications: NotificationController(NotificationRepository()),
-      patientOrders: PatientOrdersController(orders, deliveries),
+      patientOrders: patientOrders,
+      patientHome: PatientHomeController(orders: patientOrders, pendientes: pendientesService, deliveries: deliveries),
       driverBoard: DriverBoardController(orders, deliveries),
       deliveries: deliveries,
       trackingChannels: () => SocketTrackingChannel(AppConfig.geolocationBaseUrl, auth),
@@ -91,6 +95,7 @@ class AppDependencies {
   final PasswordResetController passwordReset;
   final NotificationController notifications;
   final PatientOrdersController patientOrders;
+  final PatientHomeController patientHome;
   final DriverBoardController driverBoard;
   final DeliveryService deliveries;
   final TrackingChannelFactory trackingChannels;
@@ -121,6 +126,7 @@ class AppDependencies {
     passwordReset.dispose();
     notifications.dispose();
     patientOrders.dispose();
+    patientHome.dispose();
     driverBoard.dispose();
     pendientes.dispose();
     adminUsers.dispose();

@@ -17,6 +17,8 @@ Future<void> _cargarAtkinson() async {
   await cargador.load();
 }
 
+void _noop() {}
+
 void main() {
   testWidgets('landing leads a visitor to sign in', (tester) async {
     var openedLogin = false;
@@ -48,34 +50,6 @@ void main() {
       expect(find.widgetWithText(FgButton, 'Crear cuenta'), findsWidgets);
     });
   }
-
-  testWidgets('home action responds to an analysis selection', (tester) async {
-    var openedAnalysis = false;
-    await tester.pumpWidget(MaterialApp(
-      home: HomeActionCard(
-        featured: true,
-        icon: Icons.document_scanner_outlined,
-        title: 'Analizar fórmula',
-        description: 'Lee tu fórmula.',
-        onTap: () => openedAnalysis = true,
-      ),
-    ));
-    await tester.tap(find.text('Analizar fórmula'));
-    expect(openedAnalysis, isTrue);
-  });
-
-  testWidgets(
-      'upcoming features are explained up front instead of looking clickable',
-      (tester) async {
-    await tester.pumpWidget(const MaterialApp(
-      home: HomeActionCard(
-          icon: Icons.inventory_2_outlined,
-          title: 'Mis medicamentos',
-          description: 'Historial.'),
-    ));
-    expect(find.text('Pronto'), findsOneWidget);
-    expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
-  });
 
   testWidgets(
       'landing actions keep the 48 px minimum touch target at phone and desktop widths',

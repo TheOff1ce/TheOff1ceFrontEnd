@@ -51,7 +51,7 @@ class _LandingPageState extends State<LandingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Franja decorativa de marca: 8 px, permitida en cabeceras (manual §3.4).
+              // Degradado de marca de la bienvenida: 8 px sobre la landing (manual §3.4 y §22).
               const DecoratedBox(
                 decoration: BoxDecoration(gradient: FgGradients.marca),
                 child:

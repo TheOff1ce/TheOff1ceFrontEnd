@@ -65,8 +65,8 @@ class FgBanner extends StatelessWidget {
   (Color, Object) get _glifo => switch (kind) {
         FgBannerKind.info => (FgColors.azul600, 'i'),
         FgBannerKind.aviso => (FgColors.riesgoSolid, '!'),
-        FgBannerKind.error => (FgColors.peligro, Icons.close_rounded),
-        FgBannerKind.exito => (FgColors.cumplidoSolid, Icons.check_rounded),
+        FgBannerKind.error => (FgColors.peligro, Icons.close),
+        FgBannerKind.exito => (FgColors.cumplidoSolid, Icons.check),
       };
 
   @override
@@ -127,7 +127,8 @@ class FgNota extends StatelessWidget {
       );
 }
 
-/// Estado vacío (§8.15). La ilustración está pendiente de diseño (§19 del manual).
+/// Estado vacío (§8.15). Una ilustración es opcional según el manual §22 (solo para situaciones
+/// sin datos y nunca en lugar del texto y la acción); hoy ningún estado vacío la usa.
 class FgEmptyState extends StatelessWidget {
   const FgEmptyState({super.key, required this.titulo, required this.mensaje, this.accionLabel, this.onAccion});
 
@@ -201,6 +202,7 @@ class _FgSkeletonState extends State<FgSkeleton> with SingleTickerProviderStateM
               height: widget.alto,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(widget.radio),
+                // Brillo de carga (manual §8.15 y §22): indica un estado de carga, no es decoración.
                 gradient: LinearGradient(
                   begin: Alignment(-2 + 4 * t, 0),
                   end: Alignment(-1 + 4 * t, 0),
@@ -287,9 +289,9 @@ class _ToastView extends StatelessWidget {
     final medidas = MediaQuery.of(context);
     final compacto = FgBreakpoint.esCompacto(medidas.size.width);
     final (color, simbolo) = switch (kind) {
-      FgToastKind.exito => (FgColors.cumplidoSolid, Icons.check_rounded),
-      FgToastKind.error => (FgColors.peligro, Icons.close_rounded),
-      FgToastKind.info => (FgColors.azul600, Icons.info_outline_rounded),
+      FgToastKind.exito => (FgColors.cumplidoSolid, Icons.check),
+      FgToastKind.error => (FgColors.peligro, Icons.close),
+      FgToastKind.info => (FgColors.azul600, Icons.info_outline),
     };
     final tarjeta = MouseRegion(
       onEnter: (_) => onPausa(),
@@ -310,7 +312,7 @@ class _ToastView extends StatelessWidget {
                 tooltip: 'Cerrar aviso',
                 onPressed: onCerrar,
                 constraints: const BoxConstraints(minWidth: FgSize.ctrlSm, minHeight: FgSize.ctrlSm),
-                icon: const Icon(Icons.close_rounded, color: FgColors.blanco, size: FgSize.iconoMd),
+                icon: const Icon(Icons.close, color: FgColors.blanco, size: FgSize.iconoMd),
               ),
             ],
           ),
