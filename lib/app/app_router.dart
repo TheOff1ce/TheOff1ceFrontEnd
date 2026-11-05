@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../auth/auth_controller.dart';
 import '../pages/account_page.dart';
-import '../pages/change_password_page.dart';
 import '../pages/admin_orders_page.dart';
 import '../pages/admin_users_page.dart';
 import '../pages/analysis_page.dart';
@@ -55,7 +54,6 @@ class AppRouter {
     AppRoutes.prescriptionResult,
     AppRoutes.notifications,
     AppRoutes.account,
-    AppRoutes.changePassword,
   };
 
   /// Private paths, including the parameterized delivery routes.
@@ -299,15 +297,6 @@ class AppRouter {
           builder: (context, state) => _gate(AccountPage(
             auth: _auth,
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
-            onChangePassword: () => context.push(AppRoutes.changePassword),
-          )),
-        ),
-        GoRoute(
-          path: AppRoutes.changePassword,
-          builder: (context, state) => _gate(ChangePasswordPage(
-            auth: _auth,
-            onBack: () => AppRoutes.backOrGo(context, AppRoutes.account),
-            onDone: () => AppRoutes.backOrGo(context, AppRoutes.account),
           )),
         ),
       ];

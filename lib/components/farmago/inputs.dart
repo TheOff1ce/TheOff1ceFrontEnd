@@ -28,6 +28,7 @@ class FgTextField extends StatefulWidget {
     this.autofocus = false,
     this.inputFormatters,
     this.autofillHints,
+    this.contrasena = false,
   });
 
   final String label;
@@ -51,6 +52,9 @@ class FgTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
 
+  /// Campo de contraseña: oculta el texto y agrega el botón "Mostrar / Ocultar contraseña".
+  final bool contrasena;
+
   @override
   State<FgTextField> createState() => _FgTextFieldState();
 }
@@ -58,6 +62,7 @@ class FgTextField extends StatefulWidget {
 class _FgTextFieldState extends State<FgTextField> {
   FocusNode? _propio;
   bool _encima = false;
+  bool _oculto = true;
 
   FocusNode get _focus => widget.focusNode ?? (_propio ??= FocusNode());
 
@@ -120,6 +125,9 @@ class _FgTextFieldState extends State<FgTextField> {
           onSubmitted: widget.onSubmitted,
           inputFormatters: widget.inputFormatters,
           autofillHints: widget.autofillHints,
+          obscureText: widget.contrasena && _oculto,
+          enableSuggestions: !widget.contrasena,
+          autocorrect: !widget.contrasena,
           minLines: widget.multilinea ? 4 : 1,
           maxLines: widget.multilinea ? null : 1,
           style: FgText.body,
@@ -140,7 +148,18 @@ class _FgTextFieldState extends State<FgTextField> {
             prefixIcon: widget.iconoInicial == null
                 ? null
                 : Icon(widget.iconoInicial, size: FgSize.iconoMd, color: FgColors.inkSoft),
-            suffixIcon: widget.limpiable && texto.isNotEmpty
+            suffixIcon: widget.contrasena
+                ? IconButton(
+                    tooltip: _oculto ? 'Mostrar contraseña' : 'Ocultar contraseña',
+                    icon: Icon(
+                      _oculto ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: FgSize.iconoMd,
+                      color: FgColors.inkSoft,
+                    ),
+                    constraints: const BoxConstraints(minWidth: FgSize.tapMin, minHeight: FgSize.tapMin),
+                    onPressed: () => setState(() => _oculto = !_oculto),
+                  )
+                : widget.limpiable && texto.isNotEmpty
                 ? IconButton(
                     tooltip: 'Limpiar búsqueda',
                     icon: const Icon(Icons.close_rounded, size: FgSize.iconoMd),
