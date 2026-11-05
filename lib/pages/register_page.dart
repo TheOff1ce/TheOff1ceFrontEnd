@@ -72,7 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   @override
-  Widget build(BuildContext context) => AuthShell(
+  Widget build(BuildContext context) => LoginLayout (
         onBack: widget.onBack,
         title: 'Crea tu espacio de salud.',
         subtitle: 'Te enviaremos un código al correo para proteger tu cuenta. Todos los campos son obligatorios.',
