@@ -145,7 +145,8 @@ class _FgButtonState extends State<FgButton> {
           Icon(widget.icon, size: FgSize.iconoMd),
           const SizedBox(width: FgSpace.sp2),
         ],
-        Text(etiqueta, textAlign: TextAlign.center),
+        // En pantallas angostas la etiqueta pasa a dos líneas en vez de desbordar el botón.
+        Flexible(child: Text(etiqueta, textAlign: TextAlign.center)),
       ],
     );
     // Cargando no se muestra como deshabilitado, pero tampoco admite clics.

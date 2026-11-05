@@ -141,10 +141,11 @@ class _AdminOrderCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.l),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: Text(o.pharmacy.name, style: context.text.titleMedium)),
-            StatusChip(label: _status.$1, tone: _status.$2),
-          ]),
+          TitleWithStatus(
+            title: o.pharmacy.name,
+            style: context.text.titleMedium,
+            status: StatusChip(label: _status.$1, tone: _status.$2),
+          ),
           const SizedBox(height: AppSpacing.xs),
           Text('Recoger: ${o.pharmacy.address}', style: context.text.bodySmall),
           Text('Entregar: ${o.deliveryAddress}', style: context.text.bodySmall),

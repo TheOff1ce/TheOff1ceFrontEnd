@@ -35,6 +35,13 @@ abstract final class ErrorMessages {
       'Tu código caducó o ya no es válido, así que la contraseña no se cambió. Pide un código nuevo para continuar.';
   static const sessionUnverified =
       'No pudimos comprobar tu sesión porque el servicio no respondió. Revisa tu conexión e inténtalo de nuevo.';
+  static const currentPasswordInvalid =
+      'La contraseña actual no es correcta. Revísala e inténtalo de nuevo.';
+  static const passwordNotSet =
+      'Tu cuenta entra con Google, así que no tiene una contraseña de FARMA GO para cambiar.';
+  static const passwordUnchanged = 'La contraseña nueva debe ser distinta de la actual.';
+  static const unreadablePrescription =
+      'No pudimos leer la fórmula. Toma otra foto con buena luz, enfocada y con todo el texto visible.';
   static const emailDelivery =
       'No pudimos enviar el código a tu correo. Inténtalo de nuevo en unos minutos.';
 

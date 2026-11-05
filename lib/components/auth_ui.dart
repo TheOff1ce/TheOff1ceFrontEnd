@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../app/theme/app_theme.dart';
 import '../utils/validators.dart';
+import '../app/theme/farmago_tokens.dart';
 
 class FarmaGoMark extends StatelessWidget {
   const FarmaGoMark({super.key, this.compact = false});
@@ -22,13 +23,18 @@ class FarmaGoMark extends StatelessWidget {
                 color: context.colors.primary,
                 borderRadius: BorderRadius.circular(AppRadii.s),
               ),
-              child: Icon(Icons.local_pharmacy_rounded, color: context.colors.onPrimary),
+              child: Icon(Icons.local_pharmacy_rounded,
+                  color: context.colors.onPrimary),
             ),
             const SizedBox(width: AppSpacing.s + 2),
             Text(
               'FARMA GO',
-              style: (compact ? context.text.titleMedium : context.text.titleLarge)
-                  ?.copyWith(fontWeight: FontWeight.w800, color: context.colors.primary, letterSpacing: -0.5),
+              style:
+                  (compact ? context.text.titleMedium : context.text.titleLarge)
+                      ?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: context.colors.primary,
+                          letterSpacing: -0.5),
             ),
           ]),
         ),
@@ -36,12 +42,22 @@ class FarmaGoMark extends StatelessWidget {
 }
 
 /// Layout shared by every public authentication screen.
+
+/// Layout compartido por las pantallas públicas de autenticación.
 class AuthShell extends StatelessWidget {
-  const AuthShell({super.key, required this.title, required this.subtitle, required this.child, this.onBack});
+  const AuthShell({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.onBack,
+    this.showOfficialLogo = false,
+  });
 
   final String title, subtitle;
   final Widget child;
   final VoidCallback? onBack;
+  final bool showOfficialLogo;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -50,19 +66,59 @@ class AuthShell extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.l, AppSpacing.xl, AppSpacing.xxl),
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.l,
+                  AppSpacing.xl,
+                  AppSpacing.xxl,
+                ),
                 children: [
                   if (onBack != null)
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: IconButton(tooltip: 'Volver', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
+                      child: IconButton(
+                        tooltip: 'Volver',
+                        onPressed: onBack,
+                        icon: const Icon(Icons.arrow_back),
+                      ),
                     ),
-                  const FarmaGoMark(),
+
+                  // Logo oficial únicamente cuando se solicite.
+                  if (showOfficialLogo)
+                    Center(
+                      child: Image.asset(
+                        'assets/images/logo_farmago.png',
+                        width: MediaQuery.sizeOf(context).width <
+                                FgBreakpoint.tablet
+                            ? 200
+                            : 240,
+                        fit: BoxFit.contain,
+                        semanticLabel: 'FarmaGo, de la farmacia a tu puerta',
+                      ),
+                    )
+                  else
+                    const FarmaGoMark(),
+
                   const SizedBox(height: AppSpacing.xxl),
-                  Semantics(header: true, child: Text(title, style: context.text.displaySmall)),
+
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      title,
+                      style: context.text.displaySmall,
+                    ),
+                  ),
+
                   const SizedBox(height: AppSpacing.s),
-                  Text(subtitle, style: context.text.bodyLarge),
+
+                  Text(
+                    subtitle,
+                    style: context.text.bodyLarge,
+                  ),
+
                   const SizedBox(height: AppSpacing.xxl - 2),
+
                   child,
                 ],
               ),
@@ -74,7 +130,12 @@ class AuthShell extends StatelessWidget {
 
 /// Primary action with an in-progress state that prevents double submission.
 class BusyButton extends StatelessWidget {
-  const BusyButton({super.key, required this.label, required this.busy, required this.onPressed, this.busyLabel});
+  const BusyButton(
+      {super.key,
+      required this.label,
+      required this.busy,
+      required this.onPressed,
+      this.busyLabel});
 
   final String label;
   final String? busyLabel;
@@ -92,7 +153,8 @@ class BusyButton extends StatelessWidget {
                   child: SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(color: context.colors.onPrimary, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                        color: context.colors.onPrimary, strokeWidth: 2),
                   ),
                 )
               : Text(label),
@@ -143,7 +205,9 @@ class _PasswordFieldState extends State<PasswordField> {
         textInputAction: widget.textInputAction,
         onFieldSubmitted: widget.onSubmitted,
         onChanged: widget.onChanged,
-        autofillHints: [widget.isNew ? AutofillHints.newPassword : AutofillHints.password],
+        autofillHints: [
+          widget.isNew ? AutofillHints.newPassword : AutofillHints.password
+        ],
         validator: widget.validator,
         decoration: InputDecoration(
           labelText: widget.label,
@@ -151,7 +215,9 @@ class _PasswordFieldState extends State<PasswordField> {
           suffixIcon: IconButton(
             tooltip: _obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
             onPressed: () => setState(() => _obscure = !_obscure),
-            icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+            icon: Icon(_obscure
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined),
           ),
         ),
       );
@@ -159,7 +225,12 @@ class _PasswordFieldState extends State<PasswordField> {
 
 /// Six-digit code input with label, digits-only keyboard and one-time-code autofill.
 class CodeField extends StatelessWidget {
-  const CodeField({super.key, required this.controller, required this.label, this.onChanged, this.onSubmitted});
+  const CodeField(
+      {super.key,
+      required this.controller,
+      required this.label,
+      this.onChanged,
+      this.onSubmitted});
 
   final TextEditingController controller;
   final String label;
@@ -177,7 +248,8 @@ class CodeField extends StatelessWidget {
         textAlign: TextAlign.center,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
-        style: context.text.headlineSmall?.copyWith(letterSpacing: 10, fontWeight: FontWeight.w800),
+        style: context.text.headlineSmall
+            ?.copyWith(letterSpacing: 10, fontWeight: FontWeight.w800),
         decoration: InputDecoration(
           labelText: label,
           hintText: '000000',
@@ -205,10 +277,15 @@ class PasswordChecklist extends StatelessWidget {
           const SizedBox(height: AppSpacing.s),
           _Requirement(
             met: password.length >= Validators.minPasswordLength,
-            text: 'Al menos ${Validators.minPasswordLength} caracteres (obligatorio)',
+            text:
+                'Al menos ${Validators.minPasswordLength} caracteres (obligatorio)',
           ),
-          _Requirement(met: RegExp(r'[A-ZÁÉÍÓÚÑ]').hasMatch(password), text: 'Una letra mayúscula (recomendado)'),
-          _Requirement(met: RegExp(r'[^A-Za-z0-9\s]').hasMatch(password), text: 'Un símbolo (recomendado)'),
+          _Requirement(
+              met: RegExp(r'[A-ZÁÉÍÓÚÑ]').hasMatch(password),
+              text: 'Una letra mayúscula (recomendado)'),
+          _Requirement(
+              met: RegExp(r'[^A-Za-z0-9\s]').hasMatch(password),
+              text: 'Un símbolo (recomendado)'),
         ]),
       );
 }
@@ -221,19 +298,22 @@ class _Requirement extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? context.status.onSuccessContainer : context.status.mutedText;
+    final color =
+        met ? context.status.onSuccessContainer : context.status.mutedText;
     return Semantics(
       label: '$text: ${met ? 'cumplido' : 'pendiente'}',
       excludeSemantics: true,
       child: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.xs),
         child: Row(children: [
-          Icon(met ? Icons.check_circle_rounded : Icons.circle_outlined, size: 18, color: color),
+          Icon(met ? Icons.check_circle_rounded : Icons.circle_outlined,
+              size: 18, color: color),
           const SizedBox(width: AppSpacing.s),
           Expanded(
             child: Text(
               text,
-              style: context.text.bodySmall?.copyWith(color: color, fontWeight: met ? FontWeight.w700 : null),
+              style: context.text.bodySmall?.copyWith(
+                  color: color, fontWeight: met ? FontWeight.w700 : null),
             ),
           ),
         ]),
@@ -251,8 +331,11 @@ class GoogleMark extends StatelessWidget {
           width: 24,
           height: 24,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-          child: Text('G', style: context.text.titleMedium?.copyWith(color: context.colors.secondary)),
+          decoration:
+              const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          child: Text('G',
+              style: context.text.titleMedium
+                  ?.copyWith(color: context.colors.secondary)),
         ),
       );
 }
@@ -264,5 +347,224 @@ void focusFirstInvalid(List<(FocusNode, String? Function())> fields) {
       node.requestFocus();
       return;
     }
+  }
+}
+
+/// Diseño responsive exclusivo de la pantalla de inicio de sesión.
+class LoginLayout extends StatelessWidget {
+  const LoginLayout({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.onBack,
+  });
+
+  final String title;
+  final String subtitle;
+  final Widget child;
+  final VoidCallback? onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: FgColors.fondo,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth >= FgBreakpoint.desktop;
+
+            final form = _buildForm(context);
+
+            if (!isDesktop) {
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: FgSize.dialogSm,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(
+                      FgBreakpoint.margenLateral(
+                        constraints.maxWidth,
+                      ),
+                    ),
+                    child: form,
+                  ),
+                ),
+              );
+            }
+
+            return Row(
+              children: [
+                // Columna izquierda: información de FarmaGo.
+                Expanded(
+                  child: Container(
+                    color: FgColors.azul100,
+                    padding: const EdgeInsets.all(FgSpace.sp8),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: FgSize.dialogSm,
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'De la farmacia a tu puerta.',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineLarge
+                                  ?.copyWith(
+                                    color: FgColors.ink,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            const SizedBox(height: FgSpace.sp5),
+                            Text(
+                              'Consulta tus medicamentos y haz '
+                              'seguimiento a tus entregas '
+                              'desde un solo lugar.',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    color: FgColors.inkSoft,
+                                  ),
+                            ),
+                            const SizedBox(height: FgSpace.sp7),
+                            _buildInfoRow(
+                              context,
+                              Icons.visibility_outlined,
+                              'Consulta el estado de tus entregas',
+                            ),
+                            const SizedBox(height: FgSpace.sp5),
+                            _buildInfoRow(
+                              context,
+                              Icons.route_outlined,
+                              'Sigue el recorrido de tus pedidos',
+                            ),
+                            const SizedBox(height: FgSpace.sp5),
+                            _buildInfoRow(
+                              context,
+                              Icons.medication_outlined,
+                              'Accede a la información de tus medicamentos',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Columna derecha: logo y formulario.
+                Expanded(
+                  child: Container(
+                    color: FgColors.superficie,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: FgSize.dialogSm,
+                        ),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(FgSpace.sp6),
+                          child: form,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(BuildContext context) {
+    final isMobile = MediaQuery.sizeOf(context).width < FgBreakpoint.tablet;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (onBack != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              tooltip: 'Volver',
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back),
+            ),
+          ),
+
+        // Logo oficial de FarmaGo.
+        Center(
+          child: Image.asset(
+            'assets/images/logo_farmago.png',
+            width: isMobile ? 200 : 240,
+            fit: BoxFit.contain,
+            semanticLabel: 'FarmaGo, de la farmacia a tu puerta',
+          ),
+        ),
+
+        const SizedBox(height: FgSpace.sp6),
+
+        Semantics(
+          header: true,
+          child: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: FgColors.ink,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ),
+
+        const SizedBox(height: FgSpace.sp3),
+
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge
+              ?.copyWith(color: FgColors.inkSoft),
+        ),
+
+        const SizedBox(height: FgSpace.sp6),
+
+        // Formulario original, sin modificar autenticación.
+        child,
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+  ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          color: FgColors.azul600,
+          size: FgSize.iconoLg,
+        ),
+        const SizedBox(width: FgSpace.sp4),
+        Expanded(
+          child: Text(
+            label,
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge
+                ?.copyWith(color: FgColors.ink),
+          ),
+        ),
+      ],
+    );
   }
 }

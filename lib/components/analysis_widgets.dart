@@ -1,42 +1,70 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
 
-/// Progress through the three analysis steps.
+/// Progress through the three analysis steps. Each step is a numbered node with its word
+/// underneath; the steps share the width evenly, so long words never overflow on small screens.
 class StepIndicator extends StatelessWidget {
   const StepIndicator({super.key, required this.activeStep});
 
   final int activeStep;
   static const _labels = ['Foto', 'Análisis', 'Resultado'];
+  static const _node = FgSize.simboloS;
 
   @override
   Widget build(BuildContext context) => Semantics(
         label: 'Paso $activeStep de ${_labels.length}: ${_labels[activeStep - 1]}',
         excludeSemantics: true,
-        child: Row(children: [
-          for (var i = 0; i < _labels.length; i++) ...[
-            if (i > 0) Expanded(child: Divider(color: context.status.decorative)),
-            _step(context, i + 1, _labels[i], activeStep >= i + 1),
-          ],
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          for (var i = 0; i < _labels.length; i++) Expanded(child: _step(i)),
         ]),
       );
 
-  Widget _step(BuildContext context, int number, String label, bool active) =>
-      Row(mainAxisSize: MainAxisSize.min, children: [
-        CircleAvatar(
-          radius: 13,
-          backgroundColor: active ? context.colors.primary : context.status.brandSurface,
+  Widget _step(int index) {
+    final number = index + 1;
+    final reached = activeStep >= number;
+    final current = activeStep == number;
+    Widget connector(bool visible, bool done) => Expanded(
+          child: Container(
+            height: FgBorder.w2,
+            color: visible ? (done ? FgColors.azul600 : FgColors.linea) : Colors.transparent,
+          ),
+        );
+    return Column(children: [
+      Row(children: [
+        connector(index > 0, reached),
+        Container(
+          width: _node,
+          height: _node,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: reached ? FgColors.azul600 : FgColors.superficie,
+            border: Border.all(color: reached ? FgColors.azul600 : FgColors.lineaControl, width: FgBorder.w2),
+          ),
           child: Text(
             '$number',
-            style: context.text.labelSmall?.copyWith(color: active ? context.colors.onPrimary : context.colors.primary),
+            style: FgText.caption.copyWith(
+              fontWeight: FontWeight.w700,
+              color: reached ? Colors.white : FgColors.inkSoft,
+              height: 1,
+            ),
           ),
         ),
-        const SizedBox(width: AppSpacing.xs + 1),
-        Text(
-          label,
-          style: context.text.labelMedium?.copyWith(color: active ? context.colors.primary : null),
+        connector(index < _labels.length - 1, activeStep > number),
+      ]),
+      const SizedBox(height: FgSpace.sp1),
+      Text(
+        _labels[index],
+        textAlign: TextAlign.center,
+        style: FgText.caption.copyWith(
+          fontWeight: current ? FontWeight.w700 : FontWeight.w400,
+          color: reached ? FgColors.azul800 : FgColors.inkSoft,
         ),
-      ]);
+      ),
+    ]);
+  }
 }
 
 /// Advice for a readable photo.

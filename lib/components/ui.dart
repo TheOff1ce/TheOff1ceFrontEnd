@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
+import 'farmago/feedback.dart';
 
 class AppCard extends StatelessWidget {
   const AppCard({super.key, required this.child, this.color, this.bordered = false});
@@ -13,15 +15,25 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final bool bordered;
 
+  /// Tarjeta del manual (§8.9): superficie, borde 1 px `--linea`, radio 14, padding 20/24.
+  /// [bordered] la resalta (borde de 2 px en tono de aviso) cuando algo pide revisión.
   @override
-  Widget build(BuildContext context) => Card(
-        color: color,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadii.xl),
-          side: bordered ? BorderSide(color: context.colors.outline) : BorderSide.none,
+  Widget build(BuildContext context) {
+    final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compacto ? FgSpace.sp4h : FgSpace.sp5),
+      decoration: BoxDecoration(
+        color: color ?? FgColors.superficie,
+        borderRadius: BorderRadius.circular(FgRadius.md),
+        border: Border.all(
+          color: bordered ? FgColors.riesgoSolid : FgColors.linea,
+          width: bordered ? FgBorder.w2 : FgBorder.w1,
         ),
-        child: Padding(padding: const EdgeInsets.all(AppSpacing.l + 4), child: child),
-      );
+      ),
+      child: child,
+    );
+  }
 }
 
 class AppButton extends StatelessWidget {
@@ -68,8 +80,8 @@ class PrescriptionImagePreview extends StatelessWidget {
         height: maxHeight,
         width: double.infinity,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.m),
-          child: ColoredBox(color: context.status.brandSurface, child: ExcludeSemantics(child: imageWidget)),
+          borderRadius: BorderRadius.circular(FgRadius.md),
+          child: ColoredBox(color: FgColors.fondoHundido, child: ExcludeSemantics(child: imageWidget)),
         ),
       ),
     );
@@ -94,27 +106,13 @@ class ConnectionBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!visible) return const SizedBox.shrink();
-    return Semantics(
-      liveRegion: true,
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: AppSpacing.l),
-        padding: const EdgeInsets.fromLTRB(AppSpacing.l, AppSpacing.s, AppSpacing.s, AppSpacing.s),
-        decoration: BoxDecoration(
-          color: context.status.warningContainer,
-          borderRadius: BorderRadius.circular(AppRadii.s),
-        ),
-        child: Row(children: [
-          Icon(Icons.wifi_off_rounded, color: context.status.onWarningContainer),
-          const SizedBox(width: AppSpacing.s),
-          Expanded(
-            child: Text(
-              'Sin conexión con el servicio. Seguiremos intentando; puedes seguir usando la app.',
-              style: context.text.bodySmall?.copyWith(color: context.status.onWarningContainer),
-            ),
-          ),
-          if (onRetry != null) TextButton(onPressed: onRetry, child: const Text('Reintentar')),
-        ]),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+      child: FgBanner(
+        kind: FgBannerKind.aviso,
+        message: 'Sin conexión con el servicio. Seguiremos intentando; puedes seguir usando la app.',
+        actionLabel: onRetry == null ? null : 'Reintentar',
+        onAction: onRetry,
       ),
     );
   }
