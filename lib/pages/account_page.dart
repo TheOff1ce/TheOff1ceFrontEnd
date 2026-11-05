@@ -5,10 +5,11 @@ import '../auth/auth_controller.dart';
 import '../components/ui.dart';
 
 class AccountPage extends StatefulWidget {
-  const AccountPage({super.key, required this.auth, required this.onBack});
+  const AccountPage({super.key, required this.auth, required this.onBack, this.onChangePassword});
 
   final AuthController auth;
   final VoidCallback onBack;
+  final VoidCallback? onChangePassword;
 
   @override
   State<AccountPage> createState() => _AccountPageState();
@@ -57,6 +58,14 @@ class _AccountPageState extends State<AccountPage> {
                   Text('Tipo de cuenta: ${user?.roleLabel ?? 'No disponible'}', style: context.text.bodyLarge),
                 ]),
               ),
+              if (widget.onChangePassword != null) ...[
+                const SizedBox(height: AppSpacing.l),
+                OutlinedButton.icon(
+                  onPressed: widget.onChangePassword,
+                  icon: const Icon(Icons.lock_reset_outlined),
+                  label: const Text('Cambiar contraseña'),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
               FilledButton.icon(
                 style: FilledButton.styleFrom(

@@ -14,6 +14,7 @@ abstract final class ErrorMapper {
     'INVALID_FILE': (AppErrorKind.invalidFile, ErrorMessages.invalidFile, false),
     'UNSUPPORTED_MEDIA_TYPE': (AppErrorKind.unsupportedFile, ErrorMessages.unsupportedFile, false),
     'INVALID_REQUEST': (AppErrorKind.validation, ErrorMessages.analysisRequest, false),
+    'UNREADABLE_PRESCRIPTION': (AppErrorKind.unreadableAnalysis, ErrorMessages.unreadablePrescription, false),
     'INVALID_AI_RESPONSE': (AppErrorKind.unreadableAnalysis, ErrorMessages.unreadableAnalysis, true),
     'AI_UNAVAILABLE': (AppErrorKind.server, ErrorMessages.analysisUnavailable, true),
     'AI_TIMEOUT': (AppErrorKind.timeout, ErrorMessages.analysisTimeout, true),
@@ -27,6 +28,9 @@ abstract final class ErrorMapper {
   static const Map<String, _Entry> _authCodes = {
     'INVALID_CREDENTIALS': (AppErrorKind.invalidCredentials, ErrorMessages.invalidCredentials, false),
     'CODE_INVALID': (AppErrorKind.invalidCode, ErrorMessages.invalidCode, false),
+    'CURRENT_PASSWORD_INVALID': (AppErrorKind.invalidCredentials, ErrorMessages.currentPasswordInvalid, false),
+    'PASSWORD_NOT_SET': (AppErrorKind.conflict, ErrorMessages.passwordNotSet, false),
+    'PASSWORD_UNCHANGED': (AppErrorKind.validation, ErrorMessages.passwordUnchanged, false),
     'SESSION_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
     'TOKEN_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
     'TOKEN_REQUIRED': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),

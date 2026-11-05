@@ -23,6 +23,7 @@ abstract final class AppRoutes {
   static const prescriptionResult = '/analyze-prescription/result';
   static const notifications = '/notifications';
   static const account = '/account';
+  static const changePassword = '/account/password';
 
   // Home deliveries (patient)
   static const myOrders = '/orders';
