@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import '../../app/theme/farmago_tokens.dart';
 import 'focus_ring.dart';
 
-enum FgButtonVariant { primary, secondary, ghost, danger }
+/// `marca`: secundario de marca en `--verde-700` (manual §3.1). Mismo tratamiento que `secondary`.
+enum FgButtonVariant { primary, secondary, ghost, danger, marca }
 
 enum FgButtonSize { lg, md, sm }
 
@@ -52,6 +53,9 @@ class _FgButtonState extends State<FgButton> {
     super.dispose();
   }
 
+  /// Respuesta al presionar: escala de 0.96 (manual §8.1), interrumpible y sin movimiento si se reduce.
+  bool _presionado = false;
+
   double get _alto => switch (widget.size) {
         FgButtonSize.lg => FgSize.ctrlLg,
         FgButtonSize.md => FgSize.ctrlMd,
@@ -84,6 +88,11 @@ class _FgButtonState extends State<FgButton> {
         if (presionado) return FgColors.peligroPressed;
         return encima ? FgColors.peligroHover : FgColors.peligro;
       case FgButtonVariant.secondary:
+      case FgButtonVariant.marca:
+        // Con borde, el fondo es opaco: nada del fondo de la pantalla se ve a través del botón.
+        if (deshabilitado) return FgColors.deshabilitadoBg;
+        if (presionado) return FgColors.azul200;
+        return encima ? FgColors.azul100 : FgColors.superficie;
       case FgButtonVariant.ghost:
         if (deshabilitado) return FgColors.deshabilitadoBg;
         if (presionado) return FgColors.azul200;
@@ -96,11 +105,13 @@ class _FgButtonState extends State<FgButton> {
     return switch (widget.variant) {
       FgButtonVariant.primary || FgButtonVariant.danger => FgColors.blanco,
       FgButtonVariant.secondary || FgButtonVariant.ghost => FgColors.azul800,
+      FgButtonVariant.marca => FgColors.verde700,
     };
   }
 
   ButtonStyle _estilo() {
-    final conBorde = widget.variant == FgButtonVariant.secondary;
+    final conBorde = widget.variant == FgButtonVariant.secondary || widget.variant == FgButtonVariant.marca;
+    final colorBorde = widget.variant == FgButtonVariant.marca ? FgColors.verde700 : FgColors.azul600;
     return ButtonStyle(
       minimumSize: WidgetStatePropertyAll(Size(widget.expand ? 0 : 120, _alto)),
       padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: _paddingX)),
@@ -108,7 +119,7 @@ class _FgButtonState extends State<FgButton> {
       shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md))),
       side: WidgetStateProperty.resolveWith(
         (estados) => conBorde && !estados.contains(WidgetState.disabled)
-            ? const BorderSide(color: FgColors.azul600, width: FgBorder.w2)
+            ? BorderSide(color: colorBorde, width: FgBorder.w2)
             : BorderSide.none,
       ),
       backgroundColor: WidgetStateProperty.resolveWith(_fondo),
@@ -134,18 +145,31 @@ class _FgButtonState extends State<FgButton> {
           Icon(widget.icon, size: FgSize.iconoMd),
           const SizedBox(width: FgSpace.sp2),
         ],
-        Text(etiqueta, textAlign: TextAlign.center),
+        // En pantallas angostas la etiqueta pasa a dos líneas en vez de desbordar el botón.
+        Flexible(child: Text(etiqueta, textAlign: TextAlign.center)),
       ],
     );
     // Cargando no se muestra como deshabilitado, pero tampoco admite clics.
     final VoidCallback? accion = widget.loading ? () {} : widget.onPressed;
     final Widget boton = switch (widget.variant) {
-      FgButtonVariant.secondary =>
+      FgButtonVariant.secondary || FgButtonVariant.marca =>
         OutlinedButton(onPressed: accion, focusNode: _focus, style: _estilo(), child: contenido),
       FgButtonVariant.ghost => TextButton(onPressed: accion, focusNode: _focus, style: _estilo(), child: contenido),
       _ => FilledButton(onPressed: accion, focusNode: _focus, style: _estilo(), child: contenido),
     };
-    final conAnillo = FgFocusRing(focusNode: _focus, child: boton);
+    final activo = widget.onPressed != null && !widget.loading;
+    final conPresion = Listener(
+      onPointerDown: activo ? (_) => setState(() => _presionado = true) : null,
+      onPointerUp: (_) => setState(() => _presionado = false),
+      onPointerCancel: (_) => setState(() => _presionado = false),
+      child: AnimatedScale(
+        scale: _presionado && activo ? .96 : 1,
+        duration: FgMotion.reducir(context, FgMotion.rapida),
+        curve: FgMotion.ease,
+        child: boton,
+      ),
+    );
+    final conAnillo = FgFocusRing(focusNode: _focus, child: conPresion);
     return widget.expand ? SizedBox(width: double.infinity, child: conAnillo) : conAnillo;
   }
 }

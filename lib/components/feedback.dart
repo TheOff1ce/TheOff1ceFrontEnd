@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
+import 'farmago/buttons.dart';
+import 'farmago/feedback.dart';
 import '../errors/app_error.dart';
 
 /// Inline error for forms and sections; announced by screen readers (FE-008).
@@ -15,31 +17,12 @@ class ErrorBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final current = error;
     if (current == null) return const SizedBox.shrink();
-    return Semantics(
-      liveRegion: true,
-      container: true,
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: AppSpacing.l),
-        padding: const EdgeInsets.all(AppSpacing.m),
-        decoration: BoxDecoration(
-          color: context.colors.errorContainer,
-          borderRadius: BorderRadius.circular(AppRadii.s),
-        ),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(Icons.error_outline, color: context.colors.onErrorContainer, semanticLabel: 'Error'),
-          const SizedBox(width: AppSpacing.s),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(current.userMessage,
-                  style: context.text.bodyMedium?.copyWith(
-                    color: context.colors.onErrorContainer,
-                    fontWeight: FontWeight.w600,
-                  )),
-              if (current.showsReference) ReferenceText(error: current),
-            ]),
-          ),
-        ]),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+      child: FgBanner(
+        kind: FgBannerKind.error,
+        message: current.userMessage,
+        referencia: current.showsReference ? current.referenceId : null,
       ),
     );
   }
@@ -53,8 +36,8 @@ class ReferenceText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: AppSpacing.xs),
-        child: SelectableText('Código de referencia: ${error.referenceId}', style: context.text.bodySmall),
+        padding: const EdgeInsets.only(top: FgSpace.sp1),
+        child: SelectableText('Código de referencia: ${error.referenceId}', style: FgText.caption),
       );
 }
 
@@ -82,26 +65,36 @@ class ErrorStateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(FgSpace.sp5),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
+            constraints: const BoxConstraints(maxWidth: FgSize.dialogSm),
             child: Semantics(
               liveRegion: true,
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                Icon(Icons.error_outline, color: context.colors.error, size: 52),
-                const SizedBox(height: AppSpacing.l),
-                Text(title, style: context.text.headlineSmall, textAlign: TextAlign.center),
-                const SizedBox(height: AppSpacing.s),
-                Text(error.userMessage, style: context.text.bodyLarge, textAlign: TextAlign.center),
+                const FgGlifo(color: FgColors.peligro, simbolo: Icons.close_rounded, diametro: 56, tamanoSimbolo: 32),
+                const SizedBox(height: FgSpace.sp5),
+                Semantics(
+                  header: true,
+                  child: Text(title, style: FgText.h2, textAlign: TextAlign.center),
+                ),
+                const SizedBox(height: FgSpace.sp2),
+                Text(error.userMessage, style: FgText.body.copyWith(color: FgColors.inkSoft), textAlign: TextAlign.center),
                 if (error.showsReference) ReferenceText(error: error),
-                const SizedBox(height: AppSpacing.xl),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(onPressed: onPrimary, icon: Icon(primaryIcon), label: Text(primaryLabel)),
+                const SizedBox(height: FgSpace.sp6),
+                FgButton(
+                  label: primaryLabel,
+                  icon: primaryIcon,
+                  expand: true,
+                  onPressed: onPrimary,
                 ),
                 if (secondaryLabel != null && onSecondary != null) ...[
-                  const SizedBox(height: AppSpacing.s),
-                  TextButton(onPressed: onSecondary, child: Text(secondaryLabel!)),
+                  const SizedBox(height: FgSpace.sp3),
+                  FgButton(
+                    label: secondaryLabel!,
+                    variant: FgButtonVariant.secondary,
+                    expand: true,
+                    onPressed: onSecondary,
+                  ),
                 ],
               ]),
             ),
@@ -144,7 +137,9 @@ class _DelayedSpinnerState extends State<DelayedSpinner> {
   Widget build(BuildContext context) => SizedBox(
         width: widget.size,
         height: widget.size,
-        child: _visible ? CircularProgressIndicator(semanticsLabel: widget.label) : null,
+        child: _visible
+            ? Semantics(label: widget.label, child: Center(child: FgSpinner(size: widget.size)))
+            : null,
       );
 }
 
