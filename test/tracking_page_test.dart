@@ -113,8 +113,8 @@ Future<void> _cargarFuentesSeguimiento() async {
   await cargador.load();
   final flutterRoot = Platform.environment['FLUTTER_ROOT'];
   final iconos = <String>[
-    if (flutterRoot != null) '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
     if (flutterRoot != null) '$flutterRoot/bin/cache/dart-sdk/bin/resources/devtools/assets/fonts/MaterialIcons-Regular.otf',
+    if (flutterRoot != null) '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
     r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf',
   ].map(File.new).firstWhere(
         (archivo) => archivo.existsSync(),
