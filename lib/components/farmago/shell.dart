@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../app/theme/farmago_tokens.dart';
 import 'buttons.dart';
 import 'focus_ring.dart';
-import 'wordmark.dart';
 
 /// Destino de navegación real de la aplicación (manual §8.12).
 class FgDestino {

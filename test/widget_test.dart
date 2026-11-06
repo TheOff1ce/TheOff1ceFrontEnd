@@ -1,6 +1,5 @@
 import 'package:farma_go/app/theme/farmago_tokens.dart';
 import 'package:farma_go/components/farmago/buttons.dart';
-import 'package:farma_go/pages/home_page.dart';
 import 'package:farma_go/pages/landing_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,8 +15,6 @@ Future<void> _cargarAtkinson() async {
   }
   await cargador.load();
 }
-
-void _noop() {}
 
 void main() {
   testWidgets('landing leads a visitor to sign in', (tester) async {
