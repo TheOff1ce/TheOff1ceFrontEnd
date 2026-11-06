@@ -41,6 +41,10 @@ class ResultPage extends StatelessWidget {
                         style: context.text.headlineSmall,
                       ),
                     ),
+                    if (result.patient != null) ...[
+                      const SizedBox(height: AppSpacing.l),
+                      _PatientCard(patient: result.patient!),
+                    ],
                     if (result.requiresHumanReview || result.warnings.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.l),
                       _ReviewNotice(warnings: result.warnings),
@@ -54,6 +58,16 @@ class ResultPage extends StatelessWidget {
                         padding: const EdgeInsets.only(top: AppSpacing.l),
                         child: MedicationCard(medication: medication),
                       ),
+                    if (result.documentStored) ...[
+                      const SizedBox(height: AppSpacing.l),
+                      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Icon(Icons.cloud_done_outlined, size: 18, color: context.status.mutedText),
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Text('Guardamos una copia privada de tu fórmula.', style: context.text.bodySmall),
+                        ),
+                      ]),
+                    ],
                     const SizedBox(height: AppSpacing.l),
                     Text(
                       'La información extraída no reemplaza la indicación de un profesional de salud.',
@@ -120,6 +134,28 @@ class _EmptyResult extends StatelessWidget {
             'Prueba con una imagen más clara, completa y bien iluminada.',
             style: context.text.bodyLarge,
             textAlign: TextAlign.center,
+          ),
+        ]),
+      );
+}
+
+class _PatientCard extends StatelessWidget {
+  const _PatientCard({required this.patient});
+
+  final PrescriptionPatient patient;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+        bordered: true,
+        child: Row(children: [
+          Icon(Icons.person_outline, color: context.colors.primary),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Paciente', style: context.text.labelLarge),
+              Text(patient.name ?? 'Nombre no legible', style: context.text.titleMedium),
+              if (patient.document != null) Text(patient.document!, style: context.text.bodySmall),
+            ]),
           ),
         ]),
       );

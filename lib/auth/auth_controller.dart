@@ -134,6 +134,18 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
     return _run(() async => _acceptSession(await _repository.verifyCode(email: email, code: code)));
   }
 
+  /// HU-005: changes the password and keeps this device signed in with the new session.
+  Future<AppError?> changePassword({required String currentPassword, required String newPassword}) =>
+      _run(() async {
+        final token = await currentAccessToken();
+        if (token == null) throw ErrorMapper.fromAuth(401, const {'error': {'code': 'SESSION_INVALID'}});
+        await _acceptSession(await _repository.changePassword(
+          accessToken: token,
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+        ));
+      });
+
   Future<AppError?> resend() async {
     final email = pendingEmail;
     if (email == null) return null;

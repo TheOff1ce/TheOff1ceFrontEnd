@@ -60,11 +60,7 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             title: 'Mis domicilios',
             onBack: widget.onBack,
             onRefresh: c.load,
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: widget.onRequest,
-              icon: const Icon(Icons.add),
-              label: const Text('Pedir domicilio'),
-            ),
+            barraAccion: PrimaryActionBar(label: 'Pedir domicilio', icon: Icons.add_rounded, onPressed: widget.onRequest),
             children: [
               ErrorBanner(error: c.error),
               if (c.loading && c.orders.isEmpty) const Center(child: DelayedSpinner()),
@@ -122,10 +118,11 @@ class _OrderCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.l),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Expanded(child: Text(order.pharmacy.name, style: context.text.titleMedium)),
-              StatusChip(label: _status.$1, tone: _status.$2),
-            ]),
+            TitleWithStatus(
+              title: order.pharmacy.name,
+              style: context.text.titleMedium,
+              status: StatusChip(label: _status.$1, tone: _status.$2),
+            ),
             const SizedBox(height: AppSpacing.xs),
             Text('Para: ${order.deliveryAddress}', style: context.text.bodySmall),
             Text(

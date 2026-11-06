@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
+import 'farmago/buttons.dart';
+import 'farmago/feedback.dart';
+import 'farmago/layout.dart';
 import '../types/delivery.dart';
 import '../types/order.dart';
 
@@ -51,6 +55,7 @@ class DeliveryProgress extends StatelessWidget {
 
 enum StatusTone { neutral, success, warning, error }
 
+/// Sello de estado del domicilio (manual §8.8): forma + símbolo + palabra, nunca solo color.
 class StatusChip extends StatelessWidget {
   const StatusChip({super.key, required this.label, this.tone = StatusTone.neutral});
 
@@ -59,16 +64,27 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (background, foreground) = switch (tone) {
-      StatusTone.success => (context.status.successContainer, context.status.onSuccessContainer),
-      StatusTone.warning => (context.status.warningContainer, context.status.onWarningContainer),
-      StatusTone.error => (context.colors.errorContainer, context.colors.onErrorContainer),
-      StatusTone.neutral => (context.status.brandSurface, context.colors.primary),
+    final (background, foreground, symbol) = switch (tone) {
+      StatusTone.success => (FgColors.cumplidoBg, FgColors.cumplidoFg, Icons.check_rounded),
+      StatusTone.warning => (FgColors.riesgoBg, FgColors.riesgoFg, Icons.schedule_rounded),
+      StatusTone.error => (FgColors.incumplidoBg, FgColors.incumplidoFg, Icons.close_rounded),
+      StatusTone.neutral => (FgColors.vigenteBg, FgColors.vigenteFg, Icons.circle),
     };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.s, vertical: AppSpacing.xs),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppRadii.s)),
-      child: Text(label, style: context.text.labelMedium?.copyWith(color: foreground, fontWeight: FontWeight.w700)),
+    return Semantics(
+      label: 'Estado: $label',
+      excludeSemantics: true,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: FgSize.selloAlto),
+        padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3),
+        decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(FgRadius.pill)),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(symbol, size: tone == StatusTone.neutral ? FgSize.simboloMini - 4 : FgSize.simboloSm, color: foreground),
+          const SizedBox(width: FgSpace.sp2),
+          Flexible(
+            child: Text(label, style: FgText.caption.copyWith(color: foreground, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+      ),
     );
   }
 }
@@ -92,14 +108,16 @@ class OrderItemsList extends StatelessWidget {
         children: [
           for (final item in items)
             Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Text('• ${item.name} × ${item.quantity}', style: context.text.bodyMedium),
+              padding: const EdgeInsets.only(bottom: FgSpace.sp1),
+              child: Text('• ${item.name} × ${item.quantity}', style: FgText.body),
             ),
         ],
       );
 }
 
-/// Shared page frame for the delivery screens (max width, back button, title).
+/// Marco de las pantallas de domicilios y administración: [FgScreen] del manual (encabezado de
+/// 56/64 px con "Volver", título `h1` en pantallas anchas), contenido a ancho de lectura y barra de
+/// acción fija opcional para la acción principal.
 class DeliveryScaffold extends StatelessWidget {
   const DeliveryScaffold({
     super.key,
@@ -107,56 +125,86 @@ class DeliveryScaffold extends StatelessWidget {
     required this.onBack,
     required this.children,
     this.onRefresh,
-    this.floatingActionButton,
+    this.barraAccion,
   });
 
   final String title;
   final VoidCallback onBack;
   final List<Widget> children;
   final Future<void> Function()? onRefresh;
-  final Widget? floatingActionButton;
+
+  /// Acción principal fija abajo (por ejemplo, "Pedir domicilio").
+  final Widget? barraAccion;
 
   @override
-  Widget build(BuildContext context) {
-    final list = ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.m, AppSpacing.xl, AppSpacing.xxl * 2),
-      children: children,
-    );
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(tooltip: 'Volver', icon: const Icon(Icons.arrow_back), onPressed: onBack),
-        title: Text(title),
-      ),
-      floatingActionButton: floatingActionButton,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 640),
-            child: onRefresh == null ? list : RefreshIndicator(onRefresh: onRefresh!, child: list),
-          ),
+  Widget build(BuildContext context) => FarmaGoThemed(
+        child: FgScreen(
+          titulo: title,
+          onBack: onBack,
+          onRefresh: onRefresh,
+          barraAccion: barraAccion,
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: FgSize.lectura),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+              ),
+            ),
+          ],
         ),
-      ),
-    );
-  }
+      );
 }
 
-/// Empty-state message with an icon.
+/// Estado vacío del manual (§8.15): título, qué pasa y qué hacer.
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.icon, required this.title, required this.message});
 
+  /// Se conserva por compatibilidad; el manual no usa iconos decorativos en estados vacíos.
   final IconData icon;
   final String title, message;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxl),
-        child: Column(children: [
-          Icon(icon, size: 48, color: context.colors.primary),
-          const SizedBox(height: AppSpacing.m),
-          Text(title, style: context.text.titleMedium, textAlign: TextAlign.center),
-          const SizedBox(height: AppSpacing.xs),
-          Text(message, style: context.text.bodyMedium, textAlign: TextAlign.center),
-        ]),
+  Widget build(BuildContext context) => FgEmptyState(titulo: title, mensaje: message);
+}
+
+/// Botón principal de la barra de acción fija: ancho completo en móvil y a la derecha en pantallas
+/// anchas (manual §8.1).
+class PrimaryActionBar extends StatelessWidget {
+  const PrimaryActionBar({super.key, required this.label, required this.onPressed, this.icon});
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
+    final boton = FgButton(
+      label: label,
+      icon: icon,
+      size: FgButtonSize.lg,
+      expand: compacto,
+      onPressed: onPressed,
+    );
+    return compacto ? boton : Align(alignment: Alignment.centerRight, child: boton);
+  }
+}
+
+/// Título de una tarjeta o pantalla con su estado al lado. En pantallas angostas el estado baja
+/// a la línea siguiente en vez de recortar el título.
+class TitleWithStatus extends StatelessWidget {
+  const TitleWithStatus({super.key, required this.title, required this.style, this.status});
+
+  final String title;
+  final TextStyle? style;
+  final Widget? status;
+
+  @override
+  Widget build(BuildContext context) => Wrap(
+        spacing: FgSpace.sp3,
+        runSpacing: FgSpace.sp2,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [Text(title, style: style), if (status != null) status!],
       );
 }

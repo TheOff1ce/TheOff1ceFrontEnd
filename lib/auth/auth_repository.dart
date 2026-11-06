@@ -63,6 +63,18 @@ class AuthRepository {
   Future<AuthSession> exchangeGoogleCode(String code) async =>
       AuthSession.fromJson(await _post('google/exchange', {'code': code}));
 
+  /// HU-005: signed-in password change. Auth signs other devices out and returns a new session.
+  Future<AuthSession> changePassword({
+    required String accessToken,
+    required String currentPassword,
+    required String newPassword,
+  }) async =>
+      AuthSession.fromJson(await _post(
+        'change-password',
+        {'currentPassword': currentPassword, 'newPassword': newPassword},
+        accessToken: accessToken,
+      ));
+
   Future<AuthUser> me(String accessToken) async {
     final response = await sendWithin(
       _timeout,
@@ -96,8 +108,9 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> _post(String endpoint, Map<String, dynamic>? payload) async {
+  Future<Map<String, dynamic>> _post(String endpoint, Map<String, dynamic>? payload, {String? accessToken}) async {
     final headers = <String, String>{'Accept': 'application/json'};
+    if (accessToken != null) headers['Authorization'] = 'Bearer $accessToken';
     if (payload != null) headers['Content-Type'] = 'application/json';
     final stored = _storedRefreshToken;
     if (!_usesBrowserCookies && stored != null) headers['Cookie'] = 'refresh_token=$stored';

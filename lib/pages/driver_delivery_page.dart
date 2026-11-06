@@ -85,10 +85,11 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
     final next = _controller.nextStep;
     final action = next == null ? null : _actionLabels[next];
     return [
-      Row(children: [
-        Expanded(child: Text(d.status.label, style: context.text.headlineSmall)),
-        if (_controller.sharing) const StatusChip(label: 'Compartiendo ubicación', tone: StatusTone.success),
-      ]),
+      TitleWithStatus(
+        title: d.status.label,
+        style: context.text.headlineSmall,
+        status: _controller.sharing ? const StatusChip(label: 'Compartiendo ubicación', tone: StatusTone.success) : null,
+      ),
       const SizedBox(height: AppSpacing.s),
       ErrorBanner(error: _controller.locationError),
       DeliveryMap(delivery: d, height: 240),

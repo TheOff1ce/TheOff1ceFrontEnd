@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette. Widgets never use these directly: they read the
-/// [ColorScheme] and [AppStatusColors] built from them (FE-009).
+import 'farmago_tokens.dart';
+
+/// Brand palette = tokens of the unified FarmaGo manual (`farmago_tokens.dart`). Widgets never
+/// use these directly: they read the [ColorScheme] and [AppStatusColors] built from them (FE-009).
 abstract final class _Palette {
-  static const navy = Color(0xFF0B3A6E);
-  static const blue = Color(0xFF2F6FAF);
-  static const sky = Color(0xFFA9CBEA);
-  static const light = Color(0xFFEAF4FC);
-  static const background = Color(0xFFF5FAFE);
-  static const text = Color(0xFF172536);
-  static const secondaryText = Color(0xFF5B6B7D); // 5.2:1 on background
-  static const outline = Color(0xFF6A8BB0); // ≥3:1 on white/background (FE-007)
-  static const warning = Color(0xFFFFF2D7);
-  static const warningText = Color(0xFF9A5B00); // 4.9:1 on warning
-  static const error = Color(0xFFB42318); // 6.6:1 on white
-  static const errorContainer = Color(0xFFFFE9E7);
-  static const success = Color(0xFF087443); // 5.2:1 on successContainer
-  static const successContainer = Color(0xFFE1F5EC);
+  static const navy = FgColors.azul800;
+  static const blue = FgColors.azul600;
+  static const light = FgColors.azul100;
+  static const background = FgColors.fondo;
+  static const text = FgColors.ink;
+  static const secondaryText = FgColors.inkSoft;
+  static const outline = FgColors.lineaControl;
+  static const line = FgColors.linea;
+  static const warning = FgColors.riesgoBg;
+  static const warningText = FgColors.riesgoFg;
+  static const error = FgColors.peligro;
+  static const errorContainer = FgColors.incumplidoBg;
+  static const errorText = FgColors.incumplidoFg;
+  static const success = FgColors.cumplidoFg;
+  static const successContainer = FgColors.cumplidoBg;
 }
 
 /// Spacing scale (multiples of 4).
@@ -29,11 +32,12 @@ abstract final class AppSpacing {
   static const xxl = 32.0;
 }
 
+/// Radii of the manual: 8 controls, 14 buttons and cards, 24 windows.
 abstract final class AppRadii {
-  static const s = 12.0;
-  static const m = 16.0;
-  static const l = 20.0;
-  static const xl = 24.0;
+  static const s = FgRadius.sm;
+  static const m = FgRadius.md;
+  static const l = FgRadius.md;
+  static const xl = FgRadius.md;
 }
 
 /// Semantic colors Material 3 does not cover (warning/success) plus brand surfaces.
@@ -65,7 +69,7 @@ class AppStatusColors extends ThemeExtension<AppStatusColors> {
     successContainer: _Palette.successContainer,
     onSuccessContainer: _Palette.success,
     brandSurface: _Palette.light,
-    decorative: _Palette.sky,
+    decorative: _Palette.line,
     mutedText: _Palette.secondaryText,
   );
 
@@ -104,103 +108,209 @@ class AppStatusColors extends ThemeExtension<AppStatusColors> {
   }
 }
 
+/// App-wide theme built from the unified FarmaGo manual: Atkinson Hyperlegible Next, the
+/// manual's palette, 48 px controls, radii 8/14/24 and a 2 px focus border. Every Material
+/// widget (buttons, fields, chips, cards, dialogs) gets the manual's look without per-screen code.
 abstract final class AppTheme {
-  static const fontFamily = 'Manrope';
+  static const fontFamily = FgText.family;
 
   static ThemeData get light {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: _Palette.navy,
-      primary: _Palette.navy,
-      onPrimary: Colors.white,
-      secondary: _Palette.blue,
-      onSecondary: Colors.white,
-      surface: Colors.white,
-      onSurface: _Palette.text,
-      onSurfaceVariant: _Palette.secondaryText,
-      outline: _Palette.outline,
-      outlineVariant: _Palette.sky,
-      error: _Palette.error,
-      onError: Colors.white,
-      errorContainer: _Palette.errorContainer,
-      onErrorContainer: _Palette.error,
+    const scheme = ColorScheme.light(
+      primary: _Palette.blue,
+      onPrimary: FgColors.blanco,
       primaryContainer: _Palette.light,
       onPrimaryContainer: _Palette.navy,
+      secondary: _Palette.navy,
+      onSecondary: FgColors.blanco,
+      surface: FgColors.superficie,
+      onSurface: _Palette.text,
+      onSurfaceVariant: _Palette.secondaryText,
+      surfaceContainerHighest: FgColors.fondoHundido,
+      outline: _Palette.outline,
+      outlineVariant: _Palette.line,
+      error: _Palette.error,
+      onError: FgColors.blanco,
+      errorContainer: _Palette.errorContainer,
+      onErrorContainer: _Palette.errorText,
     );
-    final text = _textTheme(scheme);
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppRadii.m),
-      borderSide: const BorderSide(color: _Palette.outline),
+    final text = _textTheme();
+    OutlineInputBorder border(Color color) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FgRadius.sm),
+          borderSide: BorderSide(color: color, width: FgBorder.w2),
+        );
+    final buttonShape = WidgetStatePropertyAll(
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md)),
     );
+    final buttonBase = ButtonStyle(
+      minimumSize: const WidgetStatePropertyAll(Size(FgSize.tapMin, FgSize.ctrlMd)),
+      padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: FgSpace.sp5)),
+      textStyle: WidgetStatePropertyAll(FgText.boton(18)),
+      iconSize: const WidgetStatePropertyAll(FgSize.iconoMd),
+      shape: buttonShape,
+      elevation: const WidgetStatePropertyAll(0),
+      splashFactory: NoSplash.splashFactory,
+    );
+    Color? pick(Set<WidgetState> s, {required Color rest, required Color hover, required Color pressed}) =>
+        s.contains(WidgetState.pressed) ? pressed : (s.contains(WidgetState.hovered) ? hover : rest);
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       fontFamily: fontFamily,
       textTheme: text,
       scaffoldBackgroundColor: _Palette.background,
+      dividerColor: _Palette.line,
+      splashFactory: NoSplash.splashFactory,
       extensions: const [AppStatusColors.light],
+      dividerTheme: const DividerThemeData(color: _Palette.line, thickness: FgBorder.w1, space: FgBorder.w1),
       appBarTheme: AppBarTheme(
-        backgroundColor: _Palette.background,
+        backgroundColor: FgColors.superficie,
+        surfaceTintColor: Colors.transparent,
         foregroundColor: _Palette.text,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: text.titleLarge,
+        toolbarHeight: FgSize.headerMovil,
+        titleTextStyle: FgText.h3,
+        shape: const Border(bottom: BorderSide(color: _Palette.line, width: FgBorder.w1)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        border: border,
-        enabledBorder: border,
-        focusedBorder: border.copyWith(borderSide: const BorderSide(color: _Palette.navy, width: 2)),
-        errorBorder: border.copyWith(borderSide: const BorderSide(color: _Palette.error)),
-        focusedErrorBorder: border.copyWith(borderSide: const BorderSide(color: _Palette.error, width: 2)),
+        fillColor: FgColors.superficie,
+        contentPadding: const EdgeInsets.symmetric(horizontal: FgSpace.sp4, vertical: FgSpace.sp4),
+        labelStyle: FgText.body.copyWith(color: _Palette.secondaryText),
+        floatingLabelStyle: FgText.label.copyWith(color: _Palette.navy),
+        hintStyle: FgText.body.copyWith(color: FgColors.placeholder),
+        helperStyle: FgText.caption,
+        errorStyle: FgText.caption.copyWith(color: _Palette.errorText),
+        border: border(_Palette.outline),
+        enabledBorder: border(_Palette.outline),
+        focusedBorder: border(_Palette.blue),
+        errorBorder: border(_Palette.error),
+        focusedErrorBorder: border(_Palette.error),
+        disabledBorder: border(FgColors.deshabilitadoBg),
         helperMaxLines: 3,
         errorMaxLines: 3,
       ),
-      filledButtonTheme: FilledButtonThemeData(style: _buttonStyle(text)),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: _buttonStyle(text).copyWith(
-          side: const WidgetStatePropertyAll(BorderSide(color: _Palette.outline)),
+      // Primary button (§8.1): azul 600 → 700 hover → 800 pressed; disabled with the manual's greys.
+      filledButtonTheme: FilledButtonThemeData(
+        style: buttonBase.copyWith(
+          backgroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.disabled)
+              ? FgColors.deshabilitadoBg
+              : pick(s, rest: FgColors.azul600, hover: FgColors.azul700, pressed: FgColors.azul800)),
+          foregroundColor: WidgetStateProperty.resolveWith(
+              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.blanco),
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(minimumSize: const Size(48, 48), textStyle: text.labelLarge),
+      // Secondary button: opaque surface, 2 px azul 600 border, azul 800 text.
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: buttonBase.copyWith(
+          backgroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.disabled)
+              ? FgColors.deshabilitadoBg
+              : pick(s, rest: FgColors.superficie, hover: FgColors.azul100, pressed: FgColors.azul200)),
+          foregroundColor: WidgetStateProperty.resolveWith(
+              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azul800),
+          side: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.disabled)
+              ? BorderSide.none
+              : const BorderSide(color: FgColors.azul600, width: FgBorder.w2)),
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        ),
       ),
-      snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+      // Tertiary (ghost) button.
+      textButtonTheme: TextButtonThemeData(
+        style: buttonBase.copyWith(
+          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: FgSpace.sp4)),
+          backgroundColor: WidgetStateProperty.resolveWith(
+              (s) => pick(s, rest: Colors.transparent, hover: FgColors.azul100, pressed: FgColors.azul200)),
+          foregroundColor: WidgetStateProperty.resolveWith(
+              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azul800),
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size(FgSize.tapMin, FgSize.tapMin)),
+          iconSize: const WidgetStatePropertyAll(FgSize.iconoMd),
+          shape: buttonShape,
+          foregroundColor: const WidgetStatePropertyAll(_Palette.text),
+          backgroundColor: WidgetStateProperty.resolveWith(
+              (s) => pick(s, rest: Colors.transparent, hover: FgColors.azul100, pressed: FgColors.azul200)),
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: FgColors.azul600,
+        foregroundColor: FgColors.blanco,
+        elevation: 0,
+        extendedTextStyle: TextStyle(fontFamily: FgText.family, fontSize: 18, fontWeight: FontWeight.w700),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: FgColors.superficie,
+        selectedColor: FgColors.azul100,
+        disabledColor: FgColors.deshabilitadoBg,
+        labelStyle: FgText.caption.copyWith(color: _Palette.text, fontWeight: FontWeight.w600),
+        secondaryLabelStyle: FgText.caption.copyWith(color: FgColors.azul800, fontWeight: FontWeight.w700),
+        checkmarkColor: FgColors.azul800,
+        side: const BorderSide(color: _Palette.outline, width: FgBorder.w1),
+        shape: const StadiumBorder(),
+        padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3, vertical: FgSpace.sp2),
+      ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: FgColors.superficie,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.xl)),
-      ),
-    );
-  }
-
-  static ButtonStyle _buttonStyle(TextTheme text) => ButtonStyle(
-        minimumSize: const WidgetStatePropertyAll(Size(48, 52)),
-        textStyle: WidgetStatePropertyAll(text.labelLarge),
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.m)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FgRadius.md),
+          side: const BorderSide(color: _Palette.line, width: FgBorder.w1),
         ),
-      );
-
-  /// Type scale: body text is never below 16 px; captions never below 14 px.
-  static TextTheme _textTheme(ColorScheme scheme) {
-    final strong = scheme.onSurface;
-    final muted = scheme.onSurfaceVariant;
-    return TextTheme(
-      displaySmall: TextStyle(fontSize: 32, height: 1.15, fontWeight: FontWeight.w800, color: strong),
-      headlineSmall: TextStyle(fontSize: 24, height: 1.25, fontWeight: FontWeight.w700, color: strong),
-      titleLarge: TextStyle(fontSize: 20, height: 1.3, fontWeight: FontWeight.w700, color: strong),
-      titleMedium: TextStyle(fontSize: 18, height: 1.3, fontWeight: FontWeight.w700, color: strong),
-      bodyLarge: TextStyle(fontSize: 16, height: 1.5, color: muted),
-      bodyMedium: TextStyle(fontSize: 16, height: 1.45, color: strong),
-      bodySmall: TextStyle(fontSize: 14, height: 1.4, color: muted),
-      labelLarge: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-      labelMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: muted),
-      labelSmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: strong),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: FgColors.superficie,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.lg)),
+        titleTextStyle: FgText.h3,
+        contentTextStyle: FgText.body,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: FgColors.superficie,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(FgRadius.lg))),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: _Palette.text,
+        contentTextStyle: FgText.body.copyWith(color: FgColors.blanco),
+        actionTextColor: FgColors.enlaceSobreOscuro,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.sm)),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: FgColors.azul600,
+        linearTrackColor: FgColors.track,
+        circularTrackColor: Colors.transparent,
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(color: _Palette.text, borderRadius: BorderRadius.circular(FgRadius.sm)),
+        textStyle: FgText.caption.copyWith(color: FgColors.blanco),
+      ),
+      listTileTheme: const ListTileThemeData(minVerticalPadding: FgSpace.sp3, iconColor: _Palette.secondaryText),
     );
   }
+
+  /// Manual type scale (§4): body 18, metadata never below 16.
+  static TextTheme _textTheme() => TextTheme(
+        displaySmall: FgText.h1Movil,
+        headlineMedium: FgText.h1Ancho,
+        headlineSmall: FgText.h2,
+        titleLarge: FgText.h3,
+        titleMedium: FgText.label,
+        titleSmall: FgText.label.copyWith(fontSize: 16),
+        bodyLarge: FgText.body.copyWith(color: _Palette.secondaryText),
+        bodyMedium: FgText.body,
+        bodySmall: FgText.caption,
+        labelLarge: FgText.boton(18),
+        labelMedium: FgText.caption.copyWith(fontWeight: FontWeight.w600),
+        labelSmall: FgText.caption.copyWith(fontSize: 14, fontWeight: FontWeight.w700, color: _Palette.text),
+      );
 }
 
 /// Short accessors so widgets read tokens instead of literals.
