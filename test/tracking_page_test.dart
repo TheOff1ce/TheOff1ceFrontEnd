@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:farma_go/hooks/tracking_controller.dart';
 import 'package:farma_go/pages/tracking_page.dart';
@@ -7,6 +6,8 @@ import 'package:farma_go/services/tracking_channel.dart';
 import 'package:farma_go/types/delivery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/material_icons_font.dart';
 
 /// Servicios sin red: la página solo necesita el estado que el controlador ya tiene.
 class _ServicioFalso implements DeliveryService {
@@ -111,13 +112,7 @@ Future<void> _cargarFuentesSeguimiento() async {
     cargador.addFont(rootBundle.load('assets/fonts/atkinson/AtkinsonHyperlegibleNext-$peso.ttf'));
   }
   await cargador.load();
-  final iconos = File(
-      r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf');
-  if (iconos.existsSync()) {
-    final cargadorIconos = FontLoader('MaterialIcons')
-      ..addFont(Future.value(ByteData.view(iconos.readAsBytesSync().buffer)));
-    await cargadorIconos.load();
-  }
+  await cargarFuenteIconosMaterial();
 }
 
 void captura() {

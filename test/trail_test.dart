@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:farma_go/components/farmago/trail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/material_icons_font.dart';
 
 /// Carga la fuente real del proyecto y, si existe en esta máquina, la fuente de iconos de Material
 /// del SDK, para que las capturas muestren checks y no cuadros.
@@ -13,14 +13,7 @@ Future<void> _cargarFuentes() async {
     cargador.addFont(rootBundle.load('assets/fonts/atkinson/AtkinsonHyperlegibleNext-$peso.ttf'));
   }
   await cargador.load();
-
-  final iconos = File(
-      r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf');
-  if (iconos.existsSync()) {
-    final cargadorIconos = FontLoader('MaterialIcons')
-      ..addFont(Future.value(ByteData.view(iconos.readAsBytesSync().buffer)));
-    await cargadorIconos.load();
-  }
+  await cargarFuenteIconosMaterial();
 }
 
 const _etiquetas = ['Buscando repartidor', 'Repartidor asignado', 'Pedido recogido', 'En camino', 'Llegando', 'Entregado'];
