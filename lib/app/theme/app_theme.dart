@@ -162,7 +162,7 @@ abstract final class AppTheme {
       splashFactory: NoSplash.splashFactory,
       extensions: const [AppStatusColors.light],
       dividerTheme: const DividerThemeData(color: _Palette.line, thickness: FgBorder.w1, space: FgBorder.w1),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: FgColors.superficie,
         surfaceTintColor: Colors.transparent,
         foregroundColor: _Palette.text,
