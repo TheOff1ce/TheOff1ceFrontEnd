@@ -138,7 +138,7 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(FgRadius.sm),
           borderSide: BorderSide(color: color, width: FgBorder.w2),
         );
-    final buttonShape = const WidgetStatePropertyAll(
+    final buttonShape = WidgetStatePropertyAll(
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md)),
     );
     final buttonBase = ButtonStyle(
