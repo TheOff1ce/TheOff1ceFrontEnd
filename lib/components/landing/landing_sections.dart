@@ -251,6 +251,8 @@ class _LeyendaReloj extends StatelessWidget {
 }
 
 /// Recorrido de un pendiente: las estelas del logo son la línea de tiempo (manual §9 y §13.2).
+/// CONFLICTO ABIERTO con el manual §22: las estelas solo deben aparecer dentro del logo. La línea de
+/// tiempo debería usar el trayecto de estados (`FgTrail`) o el arco de tiempo, pendiente de decisión.
 /// Escritorio: estaciones en una banda horizontal que termina en el reloj de 48 h.
 /// Tablet y móvil: riel vertical.
 class LandingTrayecto extends StatelessWidget {
