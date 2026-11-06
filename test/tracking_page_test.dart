@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/services.dart';
 import 'package:farma_go/hooks/tracking_controller.dart';
 import 'package:farma_go/pages/tracking_page.dart';
 import 'package:farma_go/services/delivery_service.dart';
@@ -7,6 +5,8 @@ import 'package:farma_go/services/tracking_channel.dart';
 import 'package:farma_go/types/delivery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'support/fuentes_reales.dart';
 
 /// Servicios sin red: la página solo necesita el estado que el controlador ya tiene.
 class _ServicioFalso implements DeliveryService {
@@ -104,25 +104,9 @@ void main() {
   });
 }
 
-/// Captura del seguimiento en móvil con la fuente real del proyecto y la de iconos de Material.
-Future<void> _cargarFuentesSeguimiento() async {
-  final cargador = FontLoader('Atkinson Hyperlegible Next');
-  for (final peso in [400, 500, 600, 700]) {
-    cargador.addFont(rootBundle.load('assets/fonts/atkinson/AtkinsonHyperlegibleNext-$peso.ttf'));
-  }
-  await cargador.load();
-  final iconos = File(
-      r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf');
-  if (iconos.existsSync()) {
-    final cargadorIconos = FontLoader('MaterialIcons')
-      ..addFont(Future.value(ByteData.view(iconos.readAsBytesSync().buffer)));
-    await cargadorIconos.load();
-  }
-}
-
 void captura() {
   testWidgets('seguimiento en camino a 360 px, con la fuente real', (tester) async {
-    await tester.runAsync(_cargarFuentesSeguimiento);
+    await tester.runAsync(cargarFuentesReales);
     tester.view.physicalSize = const Size(360, 2000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);

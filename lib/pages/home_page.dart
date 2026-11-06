@@ -272,7 +272,7 @@ class _Contenido extends StatelessWidget {
     final firstName = name?.isNotEmpty == true ? name!.split(RegExp(r'\s+')).first : null;
     final subtitulo = pantalla.isAdmin
         ? 'Administra los usuarios y los domicilios de FARMA GO.'
-        : 'Desde aquí puedes ver lo importante de tu tratamiento.';
+        : 'Aquí puedes ver lo que más importa de tu tratamiento.';
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Semantics(
         header: true,

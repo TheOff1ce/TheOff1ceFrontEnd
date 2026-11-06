@@ -1,33 +1,14 @@
-import 'dart:io';
-
 import 'package:farma_go/components/farmago/trail.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Carga la fuente real del proyecto y, si existe en esta máquina, la fuente de iconos de Material
-/// del SDK, para que las capturas muestren checks y no cuadros.
-Future<void> _cargarFuentes() async {
-  final cargador = FontLoader('Atkinson Hyperlegible Next');
-  for (final peso in [400, 500, 600, 700]) {
-    cargador.addFont(rootBundle.load('assets/fonts/atkinson/AtkinsonHyperlegibleNext-$peso.ttf'));
-  }
-  await cargador.load();
-
-  final iconos = File(
-      r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf');
-  if (iconos.existsSync()) {
-    final cargadorIconos = FontLoader('MaterialIcons')
-      ..addFont(Future.value(ByteData.view(iconos.readAsBytesSync().buffer)));
-    await cargadorIconos.load();
-  }
-}
+import 'support/fuentes_reales.dart';
 
 const _etiquetas = ['Buscando repartidor', 'Repartidor asignado', 'Pedido recogido', 'En camino', 'Llegando', 'Entregado'];
 
 void main() {
   testWidgets('trayecto en camino, capturado con la fuente real', (tester) async {
-    await tester.runAsync(_cargarFuentes);
+    await tester.runAsync(cargarFuentesReales);
     tester.view.physicalSize = const Size(360, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
