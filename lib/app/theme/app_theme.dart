@@ -170,7 +170,7 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
         toolbarHeight: FgSize.headerMovil,
         titleTextStyle: FgText.h3,
-        shape: const Border(bottom: BorderSide(color: _Palette.line, width: FgBorder.w1)),
+        shape: Border(bottom: BorderSide(color: _Palette.line, width: FgBorder.w1)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
