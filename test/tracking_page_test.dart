@@ -111,9 +111,16 @@ Future<void> _cargarFuentesSeguimiento() async {
     cargador.addFont(rootBundle.load('assets/fonts/atkinson/AtkinsonHyperlegibleNext-$peso.ttf'));
   }
   await cargador.load();
-  final iconos = File(
-      r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf');
-  if (iconos.existsSync()) {
+  final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+  final iconos = <String>[
+    if (flutterRoot != null) '$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf',
+    if (flutterRoot != null) '$flutterRoot/bin/cache/dart-sdk/bin/resources/devtools/assets/fonts/MaterialIcons-Regular.otf',
+    r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf',
+  ].map(File.new).firstWhere(
+        (archivo) => archivo.existsSync(),
+        orElse: () => File(''),
+      );
+  if (iconos.path.isNotEmpty) {
     final cargadorIconos = FontLoader('MaterialIcons')
       ..addFont(Future.value(ByteData.view(iconos.readAsBytesSync().buffer)));
     await cargadorIconos.load();
