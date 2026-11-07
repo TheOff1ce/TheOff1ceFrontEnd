@@ -105,7 +105,10 @@ class _OrdenesPageState extends State<OrdenesPage> {
                   ? null
                   : DomicilioSeleccionBar(
                       cantidad: seleccion.ids.length,
-                      ordenId: orden.id,
+                      nombres: [
+                        for (final m in orden.medicamentos)
+                          if (seleccion.ids.contains(m.id)) m.nombre,
+                      ],
                       avisoUnaOrden: _c.seleccionCambioDeOrden,
                       onQuitar: _c.quitarSeleccion,
                       onPedir: _pedir,
@@ -147,7 +150,6 @@ class _Cuerpo extends StatelessWidget {
     final vista = c.vista;
     final separacion = compacto ? FgSpace.sp6 : FgSpace.sp7;
     final respuesta = c.respuesta;
-    final conDatos = vista is ConOrdenes || vista is Vacio;
     final dosOMas = (respuesta?.ordenes.length ?? 0) >= 2;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -162,24 +164,15 @@ class _Cuerpo extends StatelessWidget {
                 lento: vista is Cargando && vista.lento,
                 onRecargar: vista is Cargando ? null : c.recargar,
                 onVerElegibles: dosOMas ? () => onVerCuales(FiltroOrdenes.domicilio) : null,
-                onVerPorAutorizar: dosOMas ? () => onVerCuales(FiltroOrdenes.porAutorizar) : null,
               ),
           },
         ),
-        if (conDatos) ...[
-          const SizedBox(height: FgSpace.sp5),
-          FgEntrada(
-            key: ValueKey('nota-${c.entradaId}'),
-            retraso: FgMotion.escalon * 4,
-            child: const FgNota(texto: OrdenesTextos.notaEps),
-          ),
-        ],
         if (c.exito case final exito?) ...[
           const SizedBox(height: FgSpace.sp5),
           FgBanner(
             kind: FgBannerKind.exito,
             title: OrdenesTextos.envioExitoso(exito.cantidad),
-            message: 'Referencia ${exito.referencia}. Recarga para ver lo que tu EPS informa ahora.',
+            message: 'Referencia ${exito.referencia}. ${OrdenesTextos.actualizarParaVer}',
             actionLabel: OrdenesTextos.recargar,
             onAction: c.recargar,
           ),
@@ -247,16 +240,20 @@ class _Ordenes extends StatelessWidget {
     var k = 0;
     final hueco = compacto ? FgSpace.sp4 : FgSpace.sp5;
     final lista = <Widget>[];
+    // Si todo es «Vigentes», el encabezado no aporta y empuja la primera orden hacia abajo.
+    final conEncabezado = !(grupos[0].$3.isNotEmpty && grupos[1].$3.isEmpty && grupos[2].$3.isEmpty);
     for (final (titulo, ayuda, ordenes) in grupos) {
       if (ordenes.isEmpty) continue;
-      lista.add(
-        FgEntrada(
-          key: ValueKey('${c.entradaId}-${c.filtroId}-g-$titulo'),
-          retraso: _retrasoTarjeta(k) - FgMotion.escalon,
-          child: _EncabezadoGrupo(titulo: titulo, cantidad: ordenes.length, ayuda: ayuda),
-        ),
-      );
-      lista.add(SizedBox(height: hueco));
+      if (conEncabezado) {
+        lista.add(
+          FgEntrada(
+            key: ValueKey('${c.entradaId}-${c.filtroId}-g-$titulo'),
+            retraso: _retrasoTarjeta(k) - FgMotion.escalon,
+            child: _EncabezadoGrupo(titulo: titulo, cantidad: ordenes.length, ayuda: ayuda),
+          ),
+        );
+        lista.add(SizedBox(height: hueco));
+      }
       for (final orden in ordenes) {
         final indice = k++;
         lista.add(
@@ -341,7 +338,7 @@ class _Filtros extends StatelessWidget {
       for (final f in FiltroOrdenes.values)
         if (f == FiltroOrdenes.todas || c.conteo(f) > 0 || c.filtro == f)
           FgChip(
-            label: '${OrdenesTextos.filtro(f)} (${c.conteo(f)})',
+            label: OrdenesTextos.filtro(f),
             selected: c.filtro == f,
             // El paciente usa siempre el chip de 48 px (§8.6 permite 40 solo en desktop denso).
             compacto: false,

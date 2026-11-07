@@ -6,13 +6,12 @@ abstract final class OrdenesTextos {
   static const tituloPantalla = 'Órdenes';
   static const tituloPanel = 'Tus órdenes de medicamentos';
   static const notaEps = 'Los estados son los que informa tu EPS. FarmaGo no autoriza ni niega medicamentos.';
-  static const consultaEnVivo = 'Consulta en vivo a tu EPS';
-  static const recargar = 'Recargar';
+  static const respuestaDeEps = 'Respuesta de tu EPS';
+  static const recargar = 'Actualizar';
   static const consultando = 'Consultando tu EPS en vivo…';
   static const consultandoLento = 'Tu EPS está tardando más de lo normal. Seguimos esperando su respuesta.';
   static const sinElegibles = 'Por ahora ningún medicamento se puede pedir a domicilio.';
   static const verCuales = 'Ver cuáles';
-  static const estadosSegunEps = 'Estados según tu EPS';
   static const vigentes = 'Vigentes';
   static const sinVencimiento = 'Sin vencimiento informado';
   static const vencidasGrupo = 'Vencidas en los últimos 3 meses';
@@ -52,14 +51,15 @@ abstract final class OrdenesTextos {
   static String cifraElegibles(int n) =>
       n == 1 ? 'medicamento que puedes pedir a domicilio' : 'medicamentos que puedes pedir a domicilio';
 
-  static String cifraPorAutorizar(int n) =>
-      n == 1 ? 'espera autorización de tu EPS' : 'esperan autorización de tu EPS';
-
-  static String cifraVigentes(int n) => n == 1 ? 'orden vigente' : 'órdenes vigentes';
-
   static String ordenId(String id) => 'Orden $id';
 
+  static String consultadoEl(String fechaHora) => 'Consultado el $fechaHora';
+
+  static const avisoOtraOrden = 'Pasaste a otra orden. Un pedido incluye medicamentos de una sola orden.';
+
   static String envioExitoso(int n) => 'Enviaste ${medicamentos(n)} a Domicilios';
+
+  static const actualizarParaVer ='Actualiza para ver lo que tu EPS informa ahora.';
 
   /// Motivos de no elegibilidad por fila. `null` para los de orden (van en la nota de la orden).
   static String? motivo(MotivoNoElegible motivo) => switch (motivo) {
@@ -71,6 +71,18 @@ abstract final class OrdenesTextos {
         MotivoNoElegible.ordenVencida || MotivoNoElegible.ordenSinVencimiento => null,
         MotivoNoElegible.desconocido => 'tu EPS no lo reporta como disponible',
       };
+
+  /// Motivos que el sello de autorización o el texto de reclamación de la misma fila ya dicen.
+  static const _motivosYaVisibles = {
+    MotivoNoElegible.autorizacionPendiente,
+    MotivoNoElegible.autorizacionSinInformacion,
+    MotivoNoElegible.yaReclamado,
+    MotivoNoElegible.reclamacionSinInformacion,
+  };
+
+  /// Como [frasesMotivos], pero en la fila solo lo que el sello no dice: no repite el estado.
+  static String? frasesMotivosFila(List<MotivoNoElegible> motivos) =>
+      frasesMotivos([for (final m in motivos) if (!_motivosYaVisibles.contains(m)) m]);
 
   /// «No se puede pedir a domicilio: tu EPS aún no lo autoriza.» o `null` si no hay motivo de fila.
   static String? frasesMotivos(List<MotivoNoElegible> motivos) {

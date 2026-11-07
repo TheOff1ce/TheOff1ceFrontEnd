@@ -13,14 +13,16 @@ class DomicilioSeleccionBar extends StatelessWidget {
   const DomicilioSeleccionBar({
     super.key,
     required this.cantidad,
-    required this.ordenId,
+    required this.nombres,
     required this.onQuitar,
     required this.onPedir,
     this.avisoUnaOrden = false,
   });
 
   final int cantidad;
-  final String ordenId;
+
+  /// Nombres de los medicamentos elegidos: lo que el paciente reconoce (el id de la orden no le dice nada).
+  final List<String> nombres;
   final VoidCallback onQuitar;
   final VoidCallback onPedir;
 
@@ -30,13 +32,11 @@ class DomicilioSeleccionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
-    final orden = avisoUnaOrden
-        ? '${OrdenesTextos.ordenId(ordenId)} · un pedido es de una sola orden'
-        : OrdenesTextos.ordenId(ordenId);
+    final detalle = avisoUnaOrden ? OrdenesTextos.avisoOtraOrden : nombres.join(', ');
     final texto = Semantics(
       liveRegion: true,
       container: true,
-      label: '${OrdenesTextos.elegidos(cantidad)}. $orden.',
+      label: '${OrdenesTextos.elegidos(cantidad)}. $detalle',
       child: ExcludeSemantics(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +62,8 @@ class DomicilioSeleccionBar extends StatelessWidget {
                 style: FgText.num(FgText.label.copyWith(fontWeight: FontWeight.w700)),
               ),
             ),
-            Text(orden, style: FgText.num(FgText.caption)),
+            if (detalle.isNotEmpty)
+              Text(detalle, style: FgText.caption, maxLines: 2, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),

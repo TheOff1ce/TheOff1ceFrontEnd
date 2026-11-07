@@ -21,7 +21,6 @@ class OrdenesConsultaPanel extends StatelessWidget {
     required this.lento,
     required this.onRecargar,
     this.onVerElegibles,
-    this.onVerPorAutorizar,
   });
 
   /// `null` mientras no hay respuesta (cargando) o en un bloqueo.
@@ -32,7 +31,6 @@ class OrdenesConsultaPanel extends StatelessWidget {
 
   /// «Ver cuáles»: solo con 2 o más órdenes. Activa el filtro y desplaza hasta la lista.
   final VoidCallback? onVerElegibles;
-  final VoidCallback? onVerPorAutorizar;
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +62,15 @@ class OrdenesConsultaPanel extends StatelessWidget {
                 if (cargando)
                   _Cargando(lento: lento, compacto: compacto)
                 else if (r != null) ...[
-                  _Cifras(respuesta: r, onVerElegibles: onVerElegibles, onVerPorAutorizar: onVerPorAutorizar),
-                  const SizedBox(height: FgSpace.sp5),
+                  _Cifras(respuesta: r, onVerElegibles: onVerElegibles),
+                  const SizedBox(height: FgSpace.sp4),
                   FgEntrada(
                     retraso: FgMotion.escalon * 3,
                     child: _FilaConsulta(consultadoEn: r.consultadoEn, onRecargar: onRecargar, compacto: compacto),
                   ),
+                  // El descargo vive con la hora de la consulta, no en un bloque aparte antes de las órdenes.
+                  const SizedBox(height: FgSpace.sp3),
+                  const Text(OrdenesTextos.notaEps, style: FgText.caption),
                 ] else
                   _FilaConsulta(consultadoEn: null, onRecargar: onRecargar, compacto: compacto),
               ],
@@ -142,146 +143,44 @@ class _Cargando extends StatelessWidget {
       );
 }
 
-/// Cifras con filete superior de 2 px, en composición libre (no son tarjetas).
+/// Una sola cifra: los medicamentos que se pueden pedir a domicilio, que es lo que lleva a la acción.
+/// Lo demás (por autorizar, vigentes, vencidas) ya está en los filtros y en los grupos de la lista.
+/// Sin elegibles no hay cifra: solo la frase que lo dice.
 class _Cifras extends StatelessWidget {
-  const _Cifras({required this.respuesta, this.onVerElegibles, this.onVerPorAutorizar});
+  const _Cifras({required this.respuesta, this.onVerElegibles});
 
   final RespuestaOrdenes respuesta;
   final VoidCallback? onVerElegibles;
-  final VoidCallback? onVerPorAutorizar;
-
-  static const _minimo = 190.0;
 
   @override
   Widget build(BuildContext context) {
     final elegibles = respuesta.totalElegibles;
-    final porAutorizar = respuesta.totalPorAutorizar;
-    final vigentes = respuesta.vigentes.length;
-    final proximo = respuesta.proximoVencimiento;
-    final cifras = <Widget>[
-      if (elegibles > 0)
-        _Cifra(
-          valor: elegibles,
-          etiqueta: OrdenesTextos.cifraElegibles(elegibles),
-          filete: FgColors.azul600,
-          onVer: respuesta.ordenes.length >= 2 ? onVerElegibles : null,
-        ),
-      if (porAutorizar > 0)
-        _Cifra(
-          valor: porAutorizar,
-          etiqueta: OrdenesTextos.cifraPorAutorizar(porAutorizar),
-          filete: FgColors.riesgoSolid,
-          colorCifra: FgColors.riesgoFg,
-          onVer: respuesta.ordenes.length >= 2 ? onVerPorAutorizar : null,
-        ),
-      _Cifra(
-        valor: vigentes,
-        etiqueta: OrdenesTextos.cifraVigentes(vigentes),
-        filete: FgColors.azul200,
-        detalle: proximo == null ? null : 'La próxima vence el ${PendienteFormat.fecha(proximo)}',
-      ),
-    ];
-    return LayoutBuilder(
-      builder: (context, c) {
-        const hueco = FgSpace.sp5;
-        final columnas = ((c.maxWidth + hueco) / (_minimo + hueco)).floor().clamp(1, cifras.length);
-        final ancho = (c.maxWidth - hueco * (columnas - 1)) / columnas;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Wrap(
-              spacing: hueco,
-              runSpacing: FgSpace.sp5,
-              children: [
-                for (final (i, cifra) in cifras.indexed)
-                  SizedBox(
-                    width: ancho,
-                    child: FgEntrada(retraso: FgMotion.escalon * i, child: _ConRetraso(indice: i, child: cifra)),
-                  ),
-              ],
-            ),
-            if (elegibles == 0) ...[
-              const SizedBox(height: FgSpace.sp5),
-              const Text(OrdenesTextos.sinElegibles, style: FgText.bodyLg),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-/// Pasa el retraso del escalón al conteo de la cifra, para que empiece junto con su entrada.
-class _ConRetraso extends InheritedWidget {
-  const _ConRetraso({required this.indice, required super.child});
-
-  final int indice;
-
-  static Duration de(BuildContext context) =>
-      FgMotion.escalon * (context.dependOnInheritedWidgetOfExactType<_ConRetraso>()?.indice ?? 0);
-
-  @override
-  bool updateShouldNotify(_ConRetraso old) => old.indice != indice;
-}
-
-class _Cifra extends StatelessWidget {
-  const _Cifra({
-    required this.valor,
-    required this.etiqueta,
-    required this.filete,
-    this.colorCifra = FgColors.ink,
-    this.detalle,
-    this.onVer,
-  });
-
-  final int valor;
-  final String etiqueta;
-  final Color filete;
-  final Color colorCifra;
-  final String? detalle;
-  final VoidCallback? onVer;
-
-  @override
-  Widget build(BuildContext context) {
+    if (elegibles == 0) return const Text(OrdenesTextos.sinElegibles, style: FgText.bodyLg);
     final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
+    final etiqueta = OrdenesTextos.cifraElegibles(elegibles);
     final numero = FgConteo(
-      valor: valor,
-      style: FgText.display.copyWith(color: colorCifra),
-      semantica: '$valor $etiqueta',
-      retraso: _ConRetraso.de(context),
+      valor: elegibles,
+      style: FgText.display,
+      semantica: '$elegibles $etiqueta',
     );
     final texto = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(etiqueta, style: FgText.body),
-        if (detalle != null) Text(detalle!, style: FgText.num(FgText.caption)),
+        Text(etiqueta, style: FgText.bodyLg),
         // El enlace trae 8 px de relleno para su área táctil: se corre para alinear su texto.
-        if (onVer != null)
+        if (respuesta.ordenes.length >= 2 && onVerElegibles != null)
           Transform.translate(
             offset: const Offset(-FgSpace.sp2, 0),
-            child: FgLinkButton(label: OrdenesTextos.verCuales, onPressed: onVer),
+            child: FgLinkButton(label: OrdenesTextos.verCuales, onPressed: onVerElegibles),
           ),
       ],
     );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: compacto ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
-        Container(height: FgBorder.w2, color: filete),
-        const SizedBox(height: FgSpace.sp3),
-        // En móvil la cifra va junto a su texto: tres bloques apilados empujarían las órdenes fuera de la vista.
-        if (compacto)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ConstrainedBox(constraints: const BoxConstraints(minWidth: FgSpace.sp7), child: numero),
-              const SizedBox(width: FgSpace.sp3),
-              Expanded(child: Padding(padding: const EdgeInsets.only(top: FgSpace.sp1), child: texto)),
-            ],
-          )
-        else ...[
-          numero,
-          texto,
-        ],
+        ConstrainedBox(constraints: const BoxConstraints(minWidth: FgSpace.sp7), child: numero),
+        const SizedBox(width: FgSpace.sp4),
+        Expanded(child: Padding(padding: EdgeInsets.only(top: compacto ? FgSpace.sp1 : 0), child: texto)),
       ],
     );
   }
@@ -296,18 +195,12 @@ class _FilaConsulta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hora = consultadoEn == null ? null : 'Hecha el ${PendienteFormat.fechaHora(consultadoEn!)}';
+    final hora = consultadoEn == null ? null : OrdenesTextos.consultadoEl(PendienteFormat.fechaHora(consultadoEn!));
+    // Es una foto de lo que la EPS respondió a esa hora, no un flujo continuo: sin punto «en vivo».
     final texto = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FgPuntoEnVivo(),
-            SizedBox(width: FgSpace.sp2),
-            Flexible(child: Text(OrdenesTextos.consultaEnVivo, style: FgText.label)),
-          ],
-        ),
+        const Text(OrdenesTextos.respuestaDeEps, style: FgText.label),
         if (hora != null) Text(hora, style: FgText.num(FgText.caption.copyWith(color: FgColors.ink))),
       ],
     );

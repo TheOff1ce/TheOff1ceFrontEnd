@@ -170,7 +170,9 @@ void main() {
 
   for (final ancho in [360.0, 1280.0]) {
     testWidgets('accesibilidad: lista a ${ancho.toInt()} px', (tester) async {
-      await montarOrdenes(tester, ancho: ancho, altura: 2600, alCargar: marcarDos);
+      await montarOrdenes(tester, ancho: ancho, altura: 3400, alCargar: marcarDos);
+      // Que terminen las entradas escalonadas: el contraste se mide sobre los píxeles ya dibujados.
+      await tester.pump(const Duration(seconds: 2));
       await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
       await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
       await expectLater(tester, meetsGuideline(textContrastGuideline));

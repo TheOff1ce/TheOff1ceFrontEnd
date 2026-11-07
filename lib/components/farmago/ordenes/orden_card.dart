@@ -83,15 +83,16 @@ class OrdenCard extends StatelessWidget {
             Container(
               color: FgColors.fondoHundido,
               padding: EdgeInsets.symmetric(horizontal: relleno, vertical: FgSpace.sp3),
-              child: Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                spacing: FgSpace.sp4,
-                children: [
-                  Text(OrdenesTextos.medicamentos(orden.medicamentos.length), style: FgText.label),
-                  const Text(OrdenesTextos.estadosSegunEps, style: FgText.caption),
-                ],
-              ),
+              child: Text(OrdenesTextos.medicamentos(orden.medicamentos.length), style: FgText.label),
             ),
+            // La instrucción va antes de las filas: quien llega a ellas ya sabe que son casillas.
+            if (orden.admiteSeleccion && elegibles.isNotEmpty)
+              _Instruccion(
+                elegibles: elegibles.length,
+                marcados: marcados.length,
+                relleno: relleno,
+                onElegirTodos: onElegirTodos,
+              ),
             for (final (j, m) in orden.medicamentos.indexed) ...[
               if (j > 0) const Divider(height: FgBorder.w1, thickness: FgBorder.w1, color: FgColors.linea),
               FgEntrada(
@@ -109,13 +110,6 @@ class OrdenCard extends StatelessWidget {
                 ),
               ),
             ],
-            if (orden.admiteSeleccion && elegibles.isNotEmpty)
-              _Pie(
-                elegibles: elegibles.length,
-                marcados: marcados.length,
-                relleno: relleno,
-                onElegirTodos: onElegirTodos,
-              ),
           ],
         ),
       ),
@@ -209,8 +203,8 @@ class _NotaOrden extends StatelessWidget {
       );
 }
 
-class _Pie extends StatelessWidget {
-  const _Pie({required this.elegibles, required this.marcados, required this.relleno, required this.onElegirTodos});
+class _Instruccion extends StatelessWidget {
+  const _Instruccion({required this.elegibles, required this.marcados, required this.relleno, required this.onElegirTodos});
 
   final int elegibles;
   final int marcados;
@@ -220,7 +214,7 @@ class _Pie extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
+          border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
         ),
         padding: EdgeInsets.symmetric(horizontal: relleno, vertical: FgSpace.sp2),
         child: Wrap(
@@ -291,7 +285,7 @@ class _MedicamentoOrdenRowState extends State<MedicamentoOrdenRow> {
     final reservaCasilla = widget.orden.admiteSeleccion;
     final motivos = widget.orden.vigencia == Vigencia.vencida || m.elegibleParaDomicilio
         ? null
-        : OrdenesTextos.frasesMotivos(m.motivosNoElegible);
+        : OrdenesTextos.frasesMotivosFila(m.motivosNoElegible);
     final estados = Wrap(
       spacing: FgSpace.sp4,
       crossAxisAlignment: WrapCrossAlignment.center,
