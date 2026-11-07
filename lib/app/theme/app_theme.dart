@@ -162,7 +162,7 @@ abstract final class AppTheme {
       splashFactory: NoSplash.splashFactory,
       extensions: const [AppStatusColors.light],
       dividerTheme: const DividerThemeData(color: _Palette.line, thickness: FgBorder.w1, space: FgBorder.w1),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: FgColors.superficie,
         surfaceTintColor: Colors.transparent,
         foregroundColor: _Palette.text,
@@ -170,7 +170,7 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
         toolbarHeight: FgSize.headerMovil,
         titleTextStyle: FgText.h3,
-        shape: const Border(bottom: BorderSide(color: _Palette.line, width: FgBorder.w1)),
+        shape: Border(bottom: BorderSide(color: _Palette.line, width: FgBorder.w1)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

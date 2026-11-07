@@ -18,6 +18,10 @@ abstract final class AppConfig {
   static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedAuthUrl);
   static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL');
   static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL');
+
+  /// Servicio de órdenes y autorizaciones (consulta a la EPS en vivo). No es `ORDERS_BASE_URL`,
+  /// que es el de domicilios. Pendiente: URL desplegada por defecto (ver reporte de la rama).
+  static const _ordenesUrl = String.fromEnvironment('ORDENES_BASE_URL');
   static const _pendientesUrl = String.fromEnvironment('PENDIENTES_BASE_URL', defaultValue: deployedPendientesUrl);
 
   /// Client key for Google Maps (browser/app key restricted by referrer or package),
@@ -34,6 +38,9 @@ abstract final class AppConfig {
   /// En local `pendientes-service` escucha en 3000 por defecto (igual que Auth): se ejecuta con
   /// `PORT=3003` y se indica con `--dart-define=PENDIENTES_BASE_URL=http://localhost:3003`.
   static const pendientesPort = 3003;
+
+  /// Puerto local supuesto del servicio de órdenes: se indica con `--dart-define=ORDENES_BASE_URL=…`.
+  static const ordenesPort = 3004;
 
   static String get apiBaseUrl => resolve(
         defined: _aiUrl,
@@ -65,6 +72,15 @@ abstract final class AppConfig {
   static String get pendientesBaseUrl => resolve(
         defined: _pendientesUrl,
         port: pendientesPort,
+        isWeb: kIsWeb,
+        platform: defaultTargetPlatform,
+        pageUri: kIsWeb ? Uri.base : null,
+      );
+
+  /// Órdenes y autorizaciones: consulta a la EPS en vivo.
+  static String get ordenesBaseUrl => resolve(
+        defined: _ordenesUrl,
+        port: ordenesPort,
         isWeb: kIsWeb,
         platform: defaultTargetPlatform,
         pageUri: kIsWeb ? Uri.base : null,
@@ -111,6 +127,12 @@ abstract final class NetworkTimeouts {
   static const orders = Duration(seconds: 25);
   static const tracking = Duration(seconds: 15);
   static const pendientes = Duration(seconds: 15);
+
+  /// La EPS responde en vivo: el cliente espera más que el backend para recibir su 504 (spec §5.6).
+  static const ordenes = Duration(seconds: 20);
+
+  /// Tras este tiempo la pantalla de órdenes avisa que la EPS tarda más de lo normal.
+  static const ordenesLento = Duration(seconds: 10);
 
   /// After this delay the analysis screen explains that it is taking longer.
   static const slowAnalysisHint = Duration(seconds: 12);

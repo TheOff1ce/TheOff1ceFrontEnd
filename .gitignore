@@ -51,3 +51,5 @@ app.*.map.json
 
 # Contexto de producto (documento local de trabajo)
 /PRODUCT.md
+.vercel
+.env*

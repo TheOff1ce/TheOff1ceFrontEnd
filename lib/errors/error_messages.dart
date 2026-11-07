@@ -100,6 +100,12 @@ abstract final class ErrorMessages {
   static const pendienteForbidden =
       'No tienes acceso a este pendiente. Si crees que es un error, escribe a soporte.';
 
+  // Órdenes y autorizaciones
+  static const ordenesUnavailable =
+      'Para no mostrarte datos viejos, no vemos consultas anteriores. Vuelve a intentarlo en unos minutos.';
+  static const ordenesForbidden = 'Esta sección es solo para pacientes.';
+  static const ordenNotFound = 'Esa orden ya no está disponible.';
+
   // Local device
   static const imagePick =
       'No pudimos abrir la imagen. Revisa que la app tenga permiso para usar la cámara o la galería e inténtalo otra vez.';

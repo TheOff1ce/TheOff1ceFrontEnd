@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:farma_go/app/theme/farmago_tokens.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/auth_repository.dart';
 import 'package:farma_go/hooks/patient_home_controller.dart';
@@ -16,28 +13,11 @@ import 'package:farma_go/types/delivery.dart';
 import 'package:farma_go/types/order.dart';
 import 'package:farma_go/types/pendiente.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-/// Carga Atkinson (la fuente del proyecto) y, si existe en esta máquina, la fuente de iconos de
-/// Material del SDK. Sin ella, las capturas muestran cuadros en lugar de iconos.
-Future<void> cargarFuentes() async {
-  final cargador = FontLoader(FgText.family);
-  for (final peso in [400, 500, 600, 700]) {
-    cargador.addFont(rootBundle.load('assets/fonts/atkinson/AtkinsonHyperlegibleNext-$peso.ttf'));
-  }
-  await cargador.load();
-
-  final iconos = File(
-      r'C:\Users\NIKOL\Downloads\flutter\bin\cache\dart-sdk\bin\resources\devtools\assets\fonts\MaterialIcons-Regular.otf');
-  if (iconos.existsSync()) {
-    final cargadorIconos = FontLoader('MaterialIcons')
-      ..addFont(Future.value(ByteData.view(iconos.readAsBytesSync().buffer)));
-    await cargadorIconos.load();
-  }
-}
+import 'fuentes_reales.dart';
 
 /// Servicios sin red: la home de prueba nunca los llama porque el foco se fija directamente.
 class _OrdenesFalsas implements OrderService {
@@ -139,7 +119,7 @@ Future<void> montarInicio(
   void Function(String)? onTracking,
   void Function(String)? onPendienteDetalle,
 }) async {
-  await tester.runAsync(cargarFuentes);
+  await tester.runAsync(cargarFuentesReales);
   tester.view.physicalSize = Size(ancho, altura);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);

@@ -200,6 +200,27 @@ void main() {
       expect(PlazoVista.de(p, const Duration(hours: 2)).titular, '37 h 15 min');
     });
 
+    // HU-012: el cálculo se prueba a las 0, 24, 47 y 49 h de iniciado el plazo.
+    for (final (transcurridas, titular, fraccion) in [(0, '48 h 0 min', 1.0), (24, '24 h 0 min', 0.5), (47, '1 h 0 min', 1 / 48)]) {
+      test('a las $transcurridas h del evento quedan $titular', () {
+        final evaluadoEn = DateTime.parse(_evento).add(Duration(hours: transcurridas)).toIso8601String();
+        final v = PlazoVista.de(PendienteResumen.fromJson(resumenJson(evaluadoEn: evaluadoEn)), Duration.zero);
+        expect(v.estado, CumplimientoPlazo.vigente);
+        expect(v.titular, titular);
+        expect(v.fraccion, closeTo(fraccion, 0.001));
+      });
+    }
+
+    test('a las 49 h del evento el pendiente aparece vencido hace 1 h', () {
+      final evaluadoEn = DateTime.parse(_evento).add(const Duration(hours: 49)).toIso8601String();
+      final v = PlazoVista.de(
+        PendienteResumen.fromJson(resumenJson(cumplimiento: 'INCUMPLIDO', evaluadoEn: evaluadoEn)),
+        Duration.zero,
+      );
+      expect((v.titular, v.subtitulo), ('Incumplido', 'Venció hace 1 h 0 min'));
+      expect(v.fraccion, 0);
+    });
+
     test('si pasó la fecha límite pero el backend dice vigente, no se declara incumplido: se pide actualizar', () {
       final p = PendienteResumen.fromJson(resumenJson());
       expect(p.vencioSinActualizar(const Duration(hours: 40)), isTrue);
