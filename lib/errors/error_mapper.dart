@@ -87,6 +87,45 @@ abstract final class ErrorMapper {
     return AppError(kind: entry.$1, userMessage: entry.$2, retryable: entry.$3, code: 'HTTP_$status');
   }
 
+  /// Códigos estables del servicio de órdenes y autorizaciones. Los bloqueos de afiliación no son
+  /// reintentables: la pantalla los presenta según el `code`, no según este mensaje.
+  static const Map<String, _Entry> _ordenesCodes = {
+    'AFILIACION_NO_ENCONTRADA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'AFILIACION_SUSPENDIDA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'AFILIACION_RETIRADA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'AFILIACION_NO_VALIDA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'DOCUMENTO_NO_REGISTRADO': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'ROL_NO_PERMITIDO': (AppErrorKind.forbidden, ErrorMessages.ordenesForbidden, false),
+    'ORDEN_NO_ENCONTRADA': (AppErrorKind.notFound, ErrorMessages.ordenNotFound, false),
+    'ELEGIBILIDAD_CAMBIADA': (AppErrorKind.conflict, ErrorMessages.conflict, false),
+    'ORDEN_VENCIDA': (AppErrorKind.conflict, ErrorMessages.conflict, false),
+    'DOMICILIO_NO_DISPONIBLE': (AppErrorKind.server, ErrorMessages.server, true),
+    'AFILIACION_NO_DISPONIBLE': (AppErrorKind.server, ErrorMessages.ordenesUnavailable, true),
+  };
+
+  /// Error del servicio de órdenes. Acepta `code` y `detalles` en la raíz del cuerpo o dentro de
+  /// `error`. Los códigos `EPS_*` y los estados 429, 503 y 504 sin código caen en la tabla por
+  /// estado HTTP. Nunca se muestra el texto del backend.
+  static AppError fromOrdenes(int status, Map<String, dynamic> body) {
+    final error = body['error'];
+    final anidado = error is Map<String, dynamic> ? error : const <String, dynamic>{};
+    final rawCode = body['code'] ?? anidado['code'];
+    final code = rawCode is String ? rawCode : null;
+    final rawDetalles = body['detalles'] ?? anidado['detalles'];
+    final detalles = rawDetalles is Map<String, dynamic> ? rawDetalles : null;
+    final entry = _ordenesCodes[code] ??
+        (code != null && code.startsWith('EPS_')
+            ? (AppErrorKind.server, ErrorMessages.ordenesUnavailable, true)
+            : _fromStatus(status));
+    return AppError(
+      kind: entry.$1,
+      userMessage: entry.$2,
+      retryable: entry.$3,
+      code: code ?? 'HTTP_$status',
+      detalles: detalles,
+    );
+  }
+
   /// Error answered by TheOff1ceAI (`{success:false, error:{code,message}}`).
   static AppError fromAi(int status, Map<String, dynamic> body) =>
       _fromCode(_aiCodes, status, body);

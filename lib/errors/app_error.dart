@@ -30,6 +30,7 @@ class AppError implements Exception {
     required this.retryable,
     this.code,
     this.cause,
+    this.detalles,
     String? referenceId,
   }) : referenceId = referenceId ?? _newReferenceId();
 
@@ -40,6 +41,10 @@ class AppError implements Exception {
   /// Stable backend code (e.g. `CODE_INVALID`), used for decisions, never shown.
   final String? code;
   final Object? cause;
+
+  /// Datos estructurados que acompañan al código (por ejemplo `orden`, `cambios` o
+  /// `documentoEnmascarado` en el servicio de órdenes). Nunca se muestran tal cual.
+  final Map<String, dynamic>? detalles;
 
   /// Short id shown discreetly for support and attached to the log entry.
   final String referenceId;
