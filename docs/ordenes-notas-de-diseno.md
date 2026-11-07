@@ -43,7 +43,18 @@ Todas siguen pendientes de registro en el manual antes de mezclar. Lo implementa
 | D7 | «Por reclamar» |
 | D8 | Filtros locales sobre la respuesta |
 | D10 | Verificación previa al abrir el diálogo |
-| D11 | `FgMotion.escalon` (60 ms) y `FgMotion.pulso` (2000 ms); entrada escalonada, conteo, punto «en vivo», filete. Con movimiento reducido todo aparece directo |
+| D11 | `FgMotion.escalon` (60 ms); entrada escalonada, conteo de la cifra y filete en carga. Con movimiento reducido todo aparece directo. El punto «en vivo» (`FgMotion.pulso`, `FgPuntoEnVivo`) quedó sin uso tras la simplificación de la sección 3.1 |
+
+### 3.1 Simplificaciones respecto al handoff
+
+Tras una revisión de diseño, la pantalla se aparta del handoff en esto:
+
+- El panel muestra una sola cifra (medicamentos que se pueden pedir a domicilio). «Esperan autorización» y «órdenes vigentes» ya están en los filtros y en los grupos.
+- Sin punto «en vivo»: la consulta es una foto de lo que la EPS respondió a esa hora. Se lee «Respuesta de tu EPS» y «Consultado el …», y el botón dice «Actualizar».
+- La nota «Los estados son los que informa tu EPS…» va dentro del panel, junto a la hora.
+- Los chips de filtro no llevan conteo, y el encabezado de grupo se omite si todo es «Vigentes».
+- «Puedes pedir N a domicilio» va antes de las filas; los motivos por fila no repiten lo que ya dicen el sello y la reclamación.
+- La barra de pedido muestra los nombres de los medicamentos elegidos, no el id de la orden.
 
 ## 4. Reglas del manual que convendría actualizar
 
