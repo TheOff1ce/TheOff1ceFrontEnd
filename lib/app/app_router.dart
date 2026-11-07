@@ -16,6 +16,7 @@ import '../pages/landing_page.dart';
 import '../pages/login_page.dart';
 import '../pages/my_orders_page.dart';
 import '../pages/notifications_page.dart';
+import '../pages/ordenes_page.dart';
 import '../pages/pendiente_detail_page.dart';
 import '../pages/pendientes_page.dart';
 import '../pages/register_page.dart';
@@ -62,6 +63,7 @@ class AppRouter {
       AppRoutes.isPatientDeliveryPath(path) ||
       AppRoutes.isDriverPath(path) ||
       AppRoutes.isPendientesPath(path) ||
+      AppRoutes.isOrdenesPath(path) ||
       AppRoutes.isAdminPath(path);
 
   late final GoRouter router = GoRouter(
@@ -100,6 +102,7 @@ class AppRouter {
     final role = _auth.user?.role;
     if (AppRoutes.isAdminPath(path) && role != 'ADMIN') return AppRoutes.home;
     if (AppRoutes.isPendientesPath(path) && PendientesRol.fromCode(role) == null) return AppRoutes.home;
+    if (AppRoutes.isOrdenesPath(path) && role != 'PATIENT') return AppRoutes.home;
     if (AppRoutes.isDriverPath(path) && role != 'DELIVERY_DRIVER') return AppRoutes.home;
     if (AppRoutes.isPatientDeliveryPath(path) && role != 'PATIENT') return AppRoutes.home;
     return null;
@@ -234,6 +237,7 @@ class AppRouter {
             onAccount: () => context.push(AppRoutes.account),
             onRequestDelivery: () => context.push(AppRoutes.requestDelivery),
             onMyOrders: () => context.push(AppRoutes.myOrders),
+            onOrdenes: () => context.push(AppRoutes.ordenes),
             onDriverBoard: () => context.push(AppRoutes.driverBoard),
             onPendientes: () => context.push(AppRoutes.pendientes),
             onAdminUsers: () => context.push(AppRoutes.adminUsers),
@@ -241,6 +245,7 @@ class AppRouter {
           )),
         ),
         ..._pendientesPages,
+        ..._ordenesPages,
         ..._deliveryPages,
         ..._adminPages,
         GoRoute(
@@ -328,6 +333,27 @@ class AppRouter {
           },
         ),
       ];
+
+  List<RouteBase> get _ordenesPages => [
+        GoRoute(
+          path: AppRoutes.ordenes,
+          builder: (context, state) => _gate(_ordenesPage(context)),
+        ),
+        GoRoute(
+          path: AppRoutes.ordenPattern,
+          builder: (context, state) => _gate(_ordenesPage(context, ordenId: state.pathParameters['ordenId'])),
+        ),
+      ];
+
+  Widget _ordenesPage(BuildContext context, {String? ordenId}) => OrdenesPage(
+        key: ValueKey('ordenes-${ordenId ?? ''}'),
+        ordenEnlace: ordenId,
+        createController: _deps.crearOrdenes,
+        onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+        // Destinos pendientes del equipo (D9): la cuenta y la lista de domicilios del paciente.
+        onRevisarDatos: () => context.push(AppRoutes.account),
+        onSeguirEnDomicilios: () => context.push(AppRoutes.myOrders),
+      );
 
   List<RouteBase> get _deliveryPages => [
         GoRoute(

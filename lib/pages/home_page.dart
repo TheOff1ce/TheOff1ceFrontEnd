@@ -36,6 +36,7 @@ class HomePage extends StatefulWidget {
     required this.onPendienteDetalle,
     this.onRequestDelivery,
     this.onMyOrders,
+    this.onOrdenes,
     this.onDriverBoard,
     this.onPendientes,
     this.onAdminUsers,
@@ -53,6 +54,10 @@ class HomePage extends StatefulWidget {
   final VoidCallback onAccount;
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onMyOrders;
+
+  /// Órdenes y autorizaciones (solo paciente). La barra inferior ya tiene cuatro destinos
+  /// (manual §8.12), así que en móvil se llega desde las acciones del inicio.
+  final VoidCallback? onOrdenes;
   final VoidCallback? onDriverBoard;
   final VoidCallback? onPendientes;
   final VoidCallback? onAdminUsers;
@@ -137,6 +142,8 @@ class _HomePageState extends State<HomePage> {
       FgDestino(icono: Icons.document_scanner_outlined, etiqueta: 'Analizar fórmula', onTap: widget.onAnalyze),
       if (widget.onRequestDelivery != null)
         FgDestino(icono: Icons.home_outlined, etiqueta: 'Pedir a casa', onTap: widget.onRequestDelivery!),
+      if (widget.onOrdenes != null)
+        FgDestino(icono: Icons.assignment_outlined, etiqueta: 'Órdenes y autorizaciones', onTap: widget.onOrdenes!),
       if (widget.onMyOrders != null)
         FgDestino(icono: Icons.receipt_long_outlined, etiqueta: 'Mis domicilios', onTap: widget.onMyOrders!),
       if (_pendientesVisible)
@@ -462,6 +469,13 @@ class _Contenido extends StatelessWidget {
               icon: Icons.home_outlined,
               variant: _w.inicio.foco is FocoVacio ? FgButtonVariant.marca : FgButtonVariant.secondary,
               onPressed: _w.onRequestDelivery,
+            ),
+          if (_w.onOrdenes != null)
+            FgButton(
+              label: 'Ver mis órdenes',
+              icon: Icons.assignment_outlined,
+              variant: FgButtonVariant.secondary,
+              onPressed: _w.onOrdenes,
             ),
         ],
       );
