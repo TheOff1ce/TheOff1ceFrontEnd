@@ -30,6 +30,10 @@ abstract final class ErrorMapper {
     'CODE_INVALID': (AppErrorKind.invalidCode, ErrorMessages.invalidCode, false),
     'CURRENT_PASSWORD_INVALID': (AppErrorKind.invalidCredentials, ErrorMessages.currentPasswordInvalid, false),
     'PASSWORD_NOT_SET': (AppErrorKind.conflict, ErrorMessages.passwordNotSet, false),
+    'DOCUMENT_IN_USE': (AppErrorKind.conflict, ErrorMessages.documentInUse, false),
+    'DOCUMENT_LOCKED': (AppErrorKind.conflict, ErrorMessages.documentLocked, false),
+    'CONSENT_REQUIRED': (AppErrorKind.validation, ErrorMessages.consentRequired, false),
+    'PROFILE_INCOMPLETE': (AppErrorKind.validation, ErrorMessages.profileIncomplete, false),
     'PASSWORD_UNCHANGED': (AppErrorKind.validation, ErrorMessages.passwordUnchanged, false),
     'SESSION_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
     'TOKEN_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
@@ -85,6 +89,45 @@ abstract final class ErrorMapper {
     };
     if (entry == null) return _fromCode(const <String, _Entry>{}, status, body);
     return AppError(kind: entry.$1, userMessage: entry.$2, retryable: entry.$3, code: 'HTTP_$status');
+  }
+
+  /// Códigos estables del servicio de órdenes y autorizaciones. Los bloqueos de afiliación no son
+  /// reintentables: la pantalla los presenta según el `code`, no según este mensaje.
+  static const Map<String, _Entry> _ordenesCodes = {
+    'AFILIACION_NO_ENCONTRADA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'AFILIACION_SUSPENDIDA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'AFILIACION_RETIRADA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'AFILIACION_NO_VALIDA': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'DOCUMENTO_NO_REGISTRADO': (AppErrorKind.forbidden, ErrorMessages.forbidden, false),
+    'ROL_NO_PERMITIDO': (AppErrorKind.forbidden, ErrorMessages.ordenesForbidden, false),
+    'ORDEN_NO_ENCONTRADA': (AppErrorKind.notFound, ErrorMessages.ordenNotFound, false),
+    'ELEGIBILIDAD_CAMBIADA': (AppErrorKind.conflict, ErrorMessages.conflict, false),
+    'ORDEN_VENCIDA': (AppErrorKind.conflict, ErrorMessages.conflict, false),
+    'DOMICILIO_NO_DISPONIBLE': (AppErrorKind.server, ErrorMessages.server, true),
+    'AFILIACION_NO_DISPONIBLE': (AppErrorKind.server, ErrorMessages.ordenesUnavailable, true),
+  };
+
+  /// Error del servicio de órdenes. Acepta `code` y `detalles` en la raíz del cuerpo o dentro de
+  /// `error`. Los códigos `EPS_*` y los estados 429, 503 y 504 sin código caen en la tabla por
+  /// estado HTTP. Nunca se muestra el texto del backend.
+  static AppError fromOrdenes(int status, Map<String, dynamic> body) {
+    final error = body['error'];
+    final anidado = error is Map<String, dynamic> ? error : const <String, dynamic>{};
+    final rawCode = body['code'] ?? anidado['code'];
+    final code = rawCode is String ? rawCode : null;
+    final rawDetalles = body['detalles'] ?? anidado['detalles'];
+    final detalles = rawDetalles is Map<String, dynamic> ? rawDetalles : null;
+    final entry = _ordenesCodes[code] ??
+        (code != null && code.startsWith('EPS_')
+            ? (AppErrorKind.server, ErrorMessages.ordenesUnavailable, true)
+            : _fromStatus(status));
+    return AppError(
+      kind: entry.$1,
+      userMessage: entry.$2,
+      retryable: entry.$3,
+      code: code ?? 'HTTP_$status',
+      detalles: detalles,
+    );
   }
 
   /// Error answered by TheOff1ceAI (`{success:false, error:{code,message}}`).

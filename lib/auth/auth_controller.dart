@@ -7,6 +7,7 @@ import '../errors/app_error.dart';
 import '../errors/error_mapper.dart';
 import '../services/access_token_source.dart';
 import '../types/auth_models.dart';
+import '../types/user_profile.dart';
 import 'auth_repository.dart';
 
 enum AuthStatus { checking, unreachable, unauthenticated, verifying, authenticated }
@@ -144,6 +145,17 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
           currentPassword: currentPassword,
           newPassword: newPassword,
         ));
+      });
+
+  /// Guarda los datos del rol (documento, celular, EPS…). Al quedar completo, el enrutador deja
+  /// pasar a la app.
+  Future<AppError?> saveProfile(ProfileInput input) => _run(() async {
+        final token = await currentAccessToken();
+        if (token == null) throw ErrorMapper.fromAuth(401, const {'error': {'code': 'SESSION_INVALID'}});
+        final updated = await _repository.updateProfile(accessToken: token, input: input);
+        if (!updated.isValid) throw ErrorMapper.fromException(const FormatException('Invalid profile payload'));
+        user = updated;
+        _notify();
       });
 
   Future<AppError?> resend() async {

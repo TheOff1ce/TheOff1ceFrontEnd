@@ -5,6 +5,7 @@ import '../hooks/admin_orders_controller.dart';
 import '../hooks/admin_users_controller.dart';
 import '../hooks/driver_board_controller.dart';
 import '../hooks/driver_delivery_controller.dart';
+import '../hooks/ordenes_controller.dart';
 import '../hooks/patient_home_controller.dart';
 import '../hooks/patient_orders_controller.dart';
 import '../hooks/pendiente_detail_controller.dart';
@@ -19,6 +20,7 @@ import '../services/authorized_json_client.dart';
 import '../services/delivery_service.dart';
 import '../services/location_source.dart';
 import '../services/order_service.dart';
+import '../services/ordenes_service.dart';
 import '../services/pendientes_service.dart';
 import '../services/prescription_service.dart';
 import '../services/tracking_channel.dart';
@@ -41,6 +43,7 @@ class AppDependencies {
     required this.adminOrders,
     required this.location,
     required this.pendientesService,
+    this.ordenesService,
     required this.pendientes,
     required this.patientHome,
     this.deliveryClients = const [],
@@ -62,6 +65,14 @@ class AppDependencies {
       errorMapper: ErrorMapper.fromPendientes,
     );
     final pendientesService = PendientesService(pendientesClient);
+    // Órdenes y autorizaciones consulta a la EPS en vivo; sus errores llevan `code` y `detalles`.
+    final ordenesClient = AuthorizedJsonClient(
+      AppConfig.ordenesBaseUrl,
+      tokens: auth,
+      timeout: NetworkTimeouts.ordenes,
+      errorMapper: ErrorMapper.fromOrdenes,
+    );
+    final ordenesService = OrdenesService(ordenesClient);
     final orders = OrderService(ordersClient);
     final deliveries = DeliveryService(trackingClient);
     // Administrator back-office: Auth's user directory with the same Bearer token.
@@ -82,10 +93,11 @@ class AppDependencies {
       trackingChannels: () => SocketTrackingChannel(AppConfig.geolocationBaseUrl, auth),
       location: GeolocatorLocationSource(),
       pendientesService: pendientesService,
+      ordenesService: ordenesService,
       pendientes: PendientesListController(pendientesService),
       adminUsers: AdminUsersController(admin),
       adminOrders: AdminOrdersController(admin, deliveries),
-      deliveryClients: [ordersClient, trackingClient, pendientesClient, authClient],
+      deliveryClients: [ordersClient, trackingClient, pendientesClient, ordenesClient, authClient],
     );
   }
 
@@ -103,8 +115,15 @@ class AppDependencies {
   final AdminOrdersController adminOrders;
   final LocationSource location;
   final PendientesService pendientesService;
+
+  /// `null` solo en pruebas que no tocan órdenes; `create()` siempre lo construye.
+  final OrdenesService? ordenesService;
   final PendientesListController pendientes;
   final List<AuthorizedJsonClient> deliveryClients;
+
+  /// Un controlador por visita a la pantalla de órdenes: nada se conserva al salir (lo libera la
+  /// pantalla que lo crea).
+  OrdenesController crearOrdenes() => OrdenesController(ordenesService!);
 
   /// Un detalle por pantalla o panel (lo libera quien lo crea).
   PendienteDetailController pendienteDetailFor(String id) => PendienteDetailController(pendientesService, id);

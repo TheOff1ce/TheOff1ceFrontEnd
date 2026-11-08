@@ -1,3 +1,5 @@
+import 'user_profile.dart';
+
 class AuthUser {
   const AuthUser({
     required this.id,
@@ -8,6 +10,9 @@ class AuthUser {
     this.emailVerified = false,
     this.createdAt,
     this.lastLoginAt,
+    this.profile = UserProfile.empty,
+    this.profileComplete = true,
+    this.profileMissing = const [],
   });
 
   final String id, name, email, role;
@@ -16,6 +21,16 @@ class AuthUser {
   final String provider;
   final bool emailVerified;
   final DateTime? createdAt, lastLoginAt;
+
+  /// Datos del rol (documento, celular, EPS…), pedidos después de crear la cuenta.
+  final UserProfile profile;
+
+  /// `false` mientras falte algo obligatorio para el rol. Versiones anteriores de Auth no lo
+  /// envían: entonces se considera completo y nadie queda bloqueado.
+  final bool profileComplete;
+
+  /// Lo que falta, en orden de formulario (`dataConsent` = aceptar la política de datos).
+  final List<String> profileMissing;
 
   bool get signsInWithGoogle => provider == 'GOOGLE';
 
@@ -42,6 +57,12 @@ class AuthUser {
         emailVerified: json['emailVerified'] == true,
         createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
         lastLoginAt: DateTime.tryParse(json['lastLoginAt']?.toString() ?? ''),
+        profile: UserProfile.fromJson(json['profile']),
+        profileComplete: json['profileComplete'] != false,
+        profileMissing: [
+          if (json['profileMissing'] is List)
+            for (final item in json['profileMissing'] as List) item.toString(),
+        ],
       );
 }
 

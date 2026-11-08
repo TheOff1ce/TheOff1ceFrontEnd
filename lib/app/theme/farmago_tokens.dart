@@ -165,6 +165,9 @@ abstract final class FgSize {
   static const toast = 480.0;
   static const contenido = 1280.0;
   static const lectura = 720.0; // ancho de la columna de lectura de la home
+  static const contenidoPaciente = 960.0; // contenido de lectura del paciente (manual §5.2)
+  static const casilla = 28.0; // caja de checkbox (§8.4)
+  static const puntoEnVivo = 10.0; // punto «en vivo» del panel de consulta (D11)
   static const medidaTexto = 600.0; // ~66 caracteres a 18 px (--w-lectura, manual §4)
   static const iconoSm = 20.0;
   static const iconoMd = 24.0;
@@ -202,6 +205,12 @@ abstract final class FgMotion {
   static const reloj = Duration(milliseconds: 600);
   static const giroSpinner = Duration(milliseconds: 800);
   static const brilloSkeleton = Duration(milliseconds: 1400);
+
+  /// Retraso entre elementos de la entrada escalonada al llegar una respuesta de la EPS (D11).
+  static const escalon = Duration(milliseconds: 60);
+
+  /// Ciclo del halo del punto «en vivo» (D11).
+  static const pulso = Duration(milliseconds: 2000);
   static const ease = Cubic(.2, .7, .2, 1);
   static const easeSalida = Cubic(.4, 0, 1, 1);
 

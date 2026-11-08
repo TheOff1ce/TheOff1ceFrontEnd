@@ -1,3 +1,4 @@
+import '../types/user_profile.dart';
 import '../errors/error_mapper.dart';
 import '../types/admin.dart';
 import 'authorized_json_client.dart';
@@ -23,6 +24,13 @@ class AdminService {
   /// Changes the role and signs that user out everywhere (Auth revokes their sessions).
   Future<AdminUser> changeRole(String userId, UserRole role) async => _parse(
         await _auth.patch('/admin/users/${Uri.encodeComponent(userId)}/role', {'role': role.code}),
+        AdminUser.fromJson,
+      );
+
+  /// Corrige el documento de un usuario (la persona no puede cambiarlo desde la app).
+  Future<AdminUser> correctDocument(String userId, DocumentType type, String number) async => _parse(
+        await _auth.patch('/admin/users/${Uri.encodeComponent(userId)}/document',
+            {'documentType': type.code, 'documentNumber': number}),
         AdminUser.fromJson,
       );
 

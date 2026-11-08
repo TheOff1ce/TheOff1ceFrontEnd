@@ -16,6 +16,7 @@ import '../pages/landing_page.dart';
 import '../pages/login_page.dart';
 import '../pages/my_orders_page.dart';
 import '../pages/notifications_page.dart';
+import '../pages/ordenes_page.dart';
 import '../pages/pendiente_detail_page.dart';
 import '../pages/pendientes_page.dart';
 import '../pages/register_page.dart';
@@ -24,6 +25,7 @@ import '../pages/reset_password_page.dart';
 import '../pages/result_page.dart';
 import '../pages/system_pages.dart';
 import '../pages/tracking_page.dart';
+import '../pages/complete_profile_page.dart';
 import '../pages/upload_page.dart';
 import '../pages/verify_email_page.dart';
 import '../utils/pendientes_rol.dart';
@@ -54,6 +56,7 @@ class AppRouter {
     AppRoutes.prescriptionResult,
     AppRoutes.notifications,
     AppRoutes.account,
+    AppRoutes.completeProfile,
   };
 
   /// Private paths, including the parameterized delivery routes.
@@ -62,6 +65,7 @@ class AppRouter {
       AppRoutes.isPatientDeliveryPath(path) ||
       AppRoutes.isDriverPath(path) ||
       AppRoutes.isPendientesPath(path) ||
+      AppRoutes.isOrdenesPath(path) ||
       AppRoutes.isAdminPath(path);
 
   late final GoRouter router = GoRouter(
@@ -84,6 +88,14 @@ class AppRouter {
       case AuthStatus.verifying:
         return path == AppRoutes.verifyEmail ? null : AppRoutes.verifyEmail;
       case AuthStatus.authenticated:
+        // Sin los datos del rol (documento, celular, EPS…) solo se ve la pantalla para completarlos.
+        // El destino que la persona buscaba se conserva y se abre al terminar.
+        final gate = profileGate(
+          complete: _auth.user?.profileComplete ?? true,
+          path: path,
+          takeReturnTo: _auth.takeReturnTo,
+        );
+        if (gate != null) return gate == path ? null : gate;
         if (publicRoutes.contains(path) || path == AppRoutes.verifyEmail) {
           return _auth.takeReturnTo() ?? AppRoutes.home;
         }
@@ -93,6 +105,19 @@ class AppRouter {
     }
   }
 
+  /// Con el perfil incompleto todo lleva a completarlo; ya completo, esa pantalla manda al destino
+  /// guardado o al inicio. `null` = el perfil no decide esta ruta.
+  @visibleForTesting
+  static String? profileGate({
+    required bool complete,
+    required String path,
+    required String? Function() takeReturnTo,
+  }) {
+    if (!complete) return AppRoutes.completeProfile;
+    if (path == AppRoutes.completeProfile) return takeReturnTo() ?? AppRoutes.home;
+    return null;
+  }
+
   /// Delivery screens are role specific: patients request and track, drivers take and deliver,
   /// administrators manage users and every order. Pendientes lo consultan los tres roles que acepta
   /// `pendientes-service`.
@@ -100,6 +125,7 @@ class AppRouter {
     final role = _auth.user?.role;
     if (AppRoutes.isAdminPath(path) && role != 'ADMIN') return AppRoutes.home;
     if (AppRoutes.isPendientesPath(path) && PendientesRol.fromCode(role) == null) return AppRoutes.home;
+    if (AppRoutes.isOrdenesPath(path) && role != 'PATIENT') return AppRoutes.home;
     if (AppRoutes.isDriverPath(path) && role != 'DELIVERY_DRIVER') return AppRoutes.home;
     if (AppRoutes.isPatientDeliveryPath(path) && role != 'PATIENT') return AppRoutes.home;
     return null;
@@ -234,6 +260,7 @@ class AppRouter {
             onAccount: () => context.push(AppRoutes.account),
             onRequestDelivery: () => context.push(AppRoutes.requestDelivery),
             onMyOrders: () => context.push(AppRoutes.myOrders),
+            onOrdenes: () => context.push(AppRoutes.ordenes),
             onDriverBoard: () => context.push(AppRoutes.driverBoard),
             onPendientes: () => context.push(AppRoutes.pendientes),
             onAdminUsers: () => context.push(AppRoutes.adminUsers),
@@ -241,6 +268,7 @@ class AppRouter {
           )),
         ),
         ..._pendientesPages,
+        ..._ordenesPages,
         ..._deliveryPages,
         ..._adminPages,
         GoRoute(
@@ -296,6 +324,10 @@ class AppRouter {
           )),
         ),
         GoRoute(
+          path: AppRoutes.completeProfile,
+          builder: (context, state) => _gate(CompleteProfilePage(auth: _auth)),
+        ),
+        GoRoute(
           path: AppRoutes.account,
           builder: (context, state) => _gate(AccountPage(
             auth: _auth,
@@ -328,6 +360,27 @@ class AppRouter {
           },
         ),
       ];
+
+  List<RouteBase> get _ordenesPages => [
+        GoRoute(
+          path: AppRoutes.ordenes,
+          builder: (context, state) => _gate(_ordenesPage(context)),
+        ),
+        GoRoute(
+          path: AppRoutes.ordenPattern,
+          builder: (context, state) => _gate(_ordenesPage(context, ordenId: state.pathParameters['ordenId'])),
+        ),
+      ];
+
+  Widget _ordenesPage(BuildContext context, {String? ordenId}) => OrdenesPage(
+        key: ValueKey('ordenes-${ordenId ?? ''}'),
+        ordenEnlace: ordenId,
+        createController: _deps.crearOrdenes,
+        onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+        // Destinos pendientes del equipo (D9): la cuenta y la lista de domicilios del paciente.
+        onRevisarDatos: () => context.push(AppRoutes.account),
+        onSeguirEnDomicilios: () => context.push(AppRoutes.myOrders),
+      );
 
   List<RouteBase> get _deliveryPages => [
         GoRoute(

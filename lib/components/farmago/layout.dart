@@ -17,7 +17,19 @@ class FgScreen extends StatelessWidget {
     this.acciones = const [],
     this.barraAccion,
     this.onRefresh,
+    this.tituloEnContenido = true,
+    this.anchoMaximo = FgSize.contenido,
+    this.barraAccionConEntrada = false,
   });
+
+  /// `false`: la pantalla pone su propio `<h1>` dentro del contenido (tablet y desktop).
+  final bool tituloEnContenido;
+
+  /// Ancho máximo del contenido (1280 por defecto; 960 en pantallas de lectura del paciente).
+  final double anchoMaximo;
+
+  /// La barra de acción sube desde abajo en 320 ms al aparecer (respuesta a una acción).
+  final bool barraAccionConEntrada;
 
   final String titulo;
   final VoidCallback onBack;
@@ -46,7 +58,7 @@ class FgScreen extends StatelessWidget {
         (compacto ? FgSpace.sp6 : FgSpace.sp7) + (barraAccion == null ? 0 : FgSize.barraAccion),
       ),
       children: [
-        if (!compacto) ...[
+        if (!compacto && tituloEnContenido) ...[
           Semantics(header: true, child: Text(titulo, style: FgText.h1(ancho))),
           const SizedBox(height: FgSpace.sp5),
         ],
@@ -56,7 +68,7 @@ class FgScreen extends StatelessWidget {
     final contenido = Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: FgSize.contenido),
+        constraints: BoxConstraints(maxWidth: anchoMaximo),
         child: compacto && onRefresh != null ? RefreshIndicator(onRefresh: onRefresh!, child: lista) : lista,
       ),
     );
@@ -66,7 +78,10 @@ class FgScreen extends StatelessWidget {
         children: [
           _Encabezado(titulo: compacto ? titulo : null, onBack: onBack, acciones: acciones, compacto: compacto),
           Expanded(child: contenido),
-          if (barraAccion != null) _BarraAccion(child: barraAccion!),
+          if (barraAccion != null)
+            barraAccionConEntrada
+                ? _EntradaDesdeAbajo(child: _BarraAccion(child: barraAccion!))
+                : _BarraAccion(child: barraAccion!),
         ],
       ),
     );
@@ -137,6 +152,23 @@ class _BarraAccion extends StatelessWidget {
           top: false,
           child: Padding(padding: const EdgeInsets.all(FgSpace.sp4), child: child),
         ),
+      );
+}
+
+/// Entrada de la barra de acción: sube desde abajo en 320 ms (`--dur-lenta`, `--ease`).
+/// Con movimiento reducido aparece directa.
+class _EntradaDesdeAbajo extends StatelessWidget {
+  const _EntradaDesdeAbajo({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: 1, end: 0),
+        duration: FgMotion.reducir(context, FgMotion.lenta),
+        curve: FgMotion.ease,
+        builder: (context, t, hijo) => FractionalTranslation(translation: Offset(0, t), child: hijo),
+        child: child,
       );
 }
 

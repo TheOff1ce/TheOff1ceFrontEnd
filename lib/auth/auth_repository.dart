@@ -8,6 +8,7 @@ import '../errors/error_mapper.dart';
 import '../services/auth_http_client.dart';
 import '../services/http_json.dart';
 import '../types/auth_models.dart';
+import '../types/user_profile.dart';
 import '../utils/constants.dart';
 
 /// HTTP adapter for TheOff1ceAuth. Every failure surfaces as `AppError`.
@@ -74,6 +75,21 @@ class AuthRepository {
         {'currentPassword': currentPassword, 'newPassword': newPassword},
         accessToken: accessToken,
       ));
+
+  /// Datos del rol pedidos después de crear la cuenta. Responde el usuario actualizado.
+  Future<AuthUser> updateProfile({required String accessToken, required ProfileInput input}) async {
+    final response = await sendWithin(
+      _timeout,
+      () => _client.patch(_uri('profile'),
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $accessToken',
+          },
+          body: jsonEncode(input.toJson())),
+    );
+    return AuthUser.fromJson(_decode(response));
+  }
 
   Future<AuthUser> me(String accessToken) async {
     final response = await sendWithin(

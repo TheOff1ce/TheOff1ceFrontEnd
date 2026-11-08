@@ -24,11 +24,20 @@ abstract final class AppRoutes {
   static const notifications = '/notifications';
   static const account = '/account';
 
+  /// Datos del rol pedidos después de crear la cuenta; obligatorio antes de usar la app.
+  static const completeProfile = '/completar-perfil';
+
   // Home deliveries (patient)
   static const myOrders = '/orders';
   static const requestDelivery = '/orders/new';
   static const trackingPattern = '/orders/tracking/:deliveryId';
   static String tracking(String deliveryId) => '/orders/tracking/${Uri.encodeComponent(deliveryId)}';
+
+  // Órdenes y autorizaciones (solo paciente). No confundir con `/orders`, que son domicilios.
+  static const ordenes = '/ordenes';
+  static const ordenPattern = '/ordenes/:ordenId';
+  static String orden(String id) => '/ordenes/${Uri.encodeComponent(id)}';
+  static bool isOrdenesPath(String path) => path == ordenes || path.startsWith('$ordenes/');
 
   // Pendientes (plazo de 48 h)
   static const pendientes = '/pendientes';

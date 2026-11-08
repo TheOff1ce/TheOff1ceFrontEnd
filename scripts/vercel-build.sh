@@ -21,7 +21,7 @@ flutter --version
 # Las variables de entorno del proyecto en Vercel se pasan como --dart-define solo si existen;
 # sin ellas valen los defaults de lib/utils/constants.dart (servicios desplegados).
 defines=()
-for name in API_BASE_URL AUTH_BASE_URL PENDIENTES_BASE_URL ORDERS_BASE_URL GEOLOCATION_BASE_URL MAPS_API_KEY; do
+for name in API_BASE_URL AUTH_BASE_URL PENDIENTES_BASE_URL ORDENES_BASE_URL ORDERS_BASE_URL GEOLOCATION_BASE_URL MAPS_API_KEY; do
   if [ -n "${!name:-}" ]; then defines+=("--dart-define=${name}=${!name}"); fi
 done
 
