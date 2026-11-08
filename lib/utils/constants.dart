@@ -14,14 +14,18 @@ abstract final class AppConfig {
   /// `pendientes-service` on AWS Lambda (Function URL).
   static const deployedPendientesUrl = 'https://ey4bd7llo4despvmqbmxof6pfi0zoifk.lambda-url.us-east-1.on.aws';
 
+  /// Servicio de órdenes y autorizaciones (API Gateway, sin puerto). Sin este default, una web
+  /// compilada sin `ORDENES_BASE_URL` pedía `http://<host>:3004` y Chrome la bloqueaba (Mixed Content).
+  static const deployedOrdenesUrl = 'https://mtdviivm49.execute-api.us-east-1.amazonaws.com';
+
   static const _aiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: deployedAiUrl);
   static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedAuthUrl);
   static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL');
   static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL');
 
   /// Servicio de órdenes y autorizaciones (consulta a la EPS en vivo). No es `ORDERS_BASE_URL`,
-  /// que es el de domicilios. Pendiente: URL desplegada por defecto (ver reporte de la rama).
-  static const _ordenesUrl = String.fromEnvironment('ORDENES_BASE_URL');
+  /// que es el de domicilios. En local: `--dart-define=ORDENES_BASE_URL=http://localhost:3004`.
+  static const _ordenesUrl = String.fromEnvironment('ORDENES_BASE_URL', defaultValue: deployedOrdenesUrl);
   static const _pendientesUrl = String.fromEnvironment('PENDIENTES_BASE_URL', defaultValue: deployedPendientesUrl);
 
   /// Client key for Google Maps (browser/app key restricted by referrer or package),
