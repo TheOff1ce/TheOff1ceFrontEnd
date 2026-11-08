@@ -294,7 +294,7 @@ class _FgChipState extends State<FgChip> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: widget.compacto ? FgSize.ctrlSm : FgSize.ctrlMd),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp4),
+                padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp4, vertical: FgSpace.sp1),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -303,11 +303,15 @@ class _FgChipState extends State<FgChip> {
                       const Icon(Icons.check_rounded, size: FgSize.iconoSm, color: FgColors.azul800),
                       const SizedBox(width: FgSpace.sp2),
                     ],
-                    Text(
-                      widget.label,
-                      style: FgText.caption.copyWith(
-                        color: seleccionado ? FgColors.azul800 : FgColors.ink,
-                        fontWeight: seleccionado ? FontWeight.w700 : FontWeight.w600,
+                    // En pantallas angostas o con texto grande la etiqueta baja de línea, no se corta.
+                    Flexible(
+                      child: Text(
+                        widget.label,
+                        textAlign: TextAlign.center,
+                        style: FgText.caption.copyWith(
+                          color: seleccionado ? FgColors.azul800 : FgColors.ink,
+                          fontWeight: seleccionado ? FontWeight.w700 : FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
