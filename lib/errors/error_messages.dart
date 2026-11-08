@@ -39,6 +39,12 @@ abstract final class ErrorMessages {
       'La contraseña actual no es correcta. Revísala e inténtalo de nuevo.';
   static const passwordNotSet =
       'Tu cuenta entra con Google, así que no tiene una contraseña de FARMA GO para cambiar.';
+  static const documentInUse =
+      'Ese documento ya está registrado en otra cuenta. Si es tuyo, escríbenos y lo revisamos.';
+  static const documentLocked =
+      'Tu documento ya está registrado y no se puede cambiar desde la app. Si hay un error, pide a un administrador que lo corrija.';
+  static const consentRequired = 'Para guardar tus datos, acepta la política de tratamiento de datos.';
+  static const profileIncomplete = 'Faltan datos obligatorios. Revisa los campos marcados.';
   static const passwordUnchanged = 'La contraseña nueva debe ser distinta de la actual.';
   static const unreadablePrescription =
       'No pudimos leer la fórmula. Toma otra foto con buena luz, enfocada y con todo el texto visible.';

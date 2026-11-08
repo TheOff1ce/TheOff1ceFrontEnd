@@ -1,6 +1,7 @@
 /// Models of the administrator back-office (TheOff1ceAuth `/admin/users`, OrderDelivery `/orders/admin`).
 library;
 
+import 'user_profile.dart';
 import 'order.dart';
 
 /// Roles issued by TheOff1ceAuth.
@@ -32,9 +33,19 @@ class AdminUser {
     required this.emailVerified,
     this.createdAt,
     this.lastLoginAt,
+    this.documentType,
+    this.documentNumber,
+    this.profileComplete = true,
   });
 
   final String id, name, email, provider;
+  final DocumentType? documentType;
+  final String? documentNumber;
+
+  /// `false` mientras el usuario no haya llenado los datos de su rol.
+  final bool profileComplete;
+
+  String? get document => documentType == null || documentNumber == null ? null : '${documentType!.code} $documentNumber';
   final UserRole? role;
   final bool emailVerified;
   final DateTime? createdAt, lastLoginAt;
@@ -52,6 +63,9 @@ class AdminUser {
         emailVerified: json['emailVerified'] == true,
         createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? ''),
         lastLoginAt: DateTime.tryParse(json['lastLoginAt']?.toString() ?? ''),
+        documentType: DocumentType.fromCode(json['documentType']?.toString()),
+        documentNumber: json['documentNumber']?.toString(),
+        profileComplete: json['profileComplete'] != false,
       );
 
   AdminUser copyWith({UserRole? role}) => AdminUser(

@@ -12,6 +12,7 @@ import 'package:farma_go/services/authorized_json_client.dart';
 import 'package:farma_go/services/delivery_service.dart';
 import 'package:farma_go/types/admin.dart';
 import 'package:farma_go/types/auth_models.dart';
+import 'package:farma_go/types/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -77,6 +78,12 @@ class _Backend {
       user['role'] = (jsonDecode(request.body) as Map)['role'];
       return _json(user);
     }
+    final docMatch = RegExp(r'^/admin/users/([^/]+)/document$').firstMatch(path);
+    if (docMatch != null && request.method == 'PATCH') {
+      final user = users.firstWhere((u) => u['id'] == docMatch.group(1));
+      user.addAll((jsonDecode(request.body) as Map).cast<String, dynamic>());
+      return _json(user);
+    }
     if (path == '/orders/admin') return _json({'orders': orders});
     final cancel = RegExp(r'^/orders/([^/]+)/cancel$').firstMatch(path);
     if (cancel != null) {
@@ -117,6 +124,20 @@ void main() {
       expect(backend.requests.last.method, 'PATCH');
       expect(jsonDecode(backend.requests.last.body), {'role': 'DELIVERY_DRIVER'});
       expect(c.users.first.role, UserRole.driver);
+      c.dispose();
+    });
+
+    test('an administrator corrects a document', () async {
+      final backend = _Backend();
+      final admin = AdminService(auth: backend.client('https://auth.x'), orders: backend.client('https://orders.x'));
+      final c = AdminUsersController(admin);
+      await c.load();
+      expect(c.users.first.document, isNull);
+      final error = await c.correctDocument(c.users.first, DocumentType.cc, '1020304050');
+      expect(error, isNull);
+      expect(backend.requests.last.url.path, endsWith('/document'));
+      expect(jsonDecode(backend.requests.last.body), {'documentType': 'CC', 'documentNumber': '1020304050'});
+      expect(c.users.first.document, 'CC 1020304050');
       c.dispose();
     });
 

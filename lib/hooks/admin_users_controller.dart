@@ -1,3 +1,4 @@
+import '../types/user_profile.dart';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -107,6 +108,22 @@ class AdminUsersController extends ChangeNotifier {
             updated,
       ];
       if (!keep) total = total > 0 ? total - 1 : 0;
+      return null;
+    } catch (e) {
+      return ErrorMapper.fromException(e);
+    } finally {
+      saving = {...saving}..remove(user.id);
+      _notify();
+    }
+  }
+
+  /// Returns `null` on success or the error to show.
+  Future<AppError?> correctDocument(AdminUser user, DocumentType type, String number) async {
+    saving = {...saving, user.id};
+    _notify();
+    try {
+      final updated = await _admin.correctDocument(user.id, type, number);
+      users = [for (final u in users) u.id == user.id ? updated : u];
       return null;
     } catch (e) {
       return ErrorMapper.fromException(e);

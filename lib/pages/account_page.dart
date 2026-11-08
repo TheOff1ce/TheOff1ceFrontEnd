@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/theme/farmago_tokens.dart';
 import '../auth/auth_controller.dart';
 import '../components/account/change_password_form.dart';
+import '../components/account/profile_form.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/layout.dart';
@@ -22,7 +23,13 @@ class AccountPage extends StatefulWidget {
 
 class _AccountPageState extends State<AccountPage> {
   bool _changingPassword = false;
+  bool _editingProfile = false;
   bool _signingOut = false;
+
+  void _profileSaved() {
+    setState(() => _editingProfile = false);
+    showFgToast(context, 'Guardamos tus datos.');
+  }
 
   Future<void> _logout() async {
     setState(() => _signingOut = true);
@@ -57,7 +64,43 @@ class _AccountPageState extends State<AccountPage> {
                         const SizedBox(height: FgSpace.sp6),
                         if (user != null) ...[
                           const _SectionTitle('Tus datos'),
-                          _Details(user: user),
+                          AnimatedSize(
+                            duration: FgMotion.reducir(context, FgMotion.media),
+                            curve: FgMotion.ease,
+                            alignment: Alignment.topCenter,
+                            child: _editingProfile
+                                ? Container(
+                                    padding: const EdgeInsets.all(FgSpace.sp5),
+                                    decoration: BoxDecoration(
+                                      color: FgColors.superficie,
+                                      borderRadius: BorderRadius.circular(FgRadius.md),
+                                      border: Border.all(color: FgColors.linea, width: FgBorder.w1),
+                                    ),
+                                    child: ProfileForm(
+                                      auth: widget.auth,
+                                      onDone: _profileSaved,
+                                      onCancel: () => setState(() => _editingProfile = false),
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      _Details(user: user),
+                                      if (user.role != 'ADMIN') ...[
+                                        const SizedBox(height: FgSpace.sp4),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: FgButton(
+                                            label: 'Editar datos',
+                                            icon: Icons.edit_outlined,
+                                            variant: FgButtonVariant.secondary,
+                                            onPressed: () => setState(() => _editingProfile = true),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                          ),
                           const SizedBox(height: FgSpace.sp6),
                           const _SectionTitle('Contraseña'),
                           _PasswordSection(
@@ -204,6 +247,7 @@ class _Details extends StatelessWidget {
     final rows = <(String, Widget)>[
       ('Nombre', _value(user.name.isEmpty ? 'Sin nombre' : user.name)),
       ('Correo', _EmailValue(user: user)),
+      ..._profileRows(user),
       if (created != null) ('Cuenta creada', _value(PendienteFormat.fecha(created), numeric: true)),
       if (lastLogin != null) ('Último ingreso', _value(PendienteFormat.fechaHora(lastLogin), numeric: true)),
     ];
@@ -223,6 +267,23 @@ class _Details extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// Datos del rol. Solo se muestran los que la persona ya llenó.
+  static List<(String, Widget)> _profileRows(AuthUser user) {
+    final p = user.profile;
+    final birth = p.birthDate;
+    return [
+      if (p.hasDocument) ('Documento', _value('${p.documentType!.code} ${p.documentNumber}', numeric: true)),
+      if (p.phone != null) ('Celular', _value(p.phone!, numeric: true)),
+      if (birth != null) ('Fecha de nacimiento', _value(PendienteFormat.fecha(birth), numeric: true)),
+      if (p.eps != null) ('EPS', _value(p.eps!)),
+      if (p.address != null) ('Dirección de entrega', _value(p.address!)),
+      if (p.vehicleType != null)
+        ('Vehículo', _value(p.vehiclePlate == null ? p.vehicleType!.label : '${p.vehicleType!.label} · ${p.vehiclePlate}')),
+      if (p.organization != null) ('EPS donde trabajas', _value(p.organization!)),
+      if (p.position != null) ('Cargo', _value(p.position!)),
+    ];
   }
 
   static Widget _value(String text, {bool numeric = false}) =>

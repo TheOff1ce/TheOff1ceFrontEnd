@@ -24,6 +24,9 @@ abstract final class AppRoutes {
   static const notifications = '/notifications';
   static const account = '/account';
 
+  /// Datos del rol pedidos después de crear la cuenta; obligatorio antes de usar la app.
+  static const completeProfile = '/completar-perfil';
+
   // Home deliveries (patient)
   static const myOrders = '/orders';
   static const requestDelivery = '/orders/new';

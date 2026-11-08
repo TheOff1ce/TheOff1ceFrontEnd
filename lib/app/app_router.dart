@@ -25,6 +25,7 @@ import '../pages/reset_password_page.dart';
 import '../pages/result_page.dart';
 import '../pages/system_pages.dart';
 import '../pages/tracking_page.dart';
+import '../pages/complete_profile_page.dart';
 import '../pages/upload_page.dart';
 import '../pages/verify_email_page.dart';
 import '../utils/pendientes_rol.dart';
@@ -55,6 +56,7 @@ class AppRouter {
     AppRoutes.prescriptionResult,
     AppRoutes.notifications,
     AppRoutes.account,
+    AppRoutes.completeProfile,
   };
 
   /// Private paths, including the parameterized delivery routes.
@@ -86,6 +88,14 @@ class AppRouter {
       case AuthStatus.verifying:
         return path == AppRoutes.verifyEmail ? null : AppRoutes.verifyEmail;
       case AuthStatus.authenticated:
+        // Sin los datos del rol (documento, celular, EPS…) solo se ve la pantalla para completarlos.
+        // El destino que la persona buscaba se conserva y se abre al terminar.
+        final gate = profileGate(
+          complete: _auth.user?.profileComplete ?? true,
+          path: path,
+          takeReturnTo: _auth.takeReturnTo,
+        );
+        if (gate != null) return gate == path ? null : gate;
         if (publicRoutes.contains(path) || path == AppRoutes.verifyEmail) {
           return _auth.takeReturnTo() ?? AppRoutes.home;
         }
@@ -93,6 +103,19 @@ class AppRouter {
       case AuthStatus.unauthenticated:
         return _signedOutRedirect(state);
     }
+  }
+
+  /// Con el perfil incompleto todo lleva a completarlo; ya completo, esa pantalla manda al destino
+  /// guardado o al inicio. `null` = el perfil no decide esta ruta.
+  @visibleForTesting
+  static String? profileGate({
+    required bool complete,
+    required String path,
+    required String? Function() takeReturnTo,
+  }) {
+    if (!complete) return AppRoutes.completeProfile;
+    if (path == AppRoutes.completeProfile) return takeReturnTo() ?? AppRoutes.home;
+    return null;
   }
 
   /// Delivery screens are role specific: patients request and track, drivers take and deliver,
@@ -299,6 +322,10 @@ class AppRouter {
             notifications: _deps.notifications,
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
           )),
+        ),
+        GoRoute(
+          path: AppRoutes.completeProfile,
+          builder: (context, state) => _gate(CompleteProfilePage(auth: _auth)),
         ),
         GoRoute(
           path: AppRoutes.account,
