@@ -28,6 +28,20 @@ void main() {
       expect(Orden.fromJson(ordenJson(vigencia: 'RARA')).vigencia, Vigencia.sinInformacion);
     });
 
+    test('lee los estados con los nombres del contrato del backend', () {
+      // Claves literales de docs/contratos/openapi.json de ordenes-service, no del fake.
+      final m = MedicamentoOrden.fromJson({
+        'medicamentoId': 'MED-1',
+        'dci': 'Losartán',
+        'concentracion': '50 mg',
+        'estadoAutorizacion': 'AUTORIZADO',
+        'estadoReclamacion': 'PENDIENTE_DE_RECLAMAR',
+        'elegibleParaDomicilio': true,
+      });
+      expect(m.autorizacion, Autorizacion.autorizado);
+      expect(m.reclamacion, Reclamacion.pendienteDeReclamar);
+    });
+
     test('eps nula y orden sin vencimiento se leen sin error', () {
       final r = RespuestaOrdenes.fromJson(respuestaJson(eps: null, ordenes: [ordenSinVencimientoJson()]));
       expect(r.eps, isNull);

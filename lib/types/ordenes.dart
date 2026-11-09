@@ -156,8 +156,8 @@ class MedicamentoOrden {
       cantidad: cantidad is num ? cantidad.toInt() : null,
       unidad: _texto(json, 'unidad'),
       laboratorioFabricante: _texto(json, 'laboratorioFabricante'),
-      autorizacion: Autorizacion.parse(json['autorizacion']),
-      reclamacion: Reclamacion.parse(json['reclamacion']),
+      autorizacion: Autorizacion.parse(json['estadoAutorizacion']),
+      reclamacion: Reclamacion.parse(json['estadoReclamacion']),
       elegibleParaDomicilio: json['elegibleParaDomicilio'] == true,
       motivosNoElegible: _motivos(json['motivosNoElegible']),
     );

@@ -36,8 +36,8 @@ Map<String, dynamic> medicamentoJson({
       'cantidad': cantidad,
       'unidad': unidad,
       'laboratorioFabricante': laboratorio,
-      'autorizacion': autorizacion,
-      'reclamacion': reclamacion,
+      'estadoAutorizacion': autorizacion,
+      'estadoReclamacion': reclamacion,
       'elegibleParaDomicilio': elegible,
       'motivosNoElegible': motivos,
     };
