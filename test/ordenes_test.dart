@@ -140,7 +140,7 @@ void main() {
     test('carga y entrega la respuesta; el filtro es local y no consulta otra vez', () async {
       var consultas = 0;
       final c = OrdenesController(servicioFeliz(alVer: (r) {
-        if (r.url.path == '/v1/ordenes') consultas++;
+        if (r.url.path == '/ordenes') consultas++;
       }));
       await c.recargar();
       expect(c.vista, isA<ConOrdenes>());

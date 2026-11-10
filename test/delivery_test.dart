@@ -179,7 +179,7 @@ void main() {
         url = request.url;
         return respond({}, 200);
       });
-      await client.post('/orders', {'a': 1});
+      await client.post('/home-deliveries', {'a': 1});
       expect(url.toString(), isNot(contains('token')));
     });
   });
@@ -187,7 +187,7 @@ void main() {
   group('PatientOrdersController', () {
     test('publishes and lists the new order first', () async {
       final controller = PatientOrdersController(OrderService(clientWith((request) async {
-        expect(request.url.path, '/orders');
+        expect(request.url.path, '/home-deliveries');
         expect(jsonDecode(request.body)['items'], isNotEmpty);
         return respond(patientOrderJson(), 201);
       })));
@@ -334,7 +334,7 @@ void main() {
 
     test('the driver only sees deliveries still in progress under "Mis entregas"', () async {
       final orders = OrderService(clientWith((request) async => switch (request.url.path) {
-            '/orders/available' => respond({'orders': []}, 200),
+            '/home-deliveries/available' => respond({'orders': []}, 200),
             _ => respond({'orders': [takenOrder('o-1', 'd-1'), takenOrder('o-2', 'd-2')]}, 200),
           }));
       final deliveries = DeliveryService(clientWith((_) async => respond({

@@ -33,7 +33,7 @@ abstract final class AppRoutes {
   static const trackingPattern = '/orders/tracking/:deliveryId';
   static String tracking(String deliveryId) => '/orders/tracking/${Uri.encodeComponent(deliveryId)}';
 
-  // Órdenes y autorizaciones (solo paciente). No confundir con `/orders`, que son domicilios.
+  // Órdenes y autorizaciones (solo paciente). No confundir con Domicilios (API `/home-deliveries`).
   static const ordenes = '/ordenes';
   static const ordenPattern = '/ordenes/:ordenId';
   static String orden(String id) => '/ordenes/${Uri.encodeComponent(id)}';

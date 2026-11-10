@@ -256,7 +256,7 @@ class Orden {
       );
 }
 
-/// Respuesta de `GET /v1/ordenes`: lo que la EPS informó en `consultadoEn`.
+/// Respuesta de `GET /ordenes`: lo que la EPS informó en `consultadoEn`.
 class RespuestaOrdenes {
   const RespuestaOrdenes({
     required this.consultadoEn,
@@ -330,7 +330,7 @@ class VerificacionMedicamento {
   final List<MotivoNoElegible> motivos;
 }
 
-/// Respuesta de `POST /v1/ordenes/{id}/domicilio/verificacion`.
+/// Respuesta de `POST /ordenes/{id}/domicilio/verificacion`.
 class VerificacionDomicilio {
   const VerificacionDomicilio({required this.medicamentos});
 
@@ -346,7 +346,7 @@ class VerificacionDomicilio {
   bool get todosElegibles => medicamentos.isNotEmpty && medicamentos.every((m) => m.elegible);
 }
 
-/// Respuesta 202 de `POST /v1/ordenes/{id}/domicilio`. La referencia se muestra tal cual.
+/// Respuesta 202 de `POST /ordenes/{id}/domicilio`. La referencia se muestra tal cual.
 class DomicilioAceptado {
   const DomicilioAceptado({required this.referencia});
 

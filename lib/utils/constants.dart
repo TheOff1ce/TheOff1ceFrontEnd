@@ -1,11 +1,16 @@
 import 'package:flutter/foundation.dart';
 
 /// Resolves service URLs from `--dart-define` first and then from defaults.
-/// Auth and AI default to their Azure App Service deployments and Pendientes to
-/// its AWS Lambda deployment; the delivery services still default to
-/// platform-aware localhost URLs. It never touches
+/// Every service defaults to the API gateway (one URL for all); `--dart-define` points
+/// one at another URL, e.g. a local copy. It never touches
 /// `dart:io`, so it also works on Flutter Web (FE-001).
 abstract final class AppConfig {
+  /// TheOff1ceApiGateway (Kong): punto de entrada único. Enruta /auth, /admin/users, /analyze,
+  /// /deliveries, /socket.io, /home-deliveries, /pendientes y /ordenes a cada microservicio.
+  static const deployedGatewayUrl = 'https://farmago-gateway-jl.azurewebsites.net';
+
+  // URLs directas de cada servicio, por si se necesita saltar el gateway con `--dart-define`.
+  // Ojo: Órdenes directo atiende en /v1/ordenes; la app usa /ordenes (la ruta del gateway).
   /// Deployed services (Azure App Service). Override with `--dart-define` to use local ones,
   /// e.g. `--dart-define=AUTH_BASE_URL=http://localhost:3000`.
   static const deployedAuthUrl = 'https://farmago-auth-jl.azurewebsites.net';
@@ -18,15 +23,21 @@ abstract final class AppConfig {
   /// compilada sin `ORDENES_BASE_URL` pedía `http://<host>:3004` y Chrome la bloqueaba (Mixed Content).
   static const deployedOrdenesUrl = 'https://mtdviivm49.execute-api.us-east-1.amazonaws.com';
 
-  static const _aiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: deployedAiUrl);
-  static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedAuthUrl);
-  static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL');
-  static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL');
+  /// Domicilios (TheOff1ceOrderDelivery, Azure Container Apps): pedidos de domicilio.
+  static const deployedOrdersUrl = 'https://domicilios-api.greenbeach-440c9bcb.brazilsouth.azurecontainerapps.io';
+
+  /// Geolocalización (Azure App Service): ruta, ETA y seguimiento en vivo (Socket.IO).
+  static const deployedGeolocationUrl = 'https://farmago-geo-jl.azurewebsites.net';
+
+  static const _aiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: deployedGatewayUrl);
+  static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedGatewayUrl);
+  static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL', defaultValue: deployedGatewayUrl);
+  static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL', defaultValue: deployedGatewayUrl);
 
   /// Servicio de órdenes y autorizaciones (consulta a la EPS en vivo). No es `ORDERS_BASE_URL`,
   /// que es el de domicilios. En local: `--dart-define=ORDENES_BASE_URL=http://localhost:3004`.
-  static const _ordenesUrl = String.fromEnvironment('ORDENES_BASE_URL', defaultValue: deployedOrdenesUrl);
-  static const _pendientesUrl = String.fromEnvironment('PENDIENTES_BASE_URL', defaultValue: deployedPendientesUrl);
+  static const _ordenesUrl = String.fromEnvironment('ORDENES_BASE_URL', defaultValue: deployedGatewayUrl);
+  static const _pendientesUrl = String.fromEnvironment('PENDIENTES_BASE_URL', defaultValue: deployedGatewayUrl);
 
   /// Client key for Google Maps (browser/app key restricted by referrer or package),
   /// never the server key. Empty: the app shows a simplified map.

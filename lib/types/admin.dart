@@ -1,4 +1,4 @@
-/// Models of the administrator back-office (TheOff1ceAuth `/admin/users`, OrderDelivery `/orders/admin`).
+/// Models of the administrator back-office (TheOff1ceAuth `/admin/users`, OrderDelivery `/home-deliveries/admin`).
 library;
 
 import 'user_profile.dart';
