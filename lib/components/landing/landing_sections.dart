@@ -6,70 +6,49 @@ import '../../utils/plazo_vista.dart';
 import '../farmago/buttons.dart';
 import '../farmago/deadline_ring.dart';
 import '../farmago/status_badge.dart';
-import 'landing_estelas.dart';
 
 /// Ancho desde el que la landing usa dos columnas (manual §10).
 bool landingAncha(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= FgBreakpoint.tablet;
 
-/// Escritorio: el reloj de 48 h se integra al final del trayecto, en una sola banda horizontal.
+/// Escritorio: el hero pone el pendiente de ejemplo al lado del texto y el recorrido va en fila.
 bool landingEscritorio(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= FgBreakpoint.desktop;
 
 /// Titular de sección: sin kicker ni numeración, el texto carga el peso.
 class _Titular extends StatelessWidget {
-  const _Titular(this.texto);
+  const _Titular(this.texto, {this.color = FgColors.ink});
 
   final String texto;
+  final Color color;
 
   @override
   Widget build(BuildContext context) => Semantics(
         header: true,
-        child: Text(texto, style: FgText.h2),
+        child: Text(texto, style: FgText.h2.copyWith(color: color)),
       );
 }
 
 /// Logo oficial de FarmaGo (docs/logo/logo.png, con fondo transparente; copia de 640 px en assets).
 /// Sin recortes ni recoloreo (manual §2).
-/// Ancho de presentación del logo en escritorio. Ni el manual ni los tokens fijan este valor
-/// (§2 solo fija mínimos): queda registrado como pendiente de diseño.
-const double _anchoLogo = 360;
-
 class LogoOficial extends StatelessWidget {
-  const LogoOficial(
-      {super.key, this.ancho = _anchoLogo, this.alineadoAlMargen = false});
+  const LogoOficial({super.key, this.ancho = 200});
 
-  /// Ancho de presentación. El pie lo usa más pequeño que el hero.
   final double ancho;
 
-  /// Compensa el margen transparente del PNG para que el arte quede sobre el margen de la página.
-  final bool alineadoAlMargen;
-
-  /// Margen transparente a la izquierda del PNG, como fracción del ancho (64 de 1192 px).
-  static const _margenPng = 0.054;
-
   @override
-  Widget build(BuildContext context) {
-    final imagen = Image.asset(
-      'assets/images/logo_farmago.png',
-      width: ancho,
-      fit: BoxFit.contain,
-    );
-    return Semantics(
-      image: true,
-      label: 'Logo de FarmaGo, de la farmacia a tu puerta',
-      // PNG con fondo transparente: se usa directamente sobre el fondo, sin panel blanco alrededor.
-      child: alineadoAlMargen
-          ? Transform.translate(
-              offset: Offset(-ancho * _margenPng, 0), child: imagen)
-          : imagen,
-    );
-  }
+  Widget build(BuildContext context) => Semantics(
+        image: true,
+        label: 'Logo de FarmaGo, de la farmacia a tu puerta',
+        child: Image.asset(
+          'assets/images/logo_farmago.png',
+          width: ancho,
+          fit: BoxFit.contain,
+        ),
+      );
 }
 
-/// Mide un bloque de texto a la medida de lectura del manual (720 px, manual §5.3): en escritorio
-/// evita líneas de más de 80 caracteres. Align da al hijo restricciones sueltas, así que el tope
-/// sí se aplica aunque el contenedor pase un ancho exacto.
+/// Mide un bloque de texto a la medida de lectura del manual (720 px, manual §5.3).
 class _Medida extends StatelessWidget {
   const _Medida({required this.child});
 
@@ -85,8 +64,11 @@ class _Medida extends StatelessWidget {
       );
 }
 
-/// Hero. En escritorio el texto va solo: el reloj vive al final del trayecto. En tablet y móvil
-/// el reloj acompaña al texto, porque el trayecto ya va en una columna.
+/// Ancho de la tarjeta de ejemplo del hero en escritorio y tablet.
+const double _anchoTarjeta = 400;
+
+/// Hero: el texto y, a su lado, un pendiente de ejemplo con el reloj de 48 h. El reloj es lo que
+/// FarmaGo muestra a cada paciente, así que es la imagen de la página.
 class LandingHero extends StatelessWidget {
   const LandingHero(
       {super.key, required this.onLogin, required this.onRegister});
@@ -100,37 +82,29 @@ class LandingHero extends StatelessWidget {
     final texto =
         _HeroTexto(onLogin: onLogin, onRegister: onRegister, ancha: ancha);
     if (escritorio) {
-      // El logo oficial ocupa el lado derecho: antes era un hueco sin función en 1440 px.
       return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
         Expanded(
-          flex: 7,
-          // Align: el hijo recibe restricciones sueltas, así el tope de lectura sí se aplica.
           child: Align(
             alignment: Alignment.centerLeft,
             child: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(maxWidth: FgSize.lectura + FgSpace.sp9),
+              constraints: const BoxConstraints(maxWidth: FgSize.lectura),
               child: texto,
             ),
           ),
         ),
-        const SizedBox(width: FgSpace.sp7),
-        const Expanded(
-            flex: 5,
-            child:
-                Align(alignment: Alignment.centerRight, child: LogoOficial())),
+        const SizedBox(width: FgSpace.sp8),
+        const SizedBox(width: _anchoTarjeta, child: _TarjetaEjemplo()),
       ]);
     }
-    // Tablet y móvil: solo el texto. El reloj de ejemplo va al final del recorrido, después de
-    // "Dos caminos", igual que en escritorio.
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: ConstrainedBox(
-        constraints:
-            const BoxConstraints(maxWidth: FgSize.lectura + FgSpace.sp9),
-        child: texto,
-      ),
-    );
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      _Medida(child: texto),
+      SizedBox(height: ancha ? FgSpace.sp8 : FgSpace.sp7),
+      if (ancha)
+        const Center(
+            child: SizedBox(width: _anchoTarjeta, child: _TarjetaEjemplo()))
+      else
+        const _TarjetaEjemplo(),
+    ]);
   }
 }
 
@@ -144,6 +118,18 @@ class _HeroTexto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ancho = MediaQuery.sizeOf(context).width;
+    final iniciar = FgButton(
+        label: 'Iniciar sesión',
+        size: FgButtonSize.lg,
+        expand: !ancha,
+        onPressed: onLogin);
+    final crear = FgButton(
+      label: 'Crear cuenta',
+      variant: FgButtonVariant.secondary,
+      size: FgButtonSize.lg,
+      expand: !ancha,
+      onPressed: onRegister,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -152,7 +138,8 @@ class _HeroTexto extends StatelessWidget {
           header: true,
           child: Text(
             'Tu medicamento, de la farmacia a tu puerta.',
-            style: ancha ? FgText.display : FgText.h1(ancho),
+            style: (ancha ? FgText.display : FgText.h1(ancho))
+                .copyWith(color: FgColors.azul800),
           ),
         ),
         const SizedBox(height: FgSpace.sp5),
@@ -160,35 +147,17 @@ class _HeroTexto extends StatelessWidget {
           'FarmaGo conecta a tu EPS, tu farmacia y tu repartidor, y te muestra en qué va cada entrega, desde que sale de la farmacia hasta que la recibes.',
           style: FgText.bodyLg,
         ),
-        const SizedBox(height: FgSpace.sp6),
+        const SizedBox(height: FgSpace.sp7),
         if (ancha)
-          Wrap(spacing: FgSpace.sp4, runSpacing: FgSpace.sp4, children: [
-            FgButton(
-                label: 'Iniciar sesión',
-                size: FgButtonSize.lg,
-                onPressed: onLogin),
-            FgButton(
-              label: 'Crear cuenta',
-              variant: FgButtonVariant.secondary,
-              size: FgButtonSize.lg,
-              onPressed: onRegister,
-            ),
-          ])
+          Wrap(
+              spacing: FgSpace.sp4,
+              runSpacing: FgSpace.sp4,
+              children: [iniciar, crear])
         else
           Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            FgButton(
-                label: 'Iniciar sesión',
-                size: FgButtonSize.lg,
-                expand: true,
-                onPressed: onLogin),
+            iniciar,
             const SizedBox(height: FgSpace.sp4),
-            FgButton(
-              label: 'Crear cuenta',
-              variant: FgButtonVariant.secondary,
-              size: FgButtonSize.lg,
-              expand: true,
-              onPressed: onRegister,
-            ),
+            crear,
           ]),
       ],
     );
@@ -200,61 +169,79 @@ const _vistaEjemplo = PlazoVista(
   estado: CumplimientoPlazo.vigente,
   titular: '31 h 20 min',
   palabraEstado: 'Vigente',
-  fecha: 'Vence 1 nov 2026, 3:30 p. m.',
+  fecha: 'Vence 1 nov 2026, 3:30 p. m.',
   fraccion: .65,
   centroPrincipal: '31 h',
   centroSecundario: '20 min',
   semantica: '',
 );
 
-/// Reloj de ejemplo en tablet y móvil, junto al texto del hero.
-class _MuestraPendiente extends StatelessWidget {
-  const _MuestraPendiente();
+/// Pendiente de ejemplo, con la forma de la tarjeta que ve el paciente en la app: quién, cuándo
+/// vence, el reloj y su estado. La franja de marca arriba la une con la bienvenida (manual §22).
+class _TarjetaEjemplo extends StatelessWidget {
+  const _TarjetaEjemplo();
 
   @override
-  Widget build(BuildContext context) => const Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ExcludeSemantics(
-            child: DeadlineRing(
-                vista: _vistaEjemplo,
-                size: DeadlineRingSize.l,
-                decorativo: true),
-          ),
-          SizedBox(height: FgSpace.sp4),
-          _LeyendaReloj(),
-        ],
+  Widget build(BuildContext context) => Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: FgColors.superficie,
+          borderRadius: BorderRadius.circular(FgRadius.lg),
+          border: Border.all(color: FgColors.linea),
+          boxShadow: FgShadow.e3,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const DecoratedBox(
+              decoration: BoxDecoration(gradient: FgGradients.marca),
+              child: SizedBox(height: FgBorder.w4),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(FgSpace.sp6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: FgSpace.sp3,
+                    runSpacing: FgSpace.sp2,
+                    children: [
+                      Text('Pendiente OM-1042',
+                          style: FgText.num(FgText.label)),
+                      const StatusBadge(
+                          estado: CumplimientoPlazo.vigente, fraccion: .65),
+                    ],
+                  ),
+                  const SizedBox(height: FgSpace.sp1),
+                  // Espacios duros en "p. m.": la hora no se parte entre líneas.
+                  Text('Vence 1 nov 2026, 3:30 p. m.',
+                      style: FgText.num(FgText.caption)),
+                  const SizedBox(height: FgSpace.sp6),
+                  const Center(
+                    child: ExcludeSemantics(
+                      child: DeadlineRing(
+                          vista: _vistaEjemplo,
+                          size: DeadlineRingSize.l,
+                          decorativo: true),
+                    ),
+                  ),
+                  const SizedBox(height: FgSpace.sp6),
+                  const Divider(height: 1, color: FgColors.linea),
+                  const SizedBox(height: FgSpace.sp3),
+                  const Text('Ejemplo ilustrativo. No es un pendiente real.',
+                      style: FgText.caption),
+                ],
+              ),
+            ),
+          ],
+        ),
       );
 }
 
-/// Leyenda del reloj: dos líneas fijas, identificador y plazo, y la marca de ejemplo.
-class _LeyendaReloj extends StatelessWidget {
-  const _LeyendaReloj();
-
-  @override
-  Widget build(BuildContext context) => const Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          StatusBadge(estado: CumplimientoPlazo.vigente, fraccion: .65),
-          SizedBox(height: FgSpace.sp3),
-          Text('Pendiente OM-1042',
-              style: FgText.label, textAlign: TextAlign.center),
-          SizedBox(height: FgSpace.sp1),
-          // Espacios duros en "p. m.": la hora no se parte entre líneas.
-          Text('Vence 1 nov 2026, 3:30 p. m.',
-              style: FgText.caption, textAlign: TextAlign.center),
-          SizedBox(height: FgSpace.sp2),
-          Text('Ejemplo ilustrativo. No es un pendiente real.',
-              style: FgText.caption, textAlign: TextAlign.center),
-        ],
-      );
-}
-
-/// Recorrido de un pendiente: las estelas del logo son la línea de tiempo (manual §9 y §13.2).
-/// CONFLICTO ABIERTO con el manual §22: las estelas solo deben aparecer dentro del logo. La línea de
-/// tiempo debería usar el trayecto de estados (`FgTrail`) o el arco de tiempo, pendiente de decisión.
-/// Escritorio: estaciones en una banda horizontal que termina en el reloj de 48 h.
-/// Tablet y móvil: riel vertical.
+/// Recorrido de un pendiente: cuatro pasos en orden, numerados porque son una secuencia.
+/// Escritorio: en fila, unidos por una línea. Tablet y móvil: en columna, con la línea vertical.
 class LandingTrayecto extends StatelessWidget {
   const LandingTrayecto({super.key});
 
@@ -283,178 +270,147 @@ class LandingTrayecto extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Espacio duro entre las dos últimas palabras: evita un título con una sola palabra en la última línea.
         const _Titular('Así avanza un pendiente'),
-        const SizedBox(height: FgSpace.sp6),
+        const SizedBox(height: FgSpace.sp7),
         if (escritorio)
-          const _Horizontal(estaciones: _estaciones)
+          IntrinsicHeight(
+            child:
+                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              for (var i = 0; i < _estaciones.length; i++)
+                Expanded(
+                  child: _PasoFila(
+                    numero: i + 1,
+                    titulo: _estaciones[i].$1,
+                    detalle: _estaciones[i].$2,
+                    ultimo: i == _estaciones.length - 1,
+                  ),
+                ),
+            ]),
+          )
         else
-          // En tablet el riel se limita a una medida de lectura: sin tope, las líneas pasan de 100 caracteres.
-          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: FgSize.lectura),
-                child: const _Vertical(estaciones: _estaciones),
-              ),
-            ),
-            const SizedBox(height: FgSpace.sp7),
-            const Center(child: _MuestraPendiente()),
-          ]),
+          _Medida(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < _estaciones.length; i++)
+                    _PasoColumna(
+                      numero: i + 1,
+                      titulo: _estaciones[i].$1,
+                      detalle: _estaciones[i].$2,
+                      ultimo: i == _estaciones.length - 1,
+                    ),
+                ]),
+          ),
       ],
     );
   }
 }
 
-/// Ancho del hueco entre el último carril y el reloj.
-const double _huecoReloj = FgSpace.sp7;
+/// Número del paso: círculo azul de marca con la cifra en blanco.
+class _NumeroPaso extends StatelessWidget {
+  const _NumeroPaso(this.numero);
 
-class _Horizontal extends StatelessWidget {
-  const _Horizontal({required this.estaciones});
-
-  final List<(String, String)> estaciones;
-
-  @override
-  Widget build(BuildContext context) {
-    const lado = DeadlineRingSize.l;
-    return LayoutBuilder(builder: (context, restricciones) {
-      final ancho = restricciones.maxWidth;
-      final anchoCarril = ancho - _huecoReloj - lado.lado;
-      final anchoEstacion = anchoCarril / estaciones.length;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: lado.lado,
-            child: Stack(children: [
-              // Las estelas van por detrás de los puntos y terminan en el borde izquierdo del reloj.
-              Positioned.fill(
-                child: EstelasTrayecto(
-                  estaciones: estaciones.length,
-                  anchoCarril: anchoCarril,
-                  xFin: ancho - lado.lado,
-                ),
-              ),
-              Row(children: [
-                SizedBox(
-                  width: anchoCarril,
-                  child: Row(children: [
-                    for (var i = 0; i < estaciones.length; i++)
-                      const Expanded(child: Center(child: _Punto())),
-                  ]),
-                ),
-                const SizedBox(width: _huecoReloj),
-                const ExcludeSemantics(
-                  child: DeadlineRing(
-                      vista: _vistaEjemplo, size: lado, decorativo: true),
-                ),
-              ]),
-            ]),
-          ),
-          const SizedBox(height: FgSpace.sp5),
-          IntrinsicHeight(
-            child:
-                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              SizedBox(
-                width: anchoCarril,
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      for (final (titulo, detalle) in estaciones)
-                        SizedBox(
-                          width: anchoEstacion,
-                          child: Padding(
-                            padding: const EdgeInsets.only(right: FgSpace.sp5),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(titulo, style: FgText.label),
-                                  const SizedBox(height: FgSpace.sp2),
-                                  Text(detalle, style: FgText.body),
-                                ]),
-                          ),
-                        ),
-                    ]),
-              ),
-              const SizedBox(width: _huecoReloj),
-              SizedBox(
-                width: lado.lado,
-                child: const _LeyendaReloj(),
-              ),
-            ]),
-          ),
-        ],
-      );
-    });
-  }
-}
-
-class _Vertical extends StatelessWidget {
-  const _Vertical({required this.estaciones});
-
-  final List<(String, String)> estaciones;
-
-  @override
-  Widget build(BuildContext context) => IntrinsicHeight(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (var i = 0; i < estaciones.length; i++)
-              IntrinsicHeight(
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        width: FgSpace.sp6 + FgSpace.sp2,
-                        child: Stack(children: [
-                          Positioned.fill(
-                            child: RielVertical(
-                              primera: i == 0,
-                              ultima: i == estaciones.length - 1,
-                              centroY: FgSpace.sp3,
-                              indice: i,
-                              total: estaciones.length,
-                            ),
-                          ),
-                          const Positioned(
-                              left: FgSpace.sp3,
-                              top: FgSpace.sp1,
-                              child: _Punto()),
-                        ]),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: FgSpace.sp6),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(estaciones[i].$1, style: FgText.label),
-                                const SizedBox(height: FgSpace.sp2),
-                                Text(estaciones[i].$2, style: FgText.body),
-                              ]),
-                        ),
-                      ),
-                    ]),
-              ),
-          ],
-        ),
-      );
-}
-
-/// Punto de estación: azul de marca con aro del color de la banda, para separarlo de la estela.
-class _Punto extends StatelessWidget {
-  const _Punto();
+  final int numero;
 
   @override
   Widget build(BuildContext context) => Container(
-        width: FgSpace.sp4,
-        height: FgSpace.sp4,
+        width: FgSize.ctrlSm,
+        height: FgSize.ctrlSm,
+        alignment: Alignment.center,
         decoration: const BoxDecoration(
-          color: FgColors.azul600,
-          shape: BoxShape.circle,
-          border: Border.fromBorderSide(
-              BorderSide(color: FgColors.superficie, width: FgBorder.w4)),
+            color: FgColors.azul600, shape: BoxShape.circle),
+        child: ExcludeSemantics(
+          child: Text('$numero',
+              style: FgText.num(FgText.label).copyWith(color: FgColors.blanco)),
         ),
+      );
+}
+
+/// Texto de un paso: el número va en la semántica para que el lector lo diga antes del título.
+class _TextoPaso extends StatelessWidget {
+  const _TextoPaso(
+      {required this.numero, required this.titulo, required this.detalle});
+
+  final int numero;
+  final String titulo, detalle;
+
+  @override
+  Widget build(BuildContext context) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Semantics(
+            label: 'Paso $numero. $titulo',
+            excludeSemantics: true,
+            child: Text(titulo, style: FgText.label)),
+        const SizedBox(height: FgSpace.sp2),
+        Text(detalle, style: FgText.body),
+      ]);
+}
+
+/// Paso en fila (escritorio): número y línea hacia el siguiente, texto debajo.
+class _PasoFila extends StatelessWidget {
+  const _PasoFila(
+      {required this.numero,
+      required this.titulo,
+      required this.detalle,
+      required this.ultimo});
+
+  final int numero;
+  final String titulo, detalle;
+  final bool ultimo;
+
+  @override
+  Widget build(BuildContext context) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          _NumeroPaso(numero),
+          if (!ultimo) ...[
+            const SizedBox(width: FgSpace.sp3),
+            Expanded(child: Container(height: FgBorder.w2, color: FgColors.azul200)),
+            const SizedBox(width: FgSpace.sp3),
+          ],
+        ]),
+        const SizedBox(height: FgSpace.sp5),
+        Padding(
+          padding: const EdgeInsets.only(right: FgSpace.sp6),
+          child: _TextoPaso(numero: numero, titulo: titulo, detalle: detalle),
+        ),
+      ]);
+}
+
+/// Paso en columna (tablet y móvil): número a la izquierda y línea vertical hacia el siguiente.
+class _PasoColumna extends StatelessWidget {
+  const _PasoColumna(
+      {required this.numero,
+      required this.titulo,
+      required this.detalle,
+      required this.ultimo});
+
+  final int numero;
+  final String titulo, detalle;
+  final bool ultimo;
+
+  @override
+  Widget build(BuildContext context) => IntrinsicHeight(
+        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Column(children: [
+            _NumeroPaso(numero),
+            if (!ultimo)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: FgSpace.sp2),
+                  child: Container(width: FgBorder.w2, color: FgColors.azul200),
+                ),
+              ),
+          ]),
+          const SizedBox(width: FgSpace.sp4),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                  top: FgSpace.sp2, bottom: ultimo ? 0 : FgSpace.sp6),
+              child: _TextoPaso(numero: numero, titulo: titulo, detalle: detalle),
+            ),
+          ),
+        ]),
       );
 }
 
@@ -505,8 +461,8 @@ const _caminoDomicilio = _Camino(
   ],
 );
 
-/// Dos caminos con un selector y un flujo de íconos con palabra. Al elegir un camino, sus pasos se
-/// encienden en orden; sin movimiento, aparecen ya encendidos.
+/// Dos caminos con un selector y un flujo de íconos con palabra, dentro de un solo panel. Al elegir
+/// un camino, sus pasos se encienden en orden; sin movimiento, aparecen ya encendidos.
 class LandingCaminos extends StatefulWidget {
   const LandingCaminos({super.key});
 
@@ -569,14 +525,28 @@ class _LandingCaminosState extends State<LandingCaminos>
               selected: !_pendiente,
               onPressed: () => _elegir(false)),
         ]),
-        const SizedBox(height: FgSpace.sp6),
-        _FlujoEnvio(pasos: pasos, progreso: _flujo, ancho: ancha),
-        const SizedBox(height: FgSpace.sp7),
-        AnimatedSwitcher(
-          duration: FgMotion.reducir(context, FgMotion.media),
-          child: KeyedSubtree(
-            key: ValueKey(_pendiente),
-            child: _pendiente ? _caminoPendiente : _caminoDomicilio,
+        const SizedBox(height: FgSpace.sp5),
+        // Un solo panel para el camino elegido: el flujo y sus datos se leen juntos.
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(ancha ? FgSpace.sp7 : FgSpace.sp5),
+          decoration: BoxDecoration(
+            color: FgColors.fondo,
+            borderRadius: BorderRadius.circular(FgRadius.lg),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _FlujoEnvio(pasos: pasos, progreso: _flujo, ancho: ancha),
+              const SizedBox(height: FgSpace.sp7),
+              AnimatedSwitcher(
+                duration: FgMotion.reducir(context, FgMotion.media),
+                child: KeyedSubtree(
+                  key: ValueKey(_pendiente),
+                  child: _pendiente ? _caminoPendiente : _caminoDomicilio,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -611,7 +581,7 @@ class _FlujoEnvio extends StatelessWidget {
                 children: [
                   for (var i = 0; i < pasos.length; i++) ...[
                     if (i > 0) const SizedBox(height: FgSpace.sp3),
-                    _PasoFila(paso: pasos[i], encendido: i < encendidos),
+                    _EstadoFila(paso: pasos[i], encendido: i < encendidos),
                   ],
                 ]);
           }
@@ -632,7 +602,8 @@ class _FlujoEnvio extends StatelessWidget {
                 ),
               SizedBox(
                 width: 112,
-                child: _PasoColumna(paso: pasos[i], encendido: i < encendidos),
+                child:
+                    _EstadoColumna(paso: pasos[i], encendido: i < encendidos),
               ),
             ],
           ]);
@@ -642,9 +613,9 @@ class _FlujoEnvio extends StatelessWidget {
   }
 }
 
-/// Paso en horizontal: círculo con ícono y palabra debajo.
-class _PasoColumna extends StatelessWidget {
-  const _PasoColumna({required this.paso, required this.encendido});
+/// Estado en horizontal: círculo con ícono y palabra debajo.
+class _EstadoColumna extends StatelessWidget {
+  const _EstadoColumna({required this.paso, required this.encendido});
 
   final _PasoEnvio paso;
   final bool encendido;
@@ -663,9 +634,9 @@ class _PasoColumna extends StatelessWidget {
       );
 }
 
-/// Paso en vertical (móvil): círculo a la izquierda, palabra a la derecha.
-class _PasoFila extends StatelessWidget {
-  const _PasoFila({required this.paso, required this.encendido});
+/// Estado en vertical (móvil): círculo a la izquierda, palabra a la derecha.
+class _EstadoFila extends StatelessWidget {
+  const _EstadoFila({required this.paso, required this.encendido});
 
   final _PasoEnvio paso;
   final bool encendido;
@@ -724,13 +695,13 @@ class _Camino extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       LayoutBuilder(builder: (context, restricciones) {
-        // En pantallas anchas cada dato es una columna: el camino ocupa el ancho de la sección.
-        final columnas = restricciones.maxWidth >= FgBreakpoint.tablet;
+        // En pantallas anchas cada dato es una columna: el camino ocupa el ancho del panel.
+        final columnas = restricciones.maxWidth >= FgBreakpoint.tablet - FgSpace.sp9;
         final celdas = [for (final fila in filas) _Celda(fila: fila)];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(titulo, style: FgText.h2),
+            Text(titulo, style: FgText.h3),
             const SizedBox(height: FgSpace.sp5),
             if (columnas)
               Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -767,13 +738,15 @@ class _Celda extends StatelessWidget {
             Text(fila.etiqueta, style: FgText.caption),
             const SizedBox(height: FgSpace.sp1),
             Text(fila.valor,
-                style: fila.destacada ? FgText.display : FgText.body),
+                style: fila.destacada
+                    ? FgText.display.copyWith(color: FgColors.azul800)
+                    : FgText.body),
           ],
         ),
       );
 }
 
-/// Línea entre dos pasos: gris de fondo y azul de marca que se llena con [avance] (0 a 1).
+/// Línea entre dos estados: gris de fondo y azul de marca que se llena con [avance] (0 a 1).
 class _Linea extends StatelessWidget {
   const _Linea({required this.avance});
 
@@ -793,6 +766,7 @@ class _Linea extends StatelessWidget {
 }
 
 /// Quién participa y qué hace cada uno (PRODUCT §3).
+/// Escritorio: cuatro columnas. Tablet: dos. Móvil: una.
 class LandingRoles extends StatelessWidget {
   const LandingRoles({super.key});
 
@@ -821,8 +795,13 @@ class LandingRoles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ancha = landingAncha(context);
-    final filas = [
+    final ancho = MediaQuery.sizeOf(context).width;
+    final columnas = ancho >= FgBreakpoint.desktop
+        ? 4
+        : ancho >= FgBreakpoint.tablet
+            ? 2
+            : 1;
+    final roles = [
       for (final (icono, titulo, detalle) in _roles)
         _Rol(icono: icono, titulo: titulo, detalle: detalle),
     ];
@@ -830,16 +809,17 @@ class LandingRoles extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const _Titular('Quién participa'),
-        const SizedBox(height: FgSpace.sp5),
-        if (ancha)
+        const SizedBox(height: FgSpace.sp7),
+        for (var fila = 0; fila < roles.length; fila += columnas) ...[
+          if (fila > 0) const SizedBox(height: FgSpace.sp6),
           Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Expanded(child: Column(children: [filas[0], filas[1]])),
-            const SizedBox(width: FgSpace.sp6),
-            Expanded(child: Column(children: [filas[2], filas[3]])),
-          ])
-        else
-          Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch, children: filas),
+            for (var i = fila; i < fila + columnas; i++) ...[
+              if (i > fila) const SizedBox(width: FgSpace.sp6),
+              Expanded(
+                  child: i < roles.length ? roles[i] : const SizedBox.shrink()),
+            ],
+          ]),
+        ],
       ],
     );
   }
@@ -853,29 +833,27 @@ class _Rol extends StatelessWidget {
   final String titulo, detalle;
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: FgSpace.sp4),
-        decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: FgColors.linea))),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          ExcludeSemantics(
-              child:
-                  Icon(icono, size: FgSize.iconoMd, color: FgColors.azul600)),
-          const SizedBox(width: FgSpace.sp4),
-          Expanded(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(titulo, style: FgText.label),
-              const SizedBox(height: FgSpace.sp1),
-              Text(detalle, style: FgText.body),
-            ]),
+  Widget build(BuildContext context) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        ExcludeSemantics(
+          child: Container(
+            width: FgSize.tapMin,
+            height: FgSize.tapMin,
+            decoration: BoxDecoration(
+              color: FgColors.azul100,
+              borderRadius: BorderRadius.circular(FgRadius.md),
+            ),
+            child: Icon(icono, size: FgSize.iconoMd, color: FgColors.azul700),
           ),
-        ]),
-      );
+        ),
+        const SizedBox(height: FgSpace.sp4),
+        Text(titulo, style: FgText.label),
+        const SizedBox(height: FgSpace.sp2),
+        Text(detalle, style: FgText.body),
+      ]);
 }
 
 /// Lo que FarmaGo no decide: la frontera de alcance, dicha sin rodeos (manual §1).
-/// Va en una banda de color propia, sin tarjeta.
 class LandingNoHace extends StatelessWidget {
   const LandingNoHace({super.key});
 
@@ -925,7 +903,8 @@ class LandingNoHace extends StatelessWidget {
       );
 }
 
-/// Cierre con una sola acción: crear cuenta (el primario ya está en el hero).
+/// Cierre con una sola acción: crear cuenta. Va sobre azul oscuro de marca para marcar el final del
+/// recorrido; el botón secundario tiene fondo blanco opaco, así se lee sobre el azul.
 class LandingCierre extends StatelessWidget {
   const LandingCierre({super.key, required this.onRegister});
 
@@ -934,14 +913,15 @@ class LandingCierre extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ancha = landingAncha(context);
-    const texto = Column(
+    final texto = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Titular('¿Tu medicamento quedó pendiente?'),
-        SizedBox(height: FgSpace.sp3),
+        const _Titular('¿Tu medicamento quedó pendiente?',
+            color: FgColors.blanco),
+        const SizedBox(height: FgSpace.sp3),
         Text(
           'Si eres paciente, crea tu cuenta para ver el estado de tus medicamentos. Las cuentas de las EPS las asigna un administrador.',
-          style: FgText.bodyLg,
+          style: FgText.bodyLg.copyWith(color: FgColors.azul100),
         ),
       ],
     );
@@ -955,12 +935,12 @@ class LandingCierre extends StatelessWidget {
     if (!ancha) {
       return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         texto,
-        const SizedBox(height: FgSpace.sp5),
+        const SizedBox(height: FgSpace.sp6),
         boton,
       ]);
     }
     return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-      const Expanded(child: _Medida(child: texto)),
+      Expanded(child: _Medida(child: texto)),
       const SizedBox(width: FgSpace.sp6),
       boton,
     ]);

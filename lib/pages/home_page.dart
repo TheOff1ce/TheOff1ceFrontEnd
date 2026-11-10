@@ -209,7 +209,7 @@ class _Contenido extends StatelessWidget {
             if (movil) ...[
               // Encabezado móvil con la marca tipográfica (manual §2): el logo no cabe a este tamaño.
               Row(children: [
-                const FgWordmark(),
+                const FgMarca(compacta: true),
                 const Spacer(),
                 ListenableBuilder(
                   listenable: _w.notifications,

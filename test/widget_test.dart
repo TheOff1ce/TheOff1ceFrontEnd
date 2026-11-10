@@ -140,9 +140,9 @@ void main() {
       await tester.pumpAndSettle();
       // Los títulos en el orden en que deben leerse. Cada uno debe quedar más abajo que el anterior.
       const titulos = [
+        'Pendiente OM-1042',
         'Dos caminos, una misma red',
         'Así avanza un pendiente',
-        'Pendiente OM-1042',
         'Quién participa',
         '¿Tu medicamento quedó pendiente?',
         'Lo que FarmaGo no decide',

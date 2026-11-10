@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../components/farmago/estampado.dart';
 import '../components/feedback.dart';
 import '../errors/app_error.dart';
 import '../errors/error_messages.dart';
@@ -10,7 +11,7 @@ class SessionLoadingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Scaffold(
-        body: Center(child: DelayedSpinner(size: 38, label: 'Comprobando tu sesión')),
+        body: FgFondo(child: Center(child: DelayedSpinner(size: 38, label: 'Comprobando tu sesión'))),
       );
 }
 
@@ -24,7 +25,7 @@ class SessionUnavailablePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(
+        body: FgFondo(child: SafeArea(
           child: ErrorStateView(
             title: 'No pudimos comprobar tu sesión',
             error: error ??
@@ -34,7 +35,7 @@ class SessionUnavailablePage extends StatelessWidget {
             secondaryLabel: 'Ir a iniciar sesión',
             onSecondary: onContinue,
           ),
-        ),
+        )),
       );
 }
 
@@ -84,14 +85,14 @@ class MissingAnalysisStepPage extends StatelessWidget {
           title: const Text('Analizar fórmula'),
           leading: IconButton(tooltip: 'Volver a seleccionar la fórmula', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
         ),
-        body: _CenteredMessage(
+        body: FgFondo(child: _CenteredMessage(
           icon: Icons.photo_library_outlined,
           title: 'Primero selecciona una fórmula',
           message: 'Este paso necesita una imagen para continuar con el análisis.',
           actionLabel: 'Seleccionar una fórmula',
           actionIcon: Icons.arrow_back,
           onAction: onBack,
-        ),
+        )),
       );
 }
 
@@ -103,14 +104,14 @@ class UnknownRoutePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Página no encontrada')),
-        body: _CenteredMessage(
+        body: FgFondo(child: _CenteredMessage(
           icon: Icons.explore_off_outlined,
           title: 'No encontramos esta pantalla',
           message: 'Puede que el enlace haya cambiado. Vuelve al inicio para continuar.',
           actionLabel: 'Ir al inicio',
           actionIcon: Icons.home_outlined,
           onAction: onHome,
-        ),
+        )),
       );
 }
 
