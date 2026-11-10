@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/farmago_tokens.dart';
 import 'buttons.dart';
+import 'estampado.dart';
 
 /// Marco de pantalla del manual (§5, §8.12): encabezado de 56 px en móvil (con el título como
 /// `<h1>`) o de 64 px en tablet/desktop (con el `<h1>` en el contenido), contenido centrado de
@@ -77,7 +78,7 @@ class FgScreen extends StatelessWidget {
       body: Column(
         children: [
           _Encabezado(titulo: compacto ? titulo : null, onBack: onBack, acciones: acciones, compacto: compacto),
-          Expanded(child: contenido),
+          Expanded(child: FgFondo(child: contenido)),
           if (barraAccion != null)
             barraAccionConEntrada
                 ? _EntradaDesdeAbajo(child: _BarraAccion(child: barraAccion!))

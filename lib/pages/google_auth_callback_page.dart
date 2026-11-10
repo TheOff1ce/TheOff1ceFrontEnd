@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/app_routes.dart';
 import '../app/theme/app_theme.dart';
+import '../components/farmago/estampado.dart';
 import '../auth/auth_controller.dart';
 import '../errors/app_error.dart';
 import '../errors/error_mapper.dart';
@@ -50,7 +51,7 @@ class _GoogleAuthCallbackPageState extends State<GoogleAuthCallbackPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: Center(
+        body: FgFondo(child: Center(
           child: Semantics(
             liveRegion: true,
             child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -63,6 +64,6 @@ class _GoogleAuthCallbackPageState extends State<GoogleAuthCallbackPage> {
               Text('Comprobando tu acceso…', style: context.text.headlineSmall),
             ]),
           ),
-        ),
+        )),
       );
 }

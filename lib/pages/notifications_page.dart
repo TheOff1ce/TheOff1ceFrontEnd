@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../components/farmago/estampado.dart';
 import '../components/feedback.dart';
 import '../notifications/notification_controller.dart';
 import '../notifications/notification_item.dart';
@@ -17,7 +18,7 @@ class NotificationsPage extends StatelessWidget {
           title: const Text('Notificaciones'),
           leading: IconButton(tooltip: 'Volver al inicio', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
         ),
-        body: SafeArea(
+        body: FgFondo(child: SafeArea(
           child: ListenableBuilder(
             listenable: notifications,
             builder: (context, _) => Center(
@@ -29,7 +30,7 @@ class NotificationsPage extends StatelessWidget {
               ),
             ),
           ),
-        ),
+        )),
       );
 }
 

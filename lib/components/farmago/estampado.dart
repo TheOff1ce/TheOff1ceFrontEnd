@@ -211,3 +211,25 @@ class _EstampadoPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _EstampadoPainter oldDelegate) => oldDelegate.opacidad != opacidad;
 }
+
+/// Fondo de pantalla de FarmaGo: color `fondo` con el estampado de figuras de marca. Lo usan todas
+/// las pantallas para que compartan la misma identidad. En móvil el estampado es más discreto.
+class FgFondo extends StatelessWidget {
+  const FgFondo({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
+    return ColoredBox(
+      color: FgColors.fondo,
+      child: SizedBox.expand(
+        child: FgEstampado(
+          opacidad: compacto ? FgOpacity.estampadoMovil : null,
+          child: child,
+        ),
+      ),
+    );
+  }
+}

@@ -4,41 +4,17 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../utils/validators.dart';
 import '../app/theme/farmago_tokens.dart';
+import 'farmago/estampado.dart';
+import 'farmago/wordmark.dart';
 
+/// Marca de las pantallas de acceso: el símbolo de la app y el nombre (ver [FgMarca]).
 class FarmaGoMark extends StatelessWidget {
   const FarmaGoMark({super.key, this.compact = false});
 
   final bool compact;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-        label: 'FARMA GO',
-        header: true,
-        child: ExcludeSemantics(
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Container(
-              width: compact ? 38 : 48,
-              height: compact ? 38 : 48,
-              decoration: BoxDecoration(
-                color: context.colors.primary,
-                borderRadius: BorderRadius.circular(AppRadii.s),
-              ),
-              child: Icon(Icons.local_pharmacy_rounded,
-                  color: context.colors.onPrimary),
-            ),
-            const SizedBox(width: AppSpacing.s + 2),
-            Text(
-              'FARMA GO',
-              style:
-                  (compact ? context.text.titleMedium : context.text.titleLarge)
-                      ?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: context.colors.primary,
-                          letterSpacing: -0.5),
-            ),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) => FgMarca(compacta: compact);
 }
 
 /// Layout shared by every public authentication screen.
@@ -61,7 +37,7 @@ class AuthShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: SafeArea(
+        body: FgFondo(child: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 500),
@@ -124,7 +100,7 @@ class AuthShell extends StatelessWidget {
               ),
             ),
           ),
-        ),
+        )),
       );
 }
 
@@ -386,7 +362,7 @@ class LoginLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FgColors.fondo,
-      body: SafeArea(
+      body: FgFondo(child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth >= FgBreakpoint.desktop;
@@ -413,10 +389,9 @@ class LoginLayout extends StatelessWidget {
 
             return Row(
               children: [
-                // Columna izquierda: información de FarmaGo.
+                // Columna izquierda: información de FarmaGo, sobre el fondo con estampado de marca.
                 Expanded(
                   child: Container(
-                    color: FgColors.azul100,
                     padding: const EdgeInsets.all(FgSpace.sp8),
                     child: Center(
                       child: ConstrainedBox(
@@ -495,7 +470,7 @@ class LoginLayout extends StatelessWidget {
             );
           },
         ),
-      ),
+      )),
     );
   }
 

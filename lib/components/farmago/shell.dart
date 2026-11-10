@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/farmago_tokens.dart';
+import 'wordmark.dart';
 import 'buttons.dart';
 import 'focus_ring.dart';
 
@@ -119,7 +120,7 @@ class _BarraLateral extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: FgSpace.sp5, horizontal: colapsada ? 0 : FgSpace.sp2),
                   child: colapsada
-                      ? const Center(child: Icon(Icons.local_pharmacy_outlined, size: FgSize.iconoMd, color: FgColors.azul600))
+                      ? const Center(child: FgLogoSimbolo(lado: FgSize.ctrlSm))
                       : Image.asset(
                           'assets/images/logo_farmago.png',
                           width: FgSize.logoBarraLateral,

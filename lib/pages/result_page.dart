@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
 import '../components/medication_card.dart';
 import '../components/ui.dart';
@@ -21,7 +22,7 @@ class ResultPage extends StatelessWidget {
         title: const Text('Resultado del análisis'),
         leading: IconButton(tooltip: 'Volver al inicio', onPressed: onHome, icon: const Icon(Icons.arrow_back)),
       ),
-      body: SafeArea(
+      body: FgFondo(child: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 640),
@@ -84,7 +85,7 @@ class ResultPage extends StatelessWidget {
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 }

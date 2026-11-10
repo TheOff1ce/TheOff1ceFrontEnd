@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/app_theme.dart';
+import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
 import '../components/camera_capture_page.dart';
 import '../components/farmago/buttons.dart';
@@ -72,7 +73,7 @@ class _UploadPageState extends State<UploadPage> {
         title: const Text('Analizar fórmula'),
         leading: IconButton(tooltip: 'Volver al inicio', onPressed: widget.onBack, icon: const Icon(Icons.arrow_back)),
       ),
-      body: SafeArea(
+      body: FgFondo(child: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
@@ -145,7 +146,7 @@ class _UploadPageState extends State<UploadPage> {
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 

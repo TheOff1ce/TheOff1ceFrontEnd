@@ -27,6 +27,7 @@ flutter:
   # Logo oficial FarmaGo con fondo transparente, 640 px. El original vive en docs/logo/logo.png.
   assets:
     - assets/images/logo_farmago.png
+    - assets/images/logo_simbolo.png
     # Logo de Google para "Continuar con Google" (descargar de la guía oficial de marca).
     # Descomenta esta línea cuando el archivo exista; sin él el botón muestra una "G" neutra.
     - assets/images/google_g.png

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/app_theme.dart';
+import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
 import '../components/feedback.dart';
 import '../components/ui.dart';
@@ -89,12 +90,12 @@ class _AnalysisPageState extends State<AnalysisPage> {
         title: const Text('Analizar fórmula'),
         leading: IconButton(tooltip: 'Volver a la foto', onPressed: _cancel, icon: const Icon(Icons.arrow_back)),
       ),
-      body: SafeArea(
+      body: FgFondo(child: SafeArea(
         child: switch (state) {
           AnalysisFailed(:final error) => _failure(error),
           _ => _AnalysisInProgress(image: widget.image, slow: _slow, onCancel: _cancel),
         },
-      ),
+      )),
     );
   }
 

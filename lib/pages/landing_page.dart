@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
 import '../app/theme/farmago_tokens.dart';
+import '../components/farmago/estampado.dart';
+import '../components/farmago/wordmark.dart';
 import '../components/landing/landing_sections.dart';
 
 /// Landing pública de FarmaGo. Presenta el módulo de pendientes con el reloj de 48 h como gesto principal.
 ///
-/// Las secciones se reparten en bandas de color alternadas (fondo, superficie, fondo hundido) en
-/// lugar de tarjetas: el ritmo lo marca el cambio de superficie.
+/// Las secciones se reparten en bandas: las transparentes dejan ver el fondo con el estampado de
+/// marca (el mismo de todas las pantallas) y se alternan con bandas blancas y de color.
 class LandingPage extends StatefulWidget {
   const LandingPage(
       {super.key, required this.onLogin, required this.onRegister});
@@ -46,7 +48,7 @@ class _LandingPageState extends State<LandingPage> {
     final aire = ancha ? FgSpace.sp9 : FgSpace.sp7;
     return Scaffold(
       backgroundColor: FgColors.fondo,
-      body: SafeArea(
+      body: FgFondo(child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,7 +66,7 @@ class _LandingPageState extends State<LandingPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const _Cabecera(),
-                      SizedBox(height: ancha ? FgSpace.sp8 : FgSpace.sp6),
+                      SizedBox(height: ancha ? FgSpace.sp9 : FgSpace.sp7),
                       LandingHero(onLogin: onLogin, onRegister: onRegister),
                     ]),
               ),
@@ -84,6 +86,7 @@ class _LandingPageState extends State<LandingPage> {
               _Banda(
                   margen: margen,
                   aire: aire,
+                  color: FgColors.azul800,
                   child: LandingCierre(onRegister: onRegister)),
               _Banda(
                   margen: margen,
@@ -98,7 +101,7 @@ class _LandingPageState extends State<LandingPage> {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 }
@@ -110,7 +113,7 @@ class _Banda extends StatelessWidget {
       {required this.margen,
       required this.aire,
       required this.child,
-      this.color = FgColors.fondo});
+      this.color = Colors.transparent});
 
   final double margen, aire;
   final Widget child;
@@ -137,41 +140,7 @@ class _Cabecera extends StatelessWidget {
   const _Cabecera();
 
   @override
-  Widget build(BuildContext context) => const Row(children: [_Marca()]);
-}
-
-/// Marca tipográfica con el mismo símbolo de la app (manual §2): sin lema, sin recoloreo.
-class _Marca extends StatelessWidget {
-  const _Marca();
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-        label: 'FARMA GO',
-        header: true,
-        child: ExcludeSemantics(
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Container(
-              width: FgSize.tapMin,
-              height: FgSize.tapMin,
-              decoration: BoxDecoration(
-                color: FgColors.azul600,
-                borderRadius: BorderRadius.circular(FgRadius.sm),
-              ),
-              child: const Icon(Icons.local_pharmacy_rounded,
-                  color: FgColors.blanco),
-            ),
-            const SizedBox(width: FgSpace.sp3),
-            Flexible(
-              child: Text(
-                'FARMA GO',
-                overflow: TextOverflow.ellipsis,
-                style: FgText.label.copyWith(
-                    color: FgColors.azul800, fontWeight: FontWeight.w800),
-              ),
-            ),
-          ]),
-        ),
-      );
+  Widget build(BuildContext context) => const Row(children: [FgMarca()]);
 }
 
 /// Pie de cierre centrado: una línea divisoria, el logo oficial (su lema va dentro del arte) y el
