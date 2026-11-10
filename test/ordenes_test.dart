@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:farma_go/components/farmago/ordenes/orden_sellos.dart';
 import 'package:farma_go/errors/app_error.dart';
 import 'package:farma_go/errors/error_mapper.dart';
+import 'package:farma_go/errors/error_messages.dart';
 import 'package:farma_go/hooks/domicilio_orden_controller.dart';
 import 'package:farma_go/hooks/ordenes_controller.dart';
 import 'package:farma_go/types/ordenes.dart';
@@ -71,6 +72,16 @@ void main() {
       expect(e.kind, AppErrorKind.conflict);
       expect(e.code, 'ELEGIBILIDAD_CAMBIADA');
       expect(e.detalles, isNotNull);
+    });
+
+    test('DOMICILIO_RECHAZADO pide revisar la dirección y se puede reintentar', () {
+      final e = ErrorMapper.fromOrdenes(422, {
+        'error': {'code': 'DOMICILIO_RECHAZADO'},
+      });
+      expect(e.kind, AppErrorKind.validation);
+      expect(e.retryable, isTrue);
+      expect(e.userMessage, ErrorMessages.domicilioRechazado);
+      expect(e.userMessage, contains('dirección'));
     });
 
     test('lee el code anidado en error', () {
@@ -247,6 +258,7 @@ void main() {
         service: service,
         orden: orden,
         medicamentoIds: ['MED-METFORMINA-850', 'MED-LOSARTAN-50'],
+        direccionInicial: 'Calle 100 # 15-20, Bogotá',
         escalon: Duration.zero,
       );
       await d.verificar();
@@ -308,6 +320,62 @@ void main() {
       d.dispose();
     });
 
+    test('el pedido viaja con la dirección de entrega', () async {
+      Map<String, dynamic>? cuerpo;
+      final service = servicioFeliz(alVer: (r) {
+        if (r.url.path.endsWith('/domicilio') && r.method == 'POST') {
+          cuerpo = jsonDecode(r.body) as Map<String, dynamic>;
+        }
+      });
+      final d = DomicilioOrdenController(
+        service: service,
+        orden: Orden.fromJson(ordenJson()),
+        medicamentoIds: ['MED-LOSARTAN-50'],
+        direccionInicial: 'Calle 100 # 15-20, Bogotá',
+        escalon: Duration.zero,
+      );
+      await d.verificar();
+      await d.confirmar();
+      expect(d.fase, FaseDomicilio.exito);
+      expect(cuerpo?['direccionEntrega'], 'Calle 100 # 15-20, Bogotá');
+      d.dispose();
+    });
+
+    test('sin una dirección válida no se envía nada', () async {
+      var envios = 0;
+      final service = servicioFeliz(alVer: (r) {
+        if (r.url.path.endsWith('/domicilio') && r.method == 'POST') envios++;
+      });
+      final d = DomicilioOrdenController(
+        service: service,
+        orden: Orden.fromJson(ordenJson()),
+        medicamentoIds: ['MED-LOSARTAN-50'],
+        escalon: Duration.zero,
+      );
+      await d.verificar();
+      expect(d.direccionValida, isFalse);
+      await d.confirmar();
+      d.cambiarDireccion('  Cl 1 ');
+      expect(d.direccionValida, isFalse);
+      await d.confirmar();
+      expect(envios, 0);
+      expect(d.fase, FaseDomicilio.listo);
+      d.cambiarDireccion('Calle 100 # 15-20, Bogotá');
+      expect(d.direccionValida, isTrue);
+      d.dispose();
+    });
+
+    test('la dirección arranca con la del perfil del paciente', () async {
+      final c = OrdenesController(servicioFeliz(), direccionPerfil: () => 'Carrera 7 # 72-41, Bogotá');
+      await c.recargar();
+      final orden = c.respuesta!.ordenes.firstWhere((o) => o.medicamentos.any((m) => m.elegibleParaDomicilio));
+      c.alternar(orden, orden.medicamentos.firstWhere((m) => m.elegibleParaDomicilio));
+      final d = c.nuevoDomicilio();
+      expect(d.direccionEntrega, 'Carrera 7 # 72-41, Bogotá');
+      d.dispose();
+      c.dispose();
+    });
+
     test('el reintento reutiliza el solicitudId y una selección nueva genera otro', () async {
       final ids = <String>[];
       var intentos = 0;
@@ -320,7 +388,11 @@ void main() {
         return ok({});
       });
       final orden = Orden.fromJson(ordenJson());
-      final d = DomicilioOrdenController(service: service, orden: orden, medicamentoIds: ['MED-METFORMINA-850']);
+      final d = DomicilioOrdenController(
+          service: service,
+          orden: orden,
+          medicamentoIds: ['MED-METFORMINA-850'],
+          direccionInicial: 'Calle 100 # 15-20, Bogotá');
       await d.confirmar();
       expect(d.fase, FaseDomicilio.errorEnvio);
       await d.confirmar();
@@ -328,7 +400,11 @@ void main() {
       expect(ids.length, 2);
       expect(ids[0], ids[1]);
       expect(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$').hasMatch(ids[0]), isTrue);
-      final otro = DomicilioOrdenController(service: service, orden: orden, medicamentoIds: ['MED-METFORMINA-850']);
+      final otro = DomicilioOrdenController(
+          service: service,
+          orden: orden,
+          medicamentoIds: ['MED-METFORMINA-850'],
+          direccionInicial: 'Calle 100 # 15-20, Bogotá');
       await otro.confirmar();
       expect(ids.last, isNot(ids.first));
       d.dispose();
@@ -360,7 +436,7 @@ void main() {
           },
         }, 409);
       });
-      final c = OrdenesController(service);
+      final c = OrdenesController(service, direccionPerfil: () => 'Calle 100 # 15-20, Bogotá');
       await c.recargar();
       final primera = c.respuesta!.ordenes.first;
       c.alternar(primera, primera.medicamentos[0]);
@@ -390,7 +466,7 @@ void main() {
         }
         return ok({'code': 'ORDEN_VENCIDA'}, 409);
       });
-      final c = OrdenesController(service);
+      final c = OrdenesController(service, direccionPerfil: () => 'Calle 100 # 15-20, Bogotá');
       await c.recargar();
       final primera = c.respuesta!.ordenes.first;
       c.alternar(primera, primera.medicamentos[0]);
@@ -407,7 +483,7 @@ void main() {
     });
 
     test('con el envío aceptado la lista no se recarga sola y queda el aviso con la referencia', () async {
-      final c = OrdenesController(servicioFeliz());
+      final c = OrdenesController(servicioFeliz(), direccionPerfil: () => 'Calle 100 # 15-20, Bogotá');
       await c.recargar();
       final primera = c.respuesta!.ordenes.first;
       c.alternar(primera, primera.medicamentos[0]);

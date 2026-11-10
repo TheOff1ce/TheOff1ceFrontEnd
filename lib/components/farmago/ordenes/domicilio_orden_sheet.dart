@@ -6,6 +6,7 @@ import '../../../types/ordenes.dart';
 import '../buttons.dart';
 import '../deadline_ring.dart';
 import '../feedback.dart';
+import '../inputs.dart';
 import '../sello_estado.dart';
 import 'ordenes_textos.dart';
 
@@ -205,11 +206,18 @@ class _Cuerpo extends StatelessWidget {
           filas: [for (final id in c.medicamentoIds) _Fila(nombre: _med(id)?.nombre ?? id, estado: _EstadoFila.consultando)],
         );
       case FaseDomicilio.listo:
-        return _Lista(
-          introduccion: 'Tu EPS confirma ${n == 1 ? 'tu medicamento' : 'tus $n medicamentos'}.',
-          filas: [
-            for (final (i, id) in c.medicamentoIds.indexed)
-              _Fila(nombre: _med(id)?.nombre ?? id, estado: i < c.revelados ? _EstadoFila.confirmado : _EstadoFila.consultando),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _Lista(
+              introduccion: 'Tu EPS confirma ${n == 1 ? 'tu medicamento' : 'tus $n medicamentos'}.',
+              filas: [
+                for (final (i, id) in c.medicamentoIds.indexed)
+                  _Fila(nombre: _med(id)?.nombre ?? id, estado: i < c.revelados ? _EstadoFila.confirmado : _EstadoFila.consultando),
+              ],
+            ),
+            const SizedBox(height: FgSpace.sp4),
+            _CampoDireccion(controlador: c),
           ],
         );
       case FaseDomicilio.enviando:
@@ -255,10 +263,18 @@ class _Cuerpo extends StatelessWidget {
           message: 'No enviamos nada. La orden queda solo para consulta y ya no se puede pedir a domicilio.',
         );
       case FaseDomicilio.errorEnvio:
-        return const FgBanner(
-          kind: FgBannerKind.error,
-          title: 'No pudimos enviar tu pedido',
-          message: 'Domicilios no respondió. Tu selección sigue lista: vuelve a intentarlo.',
+        final rechazado = c.error?.code == 'DOMICILIO_RECHAZADO';
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            FgBanner(
+              kind: FgBannerKind.error,
+              title: 'No pudimos enviar tu pedido',
+              message: rechazado ? c.error!.userMessage : 'Domicilios no respondió. Tu selección sigue lista: vuelve a intentarlo.',
+            ),
+            const SizedBox(height: FgSpace.sp4),
+            _CampoDireccion(controlador: c),
+          ],
         );
       case FaseDomicilio.errorVerificar:
         return const FgBanner(
@@ -267,6 +283,41 @@ class _Cuerpo extends StatelessWidget {
           message: 'No enviamos nada. Vuelve a intentarlo.',
         );
     }
+  }
+}
+
+/// Dirección de entrega, precargada con la del perfil. Sin una válida no se puede confirmar.
+class _CampoDireccion extends StatefulWidget {
+  const _CampoDireccion({required this.controlador});
+
+  final DomicilioOrdenController controlador;
+
+  @override
+  State<_CampoDireccion> createState() => _CampoDireccionState();
+}
+
+class _CampoDireccionState extends State<_CampoDireccion> {
+  late final _texto = TextEditingController(text: widget.controlador.direccionEntrega);
+
+  @override
+  void dispose() {
+    _texto.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.controlador;
+    final vacia = c.direccionEntrega.trim().isEmpty;
+    return FgTextField(
+      label: 'Dirección de entrega',
+      controller: _texto,
+      ayuda: 'Calle, número y ciudad. Ahí te llevamos el pedido.',
+      error: vacia || c.direccionValida ? null : 'Escribe la dirección completa, por ejemplo «Calle 100 # 15-20, Bogotá».',
+      keyboardType: TextInputType.streetAddress,
+      autofillHints: const [AutofillHints.fullStreetAddress],
+      onChanged: c.cambiarDireccion,
+    );
   }
 }
 
@@ -433,7 +484,7 @@ class _Pie extends StatelessWidget {
         );
     final List<Widget> botones = switch (c.fase) {
       FaseDomicilio.verificando => [secundario('Cancelar'), primario(OrdenesTextos.confirmarPedido, null, cargando: true, cargandoEtiqueta: 'Verificando…')],
-      FaseDomicilio.listo => [secundario('Cancelar'), primario(OrdenesTextos.confirmarPedido, c.confirmar)],
+      FaseDomicilio.listo => [secundario('Cancelar'), primario(OrdenesTextos.confirmarPedido, c.direccionValida ? c.confirmar : null)],
       FaseDomicilio.listoConCambios || FaseDomicilio.cambio => [primario('Volver a elegir', () => onSalir())],
       FaseDomicilio.enviando => [primario(OrdenesTextos.confirmarPedido, null, cargando: true, cargandoEtiqueta: 'Enviando…')],
       FaseDomicilio.exito => [
@@ -441,7 +492,7 @@ class _Pie extends StatelessWidget {
           primario('Seguir en Domicilios', () => onSalir(SalidaDomicilio.seguirEnDomicilios)),
         ],
       FaseDomicilio.vencida => [primario('Entendido', () => onSalir())],
-      FaseDomicilio.errorEnvio => [secundario('Cancelar'), primario('Reintentar', c.confirmar)],
+      FaseDomicilio.errorEnvio => [secundario('Cancelar'), primario('Reintentar', c.direccionValida ? c.confirmar : null)],
       FaseDomicilio.errorVerificar => [secundario('Cancelar'), primario('Reintentar', c.verificar)],
     };
     return Container(

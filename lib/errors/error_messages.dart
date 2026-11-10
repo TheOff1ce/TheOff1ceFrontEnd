@@ -111,6 +111,8 @@ abstract final class ErrorMessages {
       'Para no mostrarte datos viejos, no vemos consultas anteriores. Vuelve a intentarlo en unos minutos.';
   static const ordenesForbidden = 'Esta sección es solo para pacientes.';
   static const ordenNotFound = 'Esa orden ya no está disponible.';
+  static const domicilioRechazado =
+      'No pudimos crear el pedido con esa dirección. Revísala e inténtalo de nuevo.';
 
   // Local device
   static const imagePick =
