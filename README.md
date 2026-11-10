@@ -1,14 +1,161 @@
-# Farma Go — Frontend móvil y web
+<div align="center">
 
-Aplicación Flutter para pacientes de FARMA GO: registro e inicio de sesión (correo + código, o Google en web), análisis de fórmulas médicas con IA, resultados y notificaciones. Plataformas soportadas: **Android, iOS y Web**.
+<img src="assets/images/logo_farmago.png" alt="FarmaGo" width="220"/>
 
-## Requisitos
+# 📱 TheOff1ceFrontEnd
 
-- Flutter estable (`flutter --version`).
-- `TheOff1ceAuth` en el puerto 3000 y `TheOff1ceAI` en el puerto 8000 (por ejemplo con `docker compose -f docker-compose-up.yml up --build` desde la carpeta raíz de FarmaGo).
-- Nunca se configuran claves ni secretos en Flutter. El access token de Auth vive solo en memoria y se envía a AI como `Authorization: Bearer`.
+### The FarmaGo app — for patients, couriers, EPS staff and admins
 
-## Preparar
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.3+-0175C2?style=for-the-badge&logo=dart&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)
+![Web](https://img.shields.io/badge/Web-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)
+![Google Maps](https://img.shields.io/badge/Google%20Maps-4285F4?style=for-the-badge&logo=googlemaps&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+
+**📸 Scan your prescription · 🛵 Get it delivered · 📍 Track it live**
+
+</div>
+
+---
+
+## 📑 Table of Contents
+
+1. [Overview](#-overview)
+2. [The FarmaGo Ecosystem](#-the-farmago-ecosystem)
+3. [Tech Stack](#️-tech-stack)
+4. [Architecture](#️-architecture)
+5. [Getting Started](#-getting-started)
+6. [Configuration (`--dart-define`)](#️-configuration---dart-define)
+7. [Backend Endpoints Used](#-backend-endpoints-used)
+8. [App Screens (Routes)](#️-app-screens-routes)
+9. [Pendientes (48-hour deadline)](#️-pendientes-48-hour-deadline)
+10. [Home Delivery & Live Tracking](#-home-delivery--live-tracking)
+11. [Build & Deploy](#️-build--deploy)
+12. [Branch Strategy & Structure](#-branch-strategy--structure)
+
+---
+
+## 📖 Overview
+
+**TheOff1ceFrontEnd** is the Flutter application of **FARMA GO**. Supported platforms: **Android, iOS and Web**.
+
+| 👤 Role | What they can do |
+|---|---|
+| 🧑 **Patient** | Sign up / log in (email + code, or Google on web), analyze prescriptions with AI, see results, request home delivery, track the courier live, confirm delivery with a code, check their pending medications and medical orders. |
+| 🛵 **Courier** (`DELIVERY_DRIVER`) | See available orders, take one, advance its status, share location while delivering. |
+| 🏥 **EPS** | See assigned pending medications and register updates (novedades). |
+| 👑 **Admin** | Manage users and roles, see and cancel any home-delivery order, follow any delivery. |
+
+🔒 **No keys or secrets are ever configured in Flutter.** Auth's access token lives **only in memory** and is sent to every service as `Authorization: Bearer`.
+
+---
+
+## 🧩 The FarmaGo Ecosystem
+
+**FarmaGo** helps patients get their medications: they photograph a medical prescription, an AI reads it, and they can request home delivery and follow the courier live on a map. The platform is split into independent microservices behind a single API Gateway.
+
+```mermaid
+flowchart LR
+    U["📱 Flutter App<br/>(Web · Android · iOS)"] -->|HTTPS| G["🦍 API Gateway<br/>(Kong)"]
+    G -->|/auth · /admin/users| A["🔐 Auth<br/>NestJS + MongoDB"]
+    G -->|/analyze| I["🤖 AI<br/>FastAPI + LLM"]
+    G -->|/home-deliveries| O["🛵 Order Delivery<br/>NestJS + MongoDB/PostgreSQL"]
+    G -->|/deliveries · /socket.io| L["📍 Geolocation<br/>NestJS + Socket.IO"]
+    G -->|/pendientes| P["⏱️ Pendientes<br/>AWS Lambda"]
+    G -->|/ordenes| R["📋 Órdenes<br/>AWS Lambda"]
+    O -->|user's Bearer token| L
+    I -.->|prescription images| S[("Supabase Storage")]
+    L -.->|routes · geocoding| M["🗺️ Google Maps"]
+```
+
+| Repository | Role |
+|---|---|
+| [TheOff1ceFrontEnd](https://github.com/TheOff1ce/TheOff1ceFrontEnd) | Flutter app for patients, couriers, EPS staff and admins |
+| [TheOff1ceApiGateway](https://github.com/TheOff1ce/TheOff1ceApiGateway) | Single entry point (Kong), routing, load balancing, rate limiting |
+| [TheOff1ceAuth](https://github.com/TheOff1ce/TheOff1ceAuth) | Sign-up, login with email code, Google OAuth, JWT, profiles, roles |
+| [TheOff1ceAI](https://github.com/TheOff1ce/TheOff1ceAI) | Reads medications from a prescription photo with OpenAI / Gemini |
+| [TheOff1ceOrderDelivery](https://github.com/TheOff1ce/TheOff1ceOrderDelivery) | Home-delivery board: patients request, couriers take orders |
+| [TheOff1ceGeolocation](https://github.com/TheOff1ce/TheOff1ceGeolocation) | Live tracking: route, ETA, delivery status and courier location |
+
+All services trust the same access token issued by **TheOff1ceAuth** (HS256 JWT, `iss=theoff1ce-auth`, `aud=theoff1ce-api`, 600 s lifetime).
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | **Flutter** (stable, CI uses 3.47.8) + **Dart ≥ 3.3** |
+| UI | **Material 3** with FarmaGo design tokens; fonts **Manrope** and **Atkinson Hyperlegible Next** (SIL OFL) |
+| Routing | **go_router** |
+| HTTP | `http`, `http_parser` |
+| Real time | `socket_io_client` |
+| Maps & location | `google_maps_flutter`, `geolocator` |
+| Camera & images | `camera`, `image_picker` |
+| Storage | `flutter_secure_storage` |
+| Others | `url_launcher`, `web`, `flutter_localizations` |
+| Testing | `flutter_test`, `fake_async`, golden (visual) tests |
+| CI/CD | **GitHub Actions** (analyze, test, build) + **Vercel** |
+
+---
+
+## 🏗️ Architecture
+
+The app separates **UI** (pages and components), **state** (controllers in `hooks/`), **data access** (services and repositories) and **models** (`types/`).
+
+```mermaid
+flowchart TD
+    PG["📄 pages/<br/>screens"] --> CP["🧩 components/<br/>reusable widgets"]
+    PG --> HK["🎛️ hooks/ · auth/<br/>controllers (state)"]
+    HK --> SV["🌐 services/<br/>HTTP + Socket.IO clients"]
+    SV --> TY["📦 types/<br/>models"]
+    SV --> ER["⚠️ errors/<br/>AppError + ErrorMapper"]
+    SV -->|Bearer token| GW["🦍 API Gateway"]
+    APP["⚙️ app/<br/>router · theme · dependencies"] --> PG
+```
+
+### 📁 Folder structure
+
+```text
+lib/
+├── main.dart
+├── app/            # Theme (Material 3 tokens + farmago_tokens), router (go_router), routes, dependency composition
+├── auth/           # Session (refresh every 600 s), password recovery, Auth repository
+├── errors/         # AppError + ErrorMapper + Spanish messages (single place)
+├── services/       # API clients with Bearer: auth, AI, orders, deliveries, ordenes, pendientes, admin;
+│                   # HTTP helpers with timeouts, images, location, Maps loader (web/native)
+├── hooks/          # Controllers: analysis, patient home, orders, driver board, tracking, admin, pendientes…
+├── pages/          # One file per screen (login, home, upload, result, tracking, driver, admin…)
+├── components/     # Reusable widgets
+│   ├── farmago/    # Fg* design-system components (buttons, inputs, shell, badges, ordenes/…)
+│   ├── pendientes/ # Pending-medication cards, table, detail panel
+│   ├── landing/    # Landing page sections
+│   └── account/    # Profile and password forms
+├── notifications/  # Notification controller, model and repository
+├── types/          # Models: auth, medication, analysis, order, delivery, ordenes, pendiente, admin…
+└── utils/          # Constants (service URLs), validators, formatters, polyline decoding
+assets/
+├── fonts/          # Manrope and Atkinson Hyperlegible Next (OFL)
+└── images/         # FarmaGo logo, symbol, Google "G"
+docs/               # Business context, identity manual, design notes
+test/               # Unit, widget and golden tests
+tool/               # Local server to test build/web (SPA routes)
+scripts/            # vercel-build.sh
+android/ ios/ web/  # Platform projects
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- 💙 **Flutter stable** (`flutter --version`)
+- 🌐 Nothing else! By default the app uses the **deployed API Gateway**. To work against local services, run them (e.g. `docker compose -f docker-compose-up.yml up --build` from the FarmaGo root folder) and point the app to them.
+
+### Prepare
 
 ```powershell
 flutter pub get
@@ -16,97 +163,233 @@ flutter analyze
 flutter test
 ```
 
-## Ejecutar
+### ▶️ Run
 
 ```powershell
-# Web en un puerto fijo (necesario para Google OAuth y para que Auth acepte el origen)
+# Web on a fixed port (needed for Google OAuth and so Auth accepts the origin)
+flutter run -d web-server --web-hostname localhost --web-port 5173
+
+# Web against local services
 flutter run -d web-server --web-hostname localhost --web-port 5173 `
   --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
 
-# Android Emulator (10.0.2.2 llega al computador)
+# Android Emulator (10.0.2.2 reaches your computer)
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000 --dart-define=AUTH_BASE_URL=http://10.0.2.2:3000
 
 # iOS Simulator
 flutter run --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000
 ```
 
-Sin `--dart-define`, **Auth y la IA apuntan a los servicios desplegados en Azure** (`https://farmago-auth-jl.azurewebsites.net` y `https://farmago-ai-jl.azurewebsites.net`). Pendientes apunta a su despliegue en AWS Lambda (`https://ey4bd7llo4despvmqbmxof6pfi0zoifk.lambda-url.us-east-1.on.aws`). Para usar los locales, pásalos explícitamente (`--dart-define=AUTH_BASE_URL=http://localhost:3000 --dart-define=API_BASE_URL=http://localhost:8000`). Orders y Geolocation siguen por defecto en local: en web el mismo host que sirve la página (puertos 3002 y 3001) y en Android `10.0.2.2`.
+In `TheOff1ceAuth`, `FRONTEND_URL` must be exactly the frontend origin (e.g. `http://localhost:5173`). The local Google redirect URI is `http://localhost:3000/auth/google/callback`.
 
-Atajo para usar los servicios de Azure (puerto 5173 obligatorio, es el origen permitido por CORS):
+---
+
+## ⚙️ Configuration (`--dart-define`)
+
+Every service URL defaults to the **API Gateway** (`https://farmago-gateway-jl.azurewebsites.net`). Override any of them with `--dart-define`:
+
+| Variable | Service | Local example |
+|---|---|---|
+| `AUTH_BASE_URL` | 🔐 TheOff1ceAuth | `http://localhost:3000` |
+| `API_BASE_URL` | 🤖 TheOff1ceAI | `http://localhost:8000` |
+| `ORDERS_BASE_URL` | 🛵 TheOff1ceOrderDelivery (home deliveries) | `http://localhost:3002` |
+| `GEOLOCATION_BASE_URL` | 📍 TheOff1ceGeolocation (REST + Socket.IO) | `http://localhost:3001` |
+| `PENDIENTES_BASE_URL` | ⏱️ pendientes-service | `http://localhost:3003` |
+| `ORDENES_BASE_URL` | 📋 ordenes-service (medical orders & EPS authorizations — not home deliveries) | `http://localhost:3004` |
+| `MAPS_API_KEY` | 🗺️ Google Maps **client** key (optional) | — |
+
+<details>
+<summary>Direct deployed URLs (to bypass the gateway)</summary>
+
+| Service | URL |
+|---|---|
+| Auth | `https://farmago-auth-jl.azurewebsites.net` |
+| AI | `https://farmago-ai-jl.azurewebsites.net` |
+| Geolocation | `https://farmago-geo-jl.azurewebsites.net` |
+| Order Delivery | `https://domicilios-api.greenbeach-440c9bcb.brazilsouth.azurecontainerapps.io` |
+| Pendientes (AWS Lambda) | `https://ey4bd7llo4despvmqbmxof6pfi0zoifk.lambda-url.us-east-1.on.aws` |
+| Órdenes (AWS API Gateway) | `https://mtdviivm49.execute-api.us-east-1.amazonaws.com` (serves `/v1/ordenes`; the app uses the gateway's `/ordenes`) |
+
+</details>
+
+---
+
+## 🔌 Backend Endpoints Used
+
+| Service | Endpoints the app calls |
+|---|---|
+| 🔐 **Auth** | `POST /auth/signup` · `/auth/login` · `/auth/verify-code` · `/auth/resend-code` · `/auth/refresh` · `/auth/logout` · `/auth/forgot-password` · `/auth/verify-reset-code` · `/auth/reset-password` · `/auth/change-password` · `/auth/google/exchange` · `GET /auth/google` · `GET /auth/me` · `PATCH /auth/profile` |
+| 👑 **Auth (admin)** | `GET /admin/users` · `PATCH /admin/users/:id/role` · `PATCH /admin/users/:id/document` |
+| 🤖 **AI** | `POST /analyze` (multipart image) |
+| 🛵 **Order Delivery** | `POST /home-deliveries` · `GET /home-deliveries/mine` · `POST /home-deliveries/:id/cancel` · `GET /home-deliveries/available` · `POST /home-deliveries/:id/take` · `GET /home-deliveries/taken` · `GET /home-deliveries/admin` |
+| 📍 **Geolocation** | `GET /deliveries` · `GET /deliveries/:id` · `PATCH /deliveries/:id/status` · `POST /deliveries/:id/locations` · `POST /deliveries/:id/confirm` · Socket.IO `/tracking` (`subscribe`, `delivery.location`, `delivery.route`, `delivery.status`, `delivery.ended`, `session_expired`) |
+| ⏱️ **Pendientes** | `GET /pendientes` · `GET /pendientes/:id` · `POST /pendientes/:id/novedades` |
+| 📋 **Órdenes** | `GET /ordenes` · `GET /ordenes/:id` · `POST /ordenes/:id/domicilio/verificacion` · `POST /ordenes/:id/domicilio` |
+
+---
+
+## 🗺️ App Screens (Routes)
+
+| Route | Screen | Role |
+|---|---|---|
+| `/` | Landing page | Public |
+| `/login` · `/register` · `/verify-email` | Log in, sign up, email code | Public |
+| `/forgot-password` · `/reset-password` | Password recovery | Public |
+| `/auth/google/callback` · `/auth/callback` | Google sign-in return | Public |
+| `/completar-perfil` | Complete profile (required after sign-up) | All |
+| `/home` | Home (adapts to the role) | All |
+| `/analyze-prescription` → `/processing` → `/result` | Upload / photograph, analyze and review a prescription | Patient |
+| `/orders` · `/orders/new` · `/orders/tracking/:deliveryId` | My deliveries, request delivery, live tracking | Patient |
+| `/driver/orders` · `/driver/orders/:orderId` | Available deliveries and active delivery | Courier |
+| `/pendientes` · `/pendientes/:pendienteId` | Pending medications (48 h) | Patient, EPS, Courier |
+| `/ordenes` · `/ordenes/:ordenId` | Medical orders and authorizations | Patient |
+| `/notifications` · `/account` | Notifications and account settings | All |
+| `/admin/users` · `/admin/orders` · `/admin/orders/tracking/:deliveryId` | User management, all orders, tracking | Admin |
+
+Old Spanish URLs (`/acceso`, `/registro`, `/inicio`, `/analizar-formula`…) redirect to the current ones.
+
+---
+
+## ⏱️ Pendientes (48-hour deadline)
+
+Screens of the `pendientes-service` microservice (`/pendientes` and `/pendientes/:id`), with Auth's access token in `Authorization: Bearer`:
+
+- 🧑 **Patient**: *My pending items* (only theirs). 🏥 **EPS**: pending items assigned to them. 🛵 **Courier**: all of them (the backend still has to restrict it to their deliveries).
+- List with filters (All / Pending / Delivered), search by order code and pagination. On mobile they are cards; from 768 px, a table whose detail opens in a side panel.
+- Detail: 48-hour clock, status stamp, data, medications (approval and delivery) and updates. EPS and couriers can **register updates (novedades)**.
+- The status (`VIGENTE`/`CUMPLIDO`/`INCUMPLIDO`) and the deadline are calculated by the backend; the frontend only presents them and anchors the clock to `evaluadoEn` (server time), not the device clock.
 
 ```powershell
+# Against the deployed service (default)
 flutter run -d web-server --web-hostname localhost --web-port 5173
-```
 
-En `TheOff1ceAuth`, `FRONTEND_URL` debe ser exactamente el origen del frontend (por ejemplo `http://localhost:5173`), y en `TheOff1ceAI`, `ALLOWED_ORIGINS` debe incluirlo. El redirect URI de Google es `http://localhost:3000/auth/google/callback`.
-
-## Compilar para desplegar (web)
-
-```powershell
-flutter build web --release --dart-define=API_BASE_URL=https://ai.tu-dominio --dart-define=AUTH_BASE_URL=https://auth.tu-dominio
-node tool/local_web_server.js   # prueba local de build/web con rutas directas (SPA) en el puerto 5173
-```
-
-### Vercel
-
-`vercel.json` deja el proyecto listo: `scripts/vercel-build.sh` descarga Flutter (`FLUTTER_VERSION`, por defecto 3.47.8), compila a `build/web` y todas las rutas reescriben a `index.html`. Cada push a `main` despliega producción y cada rama o PR un preview. Las variables de entorno del proyecto en Vercel (`API_BASE_URL`, `AUTH_BASE_URL`, `PENDIENTES_BASE_URL`, `ORDERS_BASE_URL`, `GEOLOCATION_BASE_URL`, `MAPS_API_KEY`) se pasan como `--dart-define` solo si existen. El dominio de Vercel debe estar en `FRONTEND_URL` de Auth y Pendientes y en `ALLOWED_ORIGINS` de la IA.
-
-Publica `build/web` en cualquier hosting estático con *fallback* a `index.html`. Para que la cookie de refresh funcione, el frontend y Auth deben compartir dominio (por ejemplo `app.tu-dominio` y `auth.tu-dominio`).
-
-## Estructura
-
-```text
-lib/
-├── app/            tema (tokens Material 3), router (go_router), composición de dependencias
-├── auth/           sesión (refresco a los 600 s), recuperación de contraseña, repositorio de Auth
-├── errors/         AppError + ErrorMapper + mensajes en español (único lugar)
-├── services/       cliente de AI con Bearer, utilidades HTTP con timeouts, imágenes
-├── hooks/          estado del análisis
-├── pages/ · components/ · notifications/ · types/ · utils/
-assets/fonts/       Manrope (OFL)
-tool/               servidor local para probar build/web
-```
-
-## Pendientes (plazo de 48 h)
-
-Pantallas del microservicio `pendientes-service` (`/pendientes` y `/pendientes/:id`), con el access token de Auth en `Authorization: Bearer`:
-
-- **Paciente**: *Mis pendientes* (solo los suyos). **EPS**: los pendientes que tiene asignados. **Repartidor**: todos (el backend aún debe acotarlo a sus entregas).
-- Lista con filtros (Todos / Pendientes / Entregados), búsqueda por código de orden y paginación. En móvil son tarjetas; desde 768 px, una tabla cuyo detalle se abre en un panel lateral.
-- Detalle: reloj de 48 h, sello de estado, datos, medicamentos (habilitación y entrega) y novedades. EPS y repartidor pueden **registrar novedades**.
-- El estado (`VIGENTE`/`CUMPLIDO`/`INCUMPLIDO`) y la fecha límite los calcula el backend; el frontend solo los presenta y ancla el reloj a `evaluadoEn` (hora del servidor), no al reloj del dispositivo.
-
-```powershell
-# Contra el servicio desplegado (por defecto)
-flutter run -d web-server --web-hostname localhost --web-port 5173
-
-# Contra un pendientes-service local
+# Against a local pendientes-service
 flutter run -d web-server --web-hostname localhost --web-port 5173 `
   --dart-define=PENDIENTES_BASE_URL=http://localhost:3003
 ```
 
-`pendientes-service` debe permitir el origen del frontend (`FRONTEND_URL=http://localhost:5173`, en el despliegue la variable `FRONTEND_URL` del entorno `production` del repositorio) y compartir `JWT_SECRET` con Auth. Sin `PENDIENTES_BASE_URL`, usa el despliegue en AWS Lambda. Estas pantallas siguen el **manual unificado de identidad FarmaGo** (tokens en `lib/app/theme/farmago_tokens.dart`, componentes `Fg*` en `lib/components/farmago/`, fuente Atkinson Hyperlegible Next); el resto de la app conserva por ahora el tema anterior (Manrope).
+`pendientes-service` must allow the frontend origin (`FRONTEND_URL=http://localhost:5173`; in deployment, the `FRONTEND_URL` variable of the repository's `production` environment) and share `JWT_SECRET` with Auth.
 
-## Domicilios y seguimiento
+🎨 These screens follow the **unified FarmaGo identity manual** (tokens in `lib/app/theme/farmago_tokens.dart`, `Fg*` components in `lib/components/farmago/`, Atkinson Hyperlegible Next font); the rest of the app keeps the previous theme (Manrope) for now.
 
-- **Paciente**: en Inicio, *Pedir medicamento a casa* (farmacia, dirección y productos) y *Mis domicilios*. Cada pedido abre el **seguimiento en vivo**: mapa con la ruta, la ubicación del repartidor, la ETA y el estado.
-- Las listas muestran el estado real del envío (Geolocation): *Buscando repartidor*, *En camino*, *Entregado*…; el paciente solo puede cancelar antes de que el repartidor recoja el pedido, y el repartidor deja de ver en *Mis entregas* las que ya terminó.
-- **Repartidor** (rol `DELIVERY_DRIVER`): *Domicilios disponibles* para tomar un pedido, ver qué recoger y dónde entregarlo, y avanzar el estado (*Ya recogí el pedido* → *Empezar viaje* → *Marcar como entregado*). Mientras lleva el pedido, la app envía su ubicación cada 10 s y deja de hacerlo al entregar.
-- Servicios: `TheOff1ceOrderDelivery` (puerto 3002) y `TheOff1ceGeolocation` (puerto 3001, REST y Socket.IO `/tracking`). Todas las llamadas llevan el `Authorization: Bearer` de Auth; en Socket.IO el token va en el handshake (`auth.token`), nunca en la URL. Si el token vence con el socket abierto, la app lo refresca y se reconecta sola.
+---
+
+## 🛵 Home Delivery & Live Tracking
+
+- 🧑 **Patient**: on Home, *Request medication at home* (pharmacy, address and products) and *My deliveries*. Each order opens **live tracking**: map with the route, the courier's location, the ETA and the status.
+- Lists show the real delivery status (from Geolocation): *Looking for a courier*, *On the way*, *Delivered*… The patient can only cancel before the courier picks up the order, and the courier stops seeing finished deliveries in *My deliveries*.
+- 🛵 **Courier**: *Available deliveries* to take an order, see what to pick up and where to deliver it, and advance the status (*I picked up the order* → *Start trip* → *Mark as delivered*). While carrying the order, the app sends its location **every 10 s** and stops when delivered.
+- 🔢 **Delivery code**: the courier tells the patient a 6-digit code, and the patient types it to confirm the delivery.
+- 🔌 Socket.IO: the token goes in the handshake (`auth.token`), never in the URL. If the token expires with the socket open, the app refreshes it and reconnects automatically.
 
 ```powershell
 flutter run -d web-server --web-hostname localhost --web-port 5173 `
   --dart-define=API_BASE_URL=http://localhost:8000 --dart-define=AUTH_BASE_URL=http://localhost:3000 `
   --dart-define=ORDERS_BASE_URL=http://localhost:3002 --dart-define=GEOLOCATION_BASE_URL=http://localhost:3001 `
-  --dart-define=MAPS_API_KEY=<clave de cliente, opcional>
+  --dart-define=MAPS_API_KEY=<client key, optional>
 ```
 
-**Mapa:** sin `MAPS_API_KEY` se muestra una vista simplificada (ruta y puntos dibujados, sin teselas), suficiente para probar con `MAPS_PROVIDER=fake` en Geolocation. Con clave, se usa `google_maps_flutter`. La clave del cliente es **distinta** de la del servidor:
+### 🗺️ Map
 
-| Plataforma | Dónde va | Restricción en Google Cloud |
+Without `MAPS_API_KEY` a simplified view is shown (route and points drawn, no tiles), enough to test with `MAPS_PROVIDER=fake` in Geolocation. With a key, `google_maps_flutter` is used. The client key is **different** from the server key:
+
+| Platform | Where it goes | Google Cloud restriction |
 |---|---|---|
-| Web | `--dart-define=MAPS_API_KEY=...` (la app carga Maps JavaScript API) | *HTTP referrers* (`http://localhost:5173/*`, tu dominio) + solo *Maps JavaScript API* |
-| Android | `MAPS_API_KEY=...` en `android/local.properties` (no se sube a git) | App Android (paquete + SHA-1) + solo *Maps SDK for Android* |
-| iOS | `MAPS_API_KEY=...` en `ios/Flutter/Secrets.xcconfig` (lo incluyen Debug/Release y no se sube a git) | App iOS (bundle ID) + solo *Maps SDK for iOS* |
+| Web | `--dart-define=MAPS_API_KEY=...` (the app loads Maps JavaScript API) | *HTTP referrers* (`http://localhost:5173/*`, your domain) + only *Maps JavaScript API* |
+| Android | `MAPS_API_KEY=...` in `android/local.properties` (not committed) | Android app (package + SHA-1) + only *Maps SDK for Android* |
+| iOS | `MAPS_API_KEY=...` in `ios/Flutter/Secrets.xcconfig` (included by Debug/Release, not committed) | iOS app (bundle ID) + only *Maps SDK for iOS* |
 
-La clave del cliente nunca debe tener habilitadas Routes ni Geocoding (esas solo las usa el backend).
+⚠️ The client key must never have Routes or Geocoding enabled (only the backend uses those).
+
+---
+
+## ☁️ Build & Deploy
+
+### Build for the web
+
+```powershell
+flutter build web --release
+node tool/local_web_server.js   # local test of build/web with direct (SPA) routes on port 5173
+```
+
+### ▲ Vercel
+
+`vercel.json` makes the project ready: `scripts/vercel-build.sh` downloads Flutter (`FLUTTER_VERSION`, default 3.47.8), builds to `build/web`, and every route rewrites to `index.html`. The project's environment variables in Vercel (`API_BASE_URL`, `AUTH_BASE_URL`, `PENDIENTES_BASE_URL`, `ORDERS_BASE_URL`, `GEOLOCATION_BASE_URL`, `ORDENES_BASE_URL`, `MAPS_API_KEY`) are passed as `--dart-define` only if they exist. The Vercel domain must be in Auth's and Pendientes' `FRONTEND_URL`.
+
+You can publish `build/web` on any static hosting with a *fallback* to `index.html`. For the refresh cookie to work without cross-site mode, frontend and Auth should share a domain (e.g. `app.your-domain` and `auth.your-domain`).
+
+### 🤖 CI (`.github/workflows/ci.yml`)
+
+| Step | Runs on |
+|---|---|
+| `flutter analyze` → `flutter test --coverage` → `flutter build web --release` | Push to `main`, `develop`, `feat/**` and PRs to `main`/`develop` |
+| Deploy to Vercel | After quality checks pass on `main` or `develop` |
+
+---
+
+## 🌿 Branch Strategy & Structure
+
+We follow a lightweight **Git Flow**. Every change reaches `main` through `develop`, and every merge goes through a Pull Request.
+
+```mermaid
+gitGraph
+   commit id: "v1.0"
+   branch develop
+   checkout develop
+   commit id: "integration"
+   branch feature/new-endpoint
+   checkout feature/new-endpoint
+   commit id: "feat: ..."
+   commit id: "test: ..."
+   checkout develop
+   merge feature/new-endpoint
+   branch fix/validation-bug
+   checkout fix/validation-bug
+   commit id: "fix: ..."
+   checkout develop
+   merge fix/validation-bug
+   checkout main
+   merge develop id: "release"
+```
+
+| Branch | Purpose | Branches off | Merges into | Rules |
+|---|---|---|---|---|
+| 🟢 **`main`** | Stable, production-ready code. What is deployed. | — | — | Protected. Only receives merges from `develop` (or an urgent `fix/*`). Never commit directly. |
+| 🔵 **`develop`** | Integration branch. The next release is assembled here. | `main` | `main` | Every feature and fix lands here first. Must always build and pass tests. |
+| 🟣 **`feature/<name>`** | One new functionality (an endpoint, a screen, a route…). | `develop` | `develop` | Short-lived. One feature per branch. Delete after merging. |
+| 🟠 **`fix/<name>`** | A bug fix. | `develop` (or `main` if urgent) | `develop` (and `main` if urgent) | Small and focused. An urgent fix merged into `main` is also merged back into `develop`. |
+
+**Naming examples:** `feature/google-login`, `feature/delivery-tracking`, `fix/refresh-cookie`, `fix/analyze-timeout`.
+
+### Workflow
+
+```bash
+git checkout develop && git pull                 # 1. Start from an up-to-date develop
+git checkout -b feature/my-feature               # 2. Create your branch
+git commit -m "feat: add my feature"             # 3. Commit with Conventional Commits
+git push -u origin feature/my-feature            # 4. Push and open a PR → develop
+# 5. Review + green CI → merge → delete the branch
+# 6. When develop is stable → PR develop → main (release)
+```
+
+### Commit convention
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+| Prefix | Use it for | Example |
+|---|---|---|
+| `feat:` | New functionality | `feat: add delivery confirmation code` |
+| `fix:` | Bug fix | `fix: handle expired refresh token` |
+| `docs:` | Documentation only | `docs: update endpoints table` |
+| `refactor:` | Code change without new behavior | `refactor: split auth service` |
+| `test:` | Adding or fixing tests | `test: cover role guard` |
+| `build:` / `ci:` | Dependencies, Docker, pipelines | `ci: add health smoke test` |
+| `chore:` | Maintenance | `chore: bump dependencies` |
+
+---
+
+<div align="center">
+
+Made with 💚 by **TheOff1ce** · Escuela Colombiana de Ingeniería Julio Garavito
+
+</div>
