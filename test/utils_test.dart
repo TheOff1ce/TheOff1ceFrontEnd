@@ -5,9 +5,19 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('deployed defaults', () {
-    test('Auth and AI point to Azure unless a --dart-define overrides them', () {
-      expect(AppConfig.authBaseUrl, 'https://farmago-auth-jl.azurewebsites.net');
-      expect(AppConfig.apiBaseUrl, 'https://farmago-ai-jl.azurewebsites.net');
+    test('every service goes through the API gateway unless a --dart-define overrides it', () {
+      const gateway = 'https://farmago-gateway-jl.azurewebsites.net';
+      expect(AppConfig.deployedGatewayUrl, gateway);
+      for (final url in [
+        AppConfig.authBaseUrl,
+        AppConfig.apiBaseUrl,
+        AppConfig.ordersBaseUrl,
+        AppConfig.geolocationBaseUrl,
+        AppConfig.pendientesBaseUrl,
+        AppConfig.ordenesBaseUrl,
+      ]) {
+        expect(url, gateway);
+      }
     });
   });
 

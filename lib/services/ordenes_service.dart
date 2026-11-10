@@ -12,15 +12,15 @@ class OrdenesService {
 
   final AuthorizedJsonClient _client;
 
-  Future<RespuestaOrdenes> listar() async => _convertir(await _client.get('/v1/ordenes'), RespuestaOrdenes.fromJson);
+  Future<RespuestaOrdenes> listar() async => _convertir(await _client.get('/ordenes'), RespuestaOrdenes.fromJson);
 
   Future<Orden> detalle(String ordenId) async =>
-      _convertir(await _client.get('/v1/ordenes/${Uri.encodeComponent(ordenId)}'), Orden.fromJson);
+      _convertir(await _client.get('/ordenes/${Uri.encodeComponent(ordenId)}'), Orden.fromJson);
 
   /// Vuelve a consultar a la EPS si los medicamentos elegidos siguen disponibles. No envía nada.
   Future<VerificacionDomicilio> verificarDomicilio(String ordenId, List<String> medicamentoIds) async => _convertir(
         await _client.post(
-          '/v1/ordenes/${Uri.encodeComponent(ordenId)}/domicilio/verificacion',
+          '/ordenes/${Uri.encodeComponent(ordenId)}/domicilio/verificacion',
           {'medicamentoIds': medicamentoIds},
         ),
         VerificacionDomicilio.fromJson,
@@ -30,7 +30,7 @@ class OrdenesService {
   Future<DomicilioAceptado> enviarDomicilio(String ordenId, String solicitudId, List<String> medicamentoIds) async =>
       _convertir(
         await _client.post(
-          '/v1/ordenes/${Uri.encodeComponent(ordenId)}/domicilio',
+          '/ordenes/${Uri.encodeComponent(ordenId)}/domicilio',
           {'solicitudId': solicitudId, 'medicamentoIds': medicamentoIds},
         ),
         DomicilioAceptado.fromJson,

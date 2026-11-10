@@ -9,20 +9,20 @@ class OrderService {
   final AuthorizedJsonClient _client;
 
   Future<PatientOrder> publish(DeliveryRequest request) async =>
-      _parse(await _client.post('/orders', request.toJson()), PatientOrder.fromJson);
+      _parse(await _client.post('/home-deliveries', request.toJson()), PatientOrder.fromJson);
 
-  Future<List<PatientOrder>> myOrders() async => _list(await _client.get('/orders/mine'), PatientOrder.fromJson);
+  Future<List<PatientOrder>> myOrders() async => _list(await _client.get('/home-deliveries/mine'), PatientOrder.fromJson);
 
   Future<PatientOrder> cancel(String orderId) async =>
-      _parse(await _client.post('/orders/${Uri.encodeComponent(orderId)}/cancel'), PatientOrder.fromJson);
+      _parse(await _client.post('/home-deliveries/${Uri.encodeComponent(orderId)}/cancel'), PatientOrder.fromJson);
 
   Future<List<AvailableOrder>> available() async =>
-      _list(await _client.get('/orders/available'), AvailableOrder.fromJson);
+      _list(await _client.get('/home-deliveries/available'), AvailableOrder.fromJson);
 
-  Future<List<DriverOrder>> taken() async => _list(await _client.get('/orders/taken'), DriverOrder.fromJson);
+  Future<List<DriverOrder>> taken() async => _list(await _client.get('/home-deliveries/taken'), DriverOrder.fromJson);
 
   Future<DriverOrder> take(String orderId) async =>
-      _parse(await _client.post('/orders/${Uri.encodeComponent(orderId)}/take'), DriverOrder.fromJson);
+      _parse(await _client.post('/home-deliveries/${Uri.encodeComponent(orderId)}/take'), DriverOrder.fromJson);
 
   static T _parse<T>(Map<String, dynamic> json, T Function(Map<String, dynamic>) fromJson) {
     try {
