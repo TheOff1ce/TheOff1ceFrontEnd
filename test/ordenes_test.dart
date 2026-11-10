@@ -28,6 +28,20 @@ void main() {
       expect(Orden.fromJson(ordenJson(vigencia: 'RARA')).vigencia, Vigencia.sinInformacion);
     });
 
+    test('lee los estados con los nombres del contrato del backend', () {
+      // Claves literales de docs/contratos/openapi.json de ordenes-service, no del fake.
+      final m = MedicamentoOrden.fromJson({
+        'medicamentoId': 'MED-1',
+        'dci': 'Losartán',
+        'concentracion': '50 mg',
+        'estadoAutorizacion': 'AUTORIZADO',
+        'estadoReclamacion': 'PENDIENTE_DE_RECLAMAR',
+        'elegibleParaDomicilio': true,
+      });
+      expect(m.autorizacion, Autorizacion.autorizado);
+      expect(m.reclamacion, Reclamacion.pendienteDeReclamar);
+    });
+
     test('eps nula y orden sin vencimiento se leen sin error', () {
       final r = RespuestaOrdenes.fromJson(respuestaJson(eps: null, ordenes: [ordenSinVencimientoJson()]));
       expect(r.eps, isNull);
@@ -242,6 +256,55 @@ void main() {
       expect(d.fase, FaseDomicilio.exito);
       expect(d.referencia, 'DOM-3f1c');
       expect(listas, 0);
+      d.dispose();
+    });
+
+    test('la verificación solo juzga los medicamentos elegidos, aunque el backend devuelva toda la orden', () async {
+      // El backend responde la elegibilidad de todos los medicamentos de la orden.
+      final service = servicioCon((r) async {
+        if (r.url.path.endsWith('/domicilio/verificacion')) {
+          return ok({
+            'medicamentos': [
+              {'medicamentoId': 'MED-METFORMINA', 'elegible': false, 'motivos': ['YA_RECLAMADO']},
+              {'medicamentoId': 'MED-LOSARTAN', 'elegible': true, 'motivos': <String>[]},
+            ],
+          });
+        }
+        return ok({});
+      });
+      final d = DomicilioOrdenController(
+        service: service,
+        orden: Orden.fromJson(ordenJson()),
+        medicamentoIds: ['MED-LOSARTAN'],
+        escalon: Duration.zero,
+      );
+      await d.verificar();
+      expect(d.fase, FaseDomicilio.listo);
+      expect(d.cambios, isEmpty);
+      d.dispose();
+    });
+
+    test('un medicamento elegido que no vuelve en la verificación cuenta como cambio', () async {
+      final service = servicioCon((r) async {
+        if (r.url.path.endsWith('/domicilio/verificacion')) {
+          return ok({
+            'medicamentos': [
+              {'medicamentoId': 'MED-LOSARTAN', 'elegible': true, 'motivos': <String>[]},
+            ],
+          });
+        }
+        return ok({});
+      });
+      final d = DomicilioOrdenController(
+        service: service,
+        orden: Orden.fromJson(ordenJson()),
+        medicamentoIds: ['MED-LOSARTAN', 'MED-OTRO'],
+        escalon: Duration.zero,
+      );
+      await d.verificar();
+      expect(d.fase, FaseDomicilio.listoConCambios);
+      expect(d.cambios.map((c) => c.id), ['MED-OTRO']);
+      expect(d.cambios.single.motivos, [MotivoNoElegible.noPerteneceALaOrden]);
       d.dispose();
     });
 

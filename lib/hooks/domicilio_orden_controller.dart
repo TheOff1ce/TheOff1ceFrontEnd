@@ -80,13 +80,22 @@ class DomicilioOrdenController extends ChangeNotifier {
       final resultado = await _service.verificarDomicilio(orden.id, medicamentoIds);
       if (_disposed) return;
       verificacion = resultado;
-      final noElegibles = [for (final m in resultado.medicamentos) if (!m.elegible) m];
-      if (noElegibles.isEmpty) {
+      // El backend responde por toda la orden: solo cuentan los medicamentos elegidos. Uno elegido
+      // que no vuelve en la respuesta ya no está en la orden según la EPS.
+      final porId = {for (final m in resultado.medicamentos) m.id: m};
+      final nuevosCambios = [
+        for (final id in medicamentoIds)
+          if (porId[id] == null)
+            CambioElegibilidad(id: id, motivos: const [MotivoNoElegible.noPerteneceALaOrden])
+          else if (!porId[id]!.elegible)
+            CambioElegibilidad(id: id, motivos: porId[id]!.motivos),
+      ];
+      if (nuevosCambios.isEmpty) {
         revelados = 0;
         _poner(FaseDomicilio.listo);
         _revelar();
       } else {
-        cambios = [for (final m in noElegibles) CambioElegibilidad(id: m.id, motivos: m.motivos)];
+        cambios = nuevosCambios;
         _poner(FaseDomicilio.listoConCambios);
       }
     } catch (e) {
