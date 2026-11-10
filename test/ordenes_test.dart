@@ -259,6 +259,55 @@ void main() {
       d.dispose();
     });
 
+    test('la verificación solo juzga los medicamentos elegidos, aunque el backend devuelva toda la orden', () async {
+      // El backend responde la elegibilidad de todos los medicamentos de la orden.
+      final service = servicioCon((r) async {
+        if (r.url.path.endsWith('/domicilio/verificacion')) {
+          return ok({
+            'medicamentos': [
+              {'medicamentoId': 'MED-METFORMINA', 'elegible': false, 'motivos': ['YA_RECLAMADO']},
+              {'medicamentoId': 'MED-LOSARTAN', 'elegible': true, 'motivos': <String>[]},
+            ],
+          });
+        }
+        return ok({});
+      });
+      final d = DomicilioOrdenController(
+        service: service,
+        orden: Orden.fromJson(ordenJson()),
+        medicamentoIds: ['MED-LOSARTAN'],
+        escalon: Duration.zero,
+      );
+      await d.verificar();
+      expect(d.fase, FaseDomicilio.listo);
+      expect(d.cambios, isEmpty);
+      d.dispose();
+    });
+
+    test('un medicamento elegido que no vuelve en la verificación cuenta como cambio', () async {
+      final service = servicioCon((r) async {
+        if (r.url.path.endsWith('/domicilio/verificacion')) {
+          return ok({
+            'medicamentos': [
+              {'medicamentoId': 'MED-LOSARTAN', 'elegible': true, 'motivos': <String>[]},
+            ],
+          });
+        }
+        return ok({});
+      });
+      final d = DomicilioOrdenController(
+        service: service,
+        orden: Orden.fromJson(ordenJson()),
+        medicamentoIds: ['MED-LOSARTAN', 'MED-OTRO'],
+        escalon: Duration.zero,
+      );
+      await d.verificar();
+      expect(d.fase, FaseDomicilio.listoConCambios);
+      expect(d.cambios.map((c) => c.id), ['MED-OTRO']);
+      expect(d.cambios.single.motivos, [MotivoNoElegible.noPerteneceALaOrden]);
+      d.dispose();
+    });
+
     test('el reintento reutiliza el solicitudId y una selección nueva genera otro', () async {
       final ids = <String>[];
       var intentos = 0;
