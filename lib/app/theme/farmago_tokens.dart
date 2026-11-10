@@ -55,6 +55,16 @@ abstract final class FgColors {
   /// Excepción permitida por el manual (§0.2): texto sobre fondos de color.
   static const blanco = Color(0xFFFFFFFF);
 
+  /// Superficie blanca translúcida para el velo de las bandas claras (`FgGradients.velo`).
+  static const veloFuerte = Color(0xF0FFFFFF);
+
+  /// Versiones transparentes de blanco y de los azules oscuros: los degradados que funden una banda
+  /// con la siguiente terminan en ellas. Mantienen el tono: un degradado hacia `Colors.transparent`
+  /// pasa por gris.
+  static const blancoTransparente = Color(0x00FFFFFF);
+  static const azul800Transparente = Color(0x00034E78);
+  static const azul700Transparente = Color(0x00035C8C);
+
   /// Enlace de acción dentro del toast oscuro (manual §7.8).
   static const enlaceSobreOscuro = Color(0xFF8CC8EA);
 
@@ -77,6 +87,60 @@ abstract final class FgGradients {
     colors: [FgColors.azul600, FgColors.cian500, FgColors.verde400],
     stops: [0, .45, 1],
   );
+
+  /// Degradado profundo de marca, solo azules: para bandas oscuras con texto blanco. El verde y el
+  /// cian del degradado de marca no dan contraste con texto blanco.
+  /// Va de arriba abajo para empalmar con [entradaProfundo] y [salidaProfundo].
+  static const profundo = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [FgColors.azul800, FgColors.azul700],
+  );
+
+  /// Funde la banda anterior con [profundo]: de transparente a `azul800`.
+  /// La opacidad sube con curva (lenta al inicio): una rampa lineal se ve como una mancha.
+  static const entradaProfundo = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      FgColors.azul800Transparente,
+      Color(0x14034E78),
+      Color(0x47034E78),
+      Color(0x99034E78),
+      FgColors.azul800,
+    ],
+    stops: [0, .3, .55, .8, 1],
+  );
+
+  /// Funde [profundo] con la banda siguiente: de `azul700` a transparente.
+  static const salidaProfundo = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      FgColors.azul700,
+      Color(0x99035C8C),
+      Color(0x47035C8C),
+      Color(0x14035C8C),
+      FgColors.azul700Transparente,
+    ],
+    stops: [0, .2, .45, .7, 1],
+  );
+
+  /// Velo blanco para bandas claras sobre el fondo con estampado: casi opaco al centro y transparente
+  /// en los bordes, así la banda se funde con las vecinas en vez de cortarlas.
+  static const velo = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [FgColors.blancoTransparente, FgColors.veloFuerte, FgColors.veloFuerte, FgColors.blancoTransparente],
+    stops: [0, .3, .7, 1],
+  );
+
+  /// Degradado suave para paneles sobre superficie blanca: de `fondo` a `azul100`.
+  static const suave = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [FgColors.fondo, FgColors.azul100],
+  );
 }
 
 /// Opacidad máxima de las estelas del logo (manual §13.2): nunca por encima de .55 y
@@ -89,6 +153,9 @@ abstract final class FgOpacity {
 
   /// Opacidad del estampado en móvil: más discreta, para que no compita con el texto en 360 px.
   static const estampadoMovil = .4;
+
+  /// Opacidad del estampado sobre bandas oscuras: muy baja, para que el texto blanco se lea limpio.
+  static const estampadoOscuro = .2;
 }
 
 /// Espaciado (base 4 px). Solo estos valores.

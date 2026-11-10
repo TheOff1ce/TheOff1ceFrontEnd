@@ -65,15 +65,19 @@ class _LandingPageState extends State<LandingPage> {
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const _Cabecera(),
-                      SizedBox(height: ancha ? FgSpace.sp9 : FgSpace.sp7),
+                      // Un solo logo por pantalla: en escritorio va el logo grande del hero; en tablet y
+                      // móvil, donde el hero es solo texto, la marca va en la cabecera.
+                      if (!landingEscritorio(context)) ...[
+                        const _Cabecera(),
+                        SizedBox(height: ancha ? FgSpace.sp8 : FgSpace.sp7),
+                      ],
                       LandingHero(onLogin: onLogin, onRegister: onRegister),
                     ]),
               ),
               _Banda(
                 margen: margen,
                 aire: aire,
-                color: FgColors.superficie,
+                gradient: FgGradients.velo,
                 child: const LandingCaminos(),
               ),
               _Banda(
@@ -81,22 +85,26 @@ class _LandingPageState extends State<LandingPage> {
               _Banda(
                   margen: margen,
                   aire: aire,
-                  color: FgColors.superficie,
+                  gradient: FgGradients.velo,
                   child: const LandingRoles()),
+              // La banda oscura entra y sale con un degradado propio: el texto siempre queda sobre
+              // el azul pleno y los bordes se funden con las bandas vecinas.
+              const _Fundido(FgGradients.entradaProfundo),
+              _Banda(
+                  margen: margen,
+                  aire: ancha ? FgSpace.sp7 : FgSpace.sp6,
+                  gradient: FgGradients.profundo,
+                  estampado: true,
+                  child: const LandingCierre()),
+              const _Fundido(FgGradients.salidaProfundo),
               _Banda(
                   margen: margen,
                   aire: aire,
-                  color: FgColors.azul800,
-                  child: LandingCierre(onRegister: onRegister)),
-              _Banda(
-                  margen: margen,
-                  aire: aire,
-                  color: FgColors.fondoHundido,
                   child: const LandingNoHace()),
               _Banda(
                   margen: margen,
                   aire: FgSpace.sp7,
-                  color: FgColors.superficie,
+                  gradient: FgGradients.velo,
                   child: const _Pie()),
             ],
           ),
@@ -106,31 +114,52 @@ class _LandingPageState extends State<LandingPage> {
   }
 }
 
-/// Banda de página: su color de fondo ocupa todo el ancho y el contenido se centra con el
-/// ancho máximo del manual (1280 px).
+/// Banda de página: su fondo ocupa todo el ancho y el contenido se centra con el ancho máximo del
+/// manual (1280 px). Sin color, deja ver el fondo con estampado de la pantalla. Con [gradient], el
+/// degradado va encima; [estampado] repite las figuras de marca sobre él.
 class _Banda extends StatelessWidget {
   const _Banda(
       {required this.margen,
       required this.aire,
       required this.child,
-      this.color = Colors.transparent});
+      this.gradient,
+      this.estampado = false});
 
   final double margen, aire;
   final Widget child;
-  final Color color;
+  final Gradient? gradient;
+  final bool estampado;
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-        color: color,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: FgSize.contenido),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: margen, vertical: aire),
-              child: child,
-            ),
-          ),
+  Widget build(BuildContext context) {
+    final contenido = Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: FgSize.contenido),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: margen, vertical: aire),
+          child: child,
         ),
+      ),
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(gradient: gradient),
+      child: estampado
+          ? FgEstampado(opacidad: FgOpacity.estampadoOscuro, child: contenido)
+          : contenido,
+    );
+  }
+}
+
+/// Franja de transición entre dos bandas: corta (24 px), apenas suaviza el borde.
+class _Fundido extends StatelessWidget {
+  const _Fundido(this.gradient);
+
+  final Gradient gradient;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: BoxDecoration(gradient: gradient),
+        child: const SizedBox(height: FgSpace.sp5, width: double.infinity),
       );
 }
 
@@ -143,8 +172,7 @@ class _Cabecera extends StatelessWidget {
   Widget build(BuildContext context) => const Row(children: [FgMarca()]);
 }
 
-/// Pie de cierre centrado: una línea divisoria, el logo oficial (su lema va dentro del arte) y el
-/// aviso de alcance debajo, en el mismo eje.
+/// Pie: una línea divisoria y el aviso de alcance. Sin logo: la marca ya está arriba.
 class _Pie extends StatelessWidget {
   const _Pie();
 
@@ -154,17 +182,10 @@ class _Pie extends StatelessWidget {
         children: [
           Divider(height: 1, color: FgColors.linea),
           SizedBox(height: FgSpace.sp6),
-          Column(
-            children: [
-              // Centrado por el eje de la rueda, igual que en el hero.
-              LogoOficial(ancho: 200),
-              SizedBox(height: FgSpace.sp4),
-              Text(
-                'Esta información no reemplaza a tu médico ni a tu EPS.',
-                style: FgText.body,
-                textAlign: TextAlign.center,
-              ),
-            ],
+          Text(
+            'Esta información no reemplaza a tu médico ni a tu EPS.',
+            style: FgText.body,
+            textAlign: TextAlign.center,
           ),
         ],
       );
