@@ -84,8 +84,8 @@ class _Backend {
       user.addAll((jsonDecode(request.body) as Map).cast<String, dynamic>());
       return _json(user);
     }
-    if (path == '/orders/admin') return _json({'orders': orders});
-    final cancel = RegExp(r'^/orders/([^/]+)/cancel$').firstMatch(path);
+    if (path == '/home-deliveries/admin') return _json({'orders': orders});
+    final cancel = RegExp(r'^/home-deliveries/([^/]+)/cancel$').firstMatch(path);
     if (cancel != null) {
       orders = [
         for (final o in orders) o['id'] == cancel.group(1) ? {...o, 'status': 'CANCELLED'} : o,
@@ -146,7 +146,7 @@ void main() {
       final admin = AdminService(auth: backend.client('https://auth.x'), orders: backend.client('https://orders.x'));
       final c = AdminOrdersController(admin, DeliveryService(backend.client('https://geo.x')));
       await c.load();
-      expect(backend.requests.firstWhere((r) => r.url.path == '/orders/admin').url.queryParameters['status'], 'pending');
+      expect(backend.requests.firstWhere((r) => r.url.path == '/home-deliveries/admin').url.queryParameters['status'], 'pending');
       expect(c.orders.map((o) => o.id), ['o-1', 'o-2']);
       expect(c.orders.last.driverId, 'driver-9');
       expect(c.canCancel(c.orders.first), isTrue);
@@ -154,7 +154,7 @@ void main() {
       expect(c.orders.first.order.status.code, 'CANCELLED');
       c.setFilter(AdminOrderFilter.cancelled);
       await Future<void>.delayed(Duration.zero);
-      expect(backend.requests.lastWhere((r) => r.url.path == '/orders/admin').url.queryParameters['status'], 'CANCELLED');
+      expect(backend.requests.lastWhere((r) => r.url.path == '/home-deliveries/admin').url.queryParameters['status'], 'CANCELLED');
       c.dispose();
     });
   });

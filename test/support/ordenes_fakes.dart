@@ -145,7 +145,7 @@ OrdenesService servicioFeliz({
     servicioCon((request) async {
       alVer?.call(request);
       final ruta = request.url.path;
-      if (request.method == 'GET' && ruta == '/v1/ordenes') return ok(lista ?? respuestaJson());
+      if (request.method == 'GET' && ruta == '/ordenes') return ok(lista ?? respuestaJson());
       if (ruta.endsWith('/domicilio/verificacion')) {
         final ids = (jsonDecode(request.body)['medicamentoIds'] as List).cast<String>();
         return ok({

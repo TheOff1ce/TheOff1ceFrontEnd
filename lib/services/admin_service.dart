@@ -35,14 +35,14 @@ class AdminService {
       );
 
   Future<List<AdminOrder>> orders(AdminOrderFilter filter) async {
-    final json = await _orders.get('/orders/admin?status=${filter.code}');
+    final json = await _orders.get('/home-deliveries/admin?status=${filter.code}');
     final raw = json['orders'];
     if (raw is! List) throw ErrorMapper.fromException(const FormatException('Expected an orders list'));
     return [for (final item in raw) if (item is Map<String, dynamic>) _parse(item, AdminOrder.fromJson)];
   }
 
   /// Cancels any order (Orders also cancels its delivery in Geolocation).
-  Future<void> cancelOrder(String orderId) => _orders.post('/orders/${Uri.encodeComponent(orderId)}/cancel');
+  Future<void> cancelOrder(String orderId) => _orders.post('/home-deliveries/${Uri.encodeComponent(orderId)}/cancel');
 
   static T _parse<T>(Map<String, dynamic> json, T Function(Map<String, dynamic>) fromJson) {
     try {
