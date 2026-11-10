@@ -1,5 +1,5 @@
+import 'farmago/code_input.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../app/theme/app_theme.dart';
 import '../utils/validators.dart';
@@ -238,24 +238,13 @@ class CodeField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
 
   @override
-  Widget build(BuildContext context) => TextField(
+  Widget build(BuildContext context) => FgCodeInput(
         controller: controller,
-        maxLength: 6,
-        keyboardType: TextInputType.number,
-        textInputAction: TextInputAction.done,
-        autofillHints: const [AutofillHints.oneTimeCode],
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        textAlign: TextAlign.center,
+        label: label,
+        ayuda: 'Escribe los 6 dígitos que te enviamos. También puedes pegarlos.',
+        autofocus: true,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
-        style: context.text.headlineSmall
-            ?.copyWith(letterSpacing: 10, fontWeight: FontWeight.w800),
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: '000000',
-          helperText: 'Escribe los 6 dígitos que te enviamos para continuar.',
-          counterText: '',
-        ),
       );
 }
 
@@ -322,21 +311,49 @@ class _Requirement extends StatelessWidget {
   }
 }
 
-class GoogleMark extends StatelessWidget {
-  const GoogleMark({super.key});
+/// Botón "Continuar con Google" con el estilo de la guía de marca de Google: fondo blanco, borde
+/// gris, texto oscuro y su logo a la izquierda.
+///
+/// El logo es de Google y no se dibuja aquí: se carga de `assets/images/google_g.png` (descárgalo
+/// de la guía oficial "Sign in with Google"). Si el archivo no está, se muestra una "G" neutra.
+class GoogleSignInButton extends StatelessWidget {
+  const GoogleSignInButton({super.key, required this.onPressed, this.label = 'Continuar con Google'});
+
+  static const logoAsset = 'assets/images/google_g.png';
+  static const _texto = Color(0xFF1F1F1F);
+  static const _borde = Color(0xFF747775);
+
+  final VoidCallback? onPressed;
+  final String label;
 
   @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-        child: Container(
-          width: 24,
-          height: 24,
-          alignment: Alignment.center,
-          decoration:
-              const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-          child: Text('G',
-              style: context.text.titleMedium
-                  ?.copyWith(color: context.colors.secondary)),
+  Widget build(BuildContext context) => OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: _texto,
+          disabledBackgroundColor: Colors.white,
+          side: const BorderSide(color: _borde),
+          minimumSize: const Size.fromHeight(48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md)),
+          textStyle: FgText.boton(16),
         ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          ExcludeSemantics(
+            child: Image.asset(
+              logoAsset,
+              width: 20,
+              height: 20,
+              errorBuilder: (context, _, __) => const SizedBox(
+                width: 20,
+                height: 20,
+                child: Center(child: Text('G', style: TextStyle(fontWeight: FontWeight.w700, color: _texto))),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(child: Text(label, textAlign: TextAlign.center)),
+        ]),
       );
 }
 

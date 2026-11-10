@@ -277,10 +277,13 @@ void main() {
       final service = DeliveryService(clientWith((request) async {
         if (request.method == 'PATCH') status = jsonDecode(request.body)['status'] as String;
         if (request.url.path.endsWith('/locations')) {
+          if (status == 'DELIVERED') {
+            return respond({'success': false, 'error': {'code': 'TRACKING_NOT_ACTIVE', 'message': 'x'}}, 409);
+          }
           reports.add(jsonDecode(request.body) as Map<String, dynamic>);
           return respond({'accepted': true, 'reason': null, 'status': status, 'eta': '2026-10-23T15:10:00Z'}, 200);
         }
-        return respond(deliveryJson(status: status), 200);
+        return respond({...deliveryJson(status: status), if (status != 'DELIVERED') 'deliveryCode': '482913'}, 200);
       }));
       final location = FakeLocation();
       final controller = DriverDeliveryController(
@@ -301,8 +304,15 @@ void main() {
       expect(reports.single['heading'], 90);
 
       await controller.advance(DeliveryStatus.inTransit);
-      await controller.advance(DeliveryStatus.delivered);
+      // No "delivered" button: the driver shows the code and the patient closes the delivery.
+      expect(controller.nextStep, isNull);
+      expect(controller.delivery?.deliveryCode, '482913');
+      status = 'DELIVERED'; // the patient typed the code
+      await controller.sendNow();
       expect(controller.sharing, isFalse);
+      expect(controller.locationError, isNull);
+      expect(controller.delivery?.status, DeliveryStatus.delivered);
+      expect(controller.delivery?.deliveryCode, isNull);
       controller.dispose();
     });
 
@@ -318,6 +328,51 @@ void main() {
       expect(controller.sharing, isFalse);
       expect(controller.locationError?.userMessage, ErrorMessages.locationPermission);
       controller.dispose();
+    });
+  });
+
+  group('delivery code', () {
+    test('only the driver payload carries it; the patient never gets one', () {
+      expect(Delivery.fromJson({...deliveryJson(), 'deliveryCode': '004213'}).deliveryCode, '004213');
+      expect(Delivery.fromJson(deliveryJson()).deliveryCode, isNull);
+      expect(Delivery.fromJson(deliveryJson(status: 'ARRIVING')).awaitsCode, isTrue);
+      expect(Delivery.fromJson(deliveryJson(status: 'PICKED_UP')).awaitsCode, isFalse);
+    });
+
+    test('the patient confirms with the code and the delivery becomes delivered', () async {
+      String? sentCode;
+      final service = DeliveryService(clientWith((request) async {
+        if (request.url.path == '/deliveries/d-1/confirm') {
+          expect(request.method, 'POST');
+          sentCode = jsonDecode(request.body)['code'] as String;
+          return sentCode == '482913'
+              ? respond(deliveryJson(status: 'DELIVERED'), 200)
+              : respond({'success': false, 'error': {'code': 'DELIVERY_CODE_INVALID', 'message': 'x'}}, 400);
+        }
+        return respond(deliveryJson(status: 'ARRIVING'), 200);
+      }));
+      final channel = FakeChannel();
+      final controller = TrackingController(deliveryId: 'd-1', deliveries: service, channel: channel);
+      await controller.start();
+      final wrong = await controller.confirm('111111');
+      expect(wrong?.code, 'DELIVERY_CODE_INVALID');
+      expect(wrong?.userMessage, ErrorMessages.deliveryCodeInvalid);
+      expect(controller.delivery?.status, DeliveryStatus.arriving);
+      expect(await controller.confirm('482913'), isNull);
+      expect(sentCode, '482913');
+      expect(controller.delivery?.status, DeliveryStatus.delivered);
+      controller.dispose();
+    });
+
+    test('too many wrong codes and a driver trying to close it have clear messages', () {
+      expect(
+        ErrorMapper.fromDelivery(429, const {'error': {'code': 'DELIVERY_CODE_LOCKED'}}).userMessage,
+        ErrorMessages.deliveryCodeLocked,
+      );
+      expect(
+        ErrorMapper.fromDelivery(409, const {'error': {'code': 'CODE_CONFIRMATION_REQUIRED'}}).userMessage,
+        ErrorMessages.codeConfirmationRequired,
+      );
     });
   });
 

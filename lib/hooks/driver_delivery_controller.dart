@@ -40,11 +40,11 @@ class DriverDeliveryController extends ChangeNotifier {
 
   bool get sharing => _timer != null;
 
-  /// Next status the driver can move to, as a primary action.
+  /// Next status the driver can move to, as a primary action. There is no "delivered": the
+  /// patient closes the delivery by typing the driver's code.
   DeliveryStatus? get nextStep => switch (delivery?.status) {
         DeliveryStatus.assigned => DeliveryStatus.pickedUp,
         DeliveryStatus.pickedUp => DeliveryStatus.inTransit,
-        DeliveryStatus.inTransit || DeliveryStatus.arriving => DeliveryStatus.delivered,
         _ => null,
       };
 
@@ -114,10 +114,23 @@ class DriverDeliveryController extends ChangeNotifier {
       if (report.status != delivery?.status) delivery = await _deliveries.get(deliveryId);
     } catch (e) {
       locationError = ErrorMapper.fromException(e);
-      if (locationError?.code == 'TRACKING_NOT_ACTIVE') _stop();
+      if (locationError?.code == 'TRACKING_NOT_ACTIVE') {
+        // Usually the patient just confirmed with the code: show the final status, not an error.
+        _stop();
+        locationError = null;
+        await _reload();
+      }
     } finally {
       _sending = false;
       _notify();
+    }
+  }
+
+  Future<void> _reload() async {
+    try {
+      delivery = await _deliveries.get(deliveryId);
+    } catch (_) {
+      // Keeps the last known delivery; the next manual refresh will retry.
     }
   }
 

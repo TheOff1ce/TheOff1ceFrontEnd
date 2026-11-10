@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../app/theme/app_theme.dart';
 import '../components/analysis_widgets.dart';
 import '../components/camera_capture_page.dart';
+import '../components/farmago/buttons.dart';
 import '../components/feedback.dart';
 import '../components/ui.dart';
 import '../errors/app_error.dart';
@@ -38,7 +39,7 @@ class _UploadPageState extends State<UploadPage> {
       if (mounted && image != null) setState(() => _image = image);
     } on AppError catch (error) {
       ErrorReporter.report(error);
-      if (mounted) showAppSnackBar(context, error.userMessage);
+      if (mounted) showAppSnackBar(context, error.userMessage, error: true);
     } finally {
       if (mounted) setState(() => _selecting = false);
     }
@@ -83,29 +84,26 @@ class _UploadPageState extends State<UploadPage> {
                 Semantics(
                   header: true,
                   child: Text(
-                    image == null ? 'Analiza tu fórmula médica.' : 'Imagen seleccionada.',
+                    image == null ? 'Analiza tu fórmula médica.' : 'Revisa tu foto.',
                     style: context.text.headlineSmall,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.s),
                 Text(
                   image == null
-                      ? 'Sube una foto clara y te ayudaremos a identificar los medicamentos indicados.'
-                      : 'Revisa que el texto esté completo y sea legible antes de iniciar el análisis.',
+                      ? 'Sube una foto clara y te decimos qué medicamentos indica, con su dosis y frecuencia.'
+                      : '¿Se lee todo el texto? Si está borrosa o cortada, cámbiala antes de analizar.',
                   style: context.text.bodyLarge,
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: image == null ? const _EmptyUpload() : _SelectedUpload(image: image),
-                ),
-                const SizedBox(height: AppSpacing.xl - 2),
+                // Sin foto, las dos formas de subirla van primero: es lo único que hay que hacer aquí.
                 if (image == null) ...[
                   _UploadChoice(
                     icon: Icons.camera_alt_outlined,
                     title: 'Tomar foto',
                     detail: 'Usa la cámara de tu dispositivo',
                     loading: _selecting,
+                    primary: true,
                     onTap: () => _pick(camera: true),
                   ),
                   const SizedBox(height: AppSpacing.m),
@@ -117,16 +115,28 @@ class _UploadPageState extends State<UploadPage> {
                     onTap: () => _pick(camera: false),
                   ),
                 ] else ...[
-                  FilledButton.icon(
+                  _SelectedUpload(image: image),
+                  const SizedBox(height: AppSpacing.xl - 2),
+                  FgButton(
+                    label: 'Analizar fórmula',
+                    icon: Icons.auto_awesome_outlined,
+                    size: FgButtonSize.lg,
+                    expand: true,
                     onPressed: _selecting ? null : () => widget.onAnalyze(image),
-                    icon: const Icon(Icons.auto_awesome_outlined),
-                    label: const Text('Analizar fórmula'),
                   ),
                   const SizedBox(height: AppSpacing.m),
-                  OutlinedButton.icon(
+                  FgButton(
+                    label: 'Cambiar imagen',
+                    icon: Icons.edit_outlined,
+                    variant: FgButtonVariant.secondary,
+                    expand: true,
                     onPressed: _selecting ? null : _showImageOptions,
-                    icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Cambiar imagen'),
+                  ),
+                  const SizedBox(height: AppSpacing.m),
+                  Text(
+                    'Al analizarla guardamos una copia privada de la foto en tu cuenta.',
+                    style: context.text.bodySmall,
+                    textAlign: TextAlign.center,
                   ),
                 ],
                 const SizedBox(height: AppSpacing.xl),
@@ -182,33 +192,6 @@ class _UploadPageState extends State<UploadPage> {
       );
 }
 
-class _EmptyUpload extends StatelessWidget {
-  const _EmptyUpload();
-
-  @override
-  Widget build(BuildContext context) => Container(
-        key: const ValueKey('empty-upload'),
-        constraints: const BoxConstraints(minHeight: 190),
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        decoration: BoxDecoration(
-          color: context.status.brandSurface,
-          borderRadius: BorderRadius.circular(AppRadii.xl),
-          border: Border.all(color: context.status.decorative),
-        ),
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          ExcludeSemantics(child: Icon(Icons.add_a_photo_outlined, size: 46, color: context.colors.primary)),
-          const SizedBox(height: AppSpacing.m),
-          Text('Aún no has elegido una fórmula', style: context.text.titleMedium, textAlign: TextAlign.center),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Toma una foto o elige una imagen desde tu galería.',
-            style: context.text.bodyLarge,
-            textAlign: TextAlign.center,
-          ),
-        ]),
-      );
-}
-
 class _SelectedUpload extends StatelessWidget {
   const _SelectedUpload({required this.image});
 
@@ -234,11 +217,15 @@ class _UploadChoice extends StatelessWidget {
     required this.detail,
     required this.loading,
     required this.onTap,
+    this.primary = false,
   });
 
   final IconData icon;
   final String title, detail;
   final bool loading;
+
+  /// La opción más común (tomar la foto ahora) se marca con borde de marca.
+  final bool primary;
   final VoidCallback onTap;
 
   @override
@@ -255,7 +242,10 @@ class _UploadChoice extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.l),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadii.l),
-                border: Border.all(color: context.colors.outline),
+                border: Border.all(
+                  color: primary ? context.colors.primary : context.colors.outline,
+                  width: primary ? 2 : 1,
+                ),
               ),
               child: Row(children: [
                 CircleAvatar(

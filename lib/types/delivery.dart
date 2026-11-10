@@ -43,6 +43,30 @@ enum DeliveryStatus {
 
   bool get isFinished => this == delivered || this == cancelled || this == failed;
 
+  /// Qué pasa ahora y qué sigue, dicho al paciente (visibilidad del estado).
+  String get patientHint => switch (this) {
+        created => 'Estamos buscando un repartidor. Te avisamos cuando alguien tome tu pedido.',
+        assigned => 'Un repartidor va a la farmacia por tu pedido.',
+        pickedUp => 'El repartidor ya tiene tu pedido y está por salir.',
+        inTransit => 'Tu pedido va en camino. Al recibirlo, confírmalo con el código del repartidor.',
+        arriving => 'El repartidor está llegando. Ten a la mano tu app para escribir su código.',
+        delivered => 'Recibiste este pedido.',
+        cancelled => 'Este pedido se canceló.',
+        failed => 'El repartidor no pudo entregarlo. Puedes pedirlo de nuevo.',
+        unknown => 'No pudimos leer el estado. Actualiza para intentarlo de nuevo.',
+      };
+
+  /// Qué debe hacer ahora el repartidor.
+  String get driverHint => switch (this) {
+        assigned => 'Ve a la farmacia y recoge el pedido.',
+        pickedUp => 'Cuando salgas hacia la dirección de entrega, empieza el viaje.',
+        inTransit || arriving => 'Entrega el pedido y dile tu código al paciente. Él cierra la entrega en su app.',
+        delivered => 'Entrega terminada. ¡Buen trabajo!',
+        failed => 'Marcaste que no se pudo entregar.',
+        cancelled => 'El paciente canceló este pedido.',
+        _ => '',
+      };
+
   /// Main steps of the progress indicator (terminal failures are shown apart).
   static const steps = [created, assigned, pickedUp, inTransit, arriving, delivered];
 }
@@ -97,6 +121,7 @@ class Delivery {
     required this.driverAssigned,
     required this.driverLocation,
     required this.distanceToDestinationMeters,
+    this.deliveryCode,
   });
 
   final String id, orderId;
@@ -107,6 +132,13 @@ class Delivery {
   final bool driverAssigned;
   final DriverLocation? driverLocation;
   final int? distanceToDestinationMeters;
+
+  /// Código de 6 dígitos que el repartidor le dice al paciente al entregar. Solo llega en las
+  /// respuestas del repartidor asignado, mientras el envío está abierto; el paciente nunca lo ve.
+  final String? deliveryCode;
+
+  /// El paciente cierra la entrega escribiendo el código (solo en camino o llegando).
+  bool get awaitsCode => status == DeliveryStatus.inTransit || status == DeliveryStatus.arriving;
 
   factory Delivery.fromJson(Map<String, dynamic> json) => Delivery(
         id: json['id']?.toString() ?? '',
@@ -119,6 +151,7 @@ class Delivery {
         driverAssigned: json['driverAssigned'] == true,
         driverLocation: json['driverLocation'] is Map ? DriverLocation.fromJson(_map(json['driverLocation'])) : null,
         distanceToDestinationMeters: (json['distanceToDestinationMeters'] as num?)?.round(),
+        deliveryCode: switch (json['deliveryCode']) { final String code when code.isNotEmpty => code, _ => null },
       );
 
   /// Applies a `delivery.location` event.
@@ -147,6 +180,7 @@ class Delivery {
         driverAssigned: driverAssigned,
         driverLocation: driverLocation,
         distanceToDestinationMeters: distance,
+        deliveryCode: deliveryCode,
       );
 }
 

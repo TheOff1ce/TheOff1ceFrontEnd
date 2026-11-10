@@ -1,3 +1,4 @@
+import '../components/farmago/dialogs.dart';
 import '../components/account/profile_form.dart';
 import '../types/user_profile.dart';
 import 'package:flutter/material.dart';
@@ -38,23 +39,17 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
   }
 
   Future<void> _changeRole(AdminUser user, UserRole role) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Cambiar el rol?'),
-        content: Text(
-          '${user.name.isEmpty ? user.email : user.name} pasará de ${user.roleLabel} a ${role.label}. '
+    final confirmed = await showFgConfirm(
+      context,
+      titulo: '¿Cambiar el rol?',
+      mensaje: '${user.name.isEmpty ? user.email : user.name} pasará de ${user.roleLabel} a ${role.label}. '
           'Se cerrará su sesión y tendrá que volver a entrar.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sí, cambiar')),
-        ],
-      ),
+      confirmar: 'Cambiar a ${role.label}',
+      cancelar: 'Dejar como está',
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
     final error = await widget.controller.changeRole(user, role);
-    if (mounted) showAppSnackBar(context, error?.userMessage ?? 'Rol actualizado: ${role.label}.');
+    if (mounted) showAppSnackBar(context, error?.userMessage ?? 'Rol actualizado: ${role.label}.', error: error != null);
   }
 
   Future<void> _correctDocument(AdminUser user) async {

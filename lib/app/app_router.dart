@@ -396,6 +396,7 @@ class AppRouter {
           path: AppRoutes.requestDelivery,
           builder: (context, state) => _gate(RequestDeliveryPage(
             controller: _deps.patientOrders,
+            defaultAddress: _auth.user?.profile.address,
             onCreated: (order) => context.pushReplacement(AppRoutes.tracking(order.deliveryId)),
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.myOrders),
           )),

@@ -49,6 +49,10 @@ class DeliveryService {
   Future<Delivery> changeStatus(String deliveryId, DeliveryStatus status) async =>
       _parse(await _client.patch('/deliveries/${_id(deliveryId)}/status', {'status': status.code}));
 
+  /// El paciente confirma que recibió el pedido con el código que le dio el repartidor.
+  Future<Delivery> confirm(String deliveryId, String code) async =>
+      _parse(await _client.post('/deliveries/${_id(deliveryId)}/confirm', {'code': code}));
+
   Future<LocationReport> reportLocation(String deliveryId, GpsFix fix) async {
     final json = await _client.post('/deliveries/${_id(deliveryId)}/locations', fix.toJson());
     return LocationReport(

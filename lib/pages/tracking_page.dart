@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/farmago_tokens.dart';
+import '../components/delivery_code.dart';
 import '../components/delivery_map.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/layout.dart';
 import '../components/farmago/trail.dart';
 import '../components/feedback.dart';
+import '../errors/app_error.dart';
 import '../hooks/tracking_controller.dart';
 import '../types/delivery.dart';
 import '../utils/delivery_format.dart';
@@ -67,6 +69,12 @@ class _TrackingPageState extends State<TrackingPage> {
         ),
       );
 
+  Future<AppError?> _confirmar(String code) async {
+    final error = await _controller.confirm(code);
+    if (error == null && mounted) showFgToast(context, 'Entrega confirmada. ¡Gracias!');
+    return error;
+  }
+
   List<Widget> _contenido(Delivery d) {
     final activo = !d.status.isFinished;
     final terminal = d.status == DeliveryStatus.cancelled || d.status == DeliveryStatus.failed;
@@ -103,6 +111,18 @@ class _TrackingPageState extends State<TrackingPage> {
         const Padding(
           padding: EdgeInsets.only(bottom: FgSpace.sp4),
           child: Text('La ubicación del repartidor ya no se comparte.', style: FgText.body),
+        ),
+      if (d.awaitsCode) ...[
+        const SizedBox(height: FgSpace.sp2),
+        PatientConfirmDelivery(busy: _controller.confirming, onConfirm: _confirmar),
+        const SizedBox(height: FgSpace.sp5),
+      ] else if (activo && d.driverAssigned)
+        Padding(
+          padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+          child: Text(
+            'Cuando te entreguen el pedido, el repartidor te dará un código de 6 dígitos para confirmarlo aquí.',
+            style: FgText.body.copyWith(color: FgColors.inkSoft),
+          ),
         ),
       const SizedBox(height: FgSpace.sp4),
       if (terminal)

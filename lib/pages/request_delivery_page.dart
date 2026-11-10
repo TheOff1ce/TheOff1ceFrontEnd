@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
 import '../components/delivery_widgets.dart';
+import '../components/farmago/buttons.dart';
+import '../components/farmago/dialogs.dart';
 import '../components/feedback.dart';
-import '../components/ui.dart';
 import '../hooks/patient_orders_controller.dart';
 import '../types/order.dart';
 
 /// Patient asks for a home delivery: pharmacy, address and the medications wanted.
 class RequestDeliveryPage extends StatefulWidget {
-  const RequestDeliveryPage({super.key, required this.controller, required this.onCreated, required this.onBack});
+  const RequestDeliveryPage({
+    super.key,
+    required this.controller,
+    required this.onCreated,
+    required this.onBack,
+    this.defaultAddress,
+  });
+
+  /// Dirección guardada en el perfil: se escribe sola para que la persona no la repita.
+  final String? defaultAddress;
 
   final PatientOrdersController controller;
   final ValueChanged<PatientOrder> onCreated;
@@ -21,12 +32,9 @@ class RequestDeliveryPage extends StatefulWidget {
 
 class _ItemFields {
   final name = TextEditingController();
-  final quantity = TextEditingController(text: '1');
+  int quantity = 1;
 
-  void dispose() {
-    name.dispose();
-    quantity.dispose();
-  }
+  void dispose() => name.dispose();
 }
 
 class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
@@ -34,7 +42,7 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
   final _form = GlobalKey<FormState>();
   final _pharmacyName = TextEditingController();
   final _pharmacyAddress = TextEditingController();
-  final _address = TextEditingController();
+  late final _address = TextEditingController(text: widget.defaultAddress ?? '');
   final _notes = TextEditingController();
   final _items = [_ItemFields()];
 
@@ -57,18 +65,35 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
     return null;
   }
 
-  static String? _quantity(String? value) {
-    final n = int.tryParse(value?.trim() ?? '');
-    if (n == null || n < 1 || n > 99) return 'Entre 1 y 99';
-    return null;
+  bool get _dirty =>
+      _pharmacyName.text.isNotEmpty ||
+      _pharmacyAddress.text.isNotEmpty ||
+      _notes.text.isNotEmpty ||
+      _address.text != (widget.defaultAddress ?? '') ||
+      _items.any((i) => i.name.text.isNotEmpty);
+
+  /// Salir con datos escritos pide confirmación: nadie pierde el formulario por un toque.
+  Future<void> _back() async {
+    if (!_dirty || widget.controller.submitting) return widget.onBack();
+    final leave = await showFgConfirm(
+      context,
+      titulo: '¿Salir sin pedir el domicilio?',
+      mensaje: 'Se perderá lo que escribiste.',
+      confirmar: 'Salir',
+      cancelar: 'Seguir editando',
+    );
+    if (leave && mounted) widget.onBack();
   }
 
   Future<void> _submit() async {
-    if (!(_form.currentState?.validate() ?? false)) return;
+    if (!(_form.currentState?.validate() ?? false)) {
+      showAppSnackBar(context, 'Revisa los campos marcados en rojo.', error: true);
+      return;
+    }
     final request = DeliveryRequest(
       pharmacy: Pharmacy(name: _pharmacyName.text.trim(), address: _pharmacyAddress.text.trim()),
       deliveryAddress: _address.text.trim(),
-      items: [for (final i in _items) OrderItem(name: i.name.text.trim(), quantity: int.parse(i.quantity.text.trim()))],
+      items: [for (final i in _items) OrderItem(name: i.name.text.trim(), quantity: i.quantity)],
       notes: _notes.text,
     );
     final order = await widget.controller.publish(request);
@@ -76,72 +101,106 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
   }
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-        listenable: widget.controller,
-        builder: (context, _) => DeliveryScaffold(
-          title: 'Pedir domicilio',
-          onBack: widget.onBack,
-          children: [
-            Text('¿Qué necesitas que te llevemos?', style: context.text.headlineSmall),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Un repartidor recogerá tu pedido en la farmacia y podrás seguirlo en el mapa.',
-              style: context.text.bodyMedium,
+  Widget build(BuildContext context) => PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _back();
+        },
+        child: ListenableBuilder(
+          listenable: widget.controller,
+          builder: (context, _) => DeliveryScaffold(
+            title: 'Pedir domicilio',
+            onBack: _back,
+            barraAccion: FgButton(
+              label: 'Pedir domicilio',
+              icon: Icons.delivery_dining,
+              size: FgButtonSize.lg,
+              expand: true,
+              loading: widget.controller.submitting,
+              loadingLabel: 'Publicando tu pedido…',
+              onPressed: _submit,
             ),
-            const SizedBox(height: AppSpacing.l),
-            ErrorBanner(error: widget.controller.error),
-            Form(
-              key: _form,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                _section(context, 'Farmacia'),
-                TextFormField(
-                  controller: _pharmacyName,
-                  decoration: const InputDecoration(labelText: 'Nombre de la farmacia'),
-                  textInputAction: TextInputAction.next,
-                  validator: (v) => _text(v),
-                ),
-                const SizedBox(height: AppSpacing.m),
-                TextFormField(
-                  controller: _pharmacyAddress,
-                  decoration: const InputDecoration(labelText: 'Dirección de la farmacia', hintText: 'Calle 72 # 10-20, Bogotá'),
-                  textInputAction: TextInputAction.next,
-                  validator: (v) => _text(v, min: 5, max: 300),
-                ),
-                _section(context, 'Entrega'),
-                TextFormField(
-                  controller: _address,
-                  decoration: const InputDecoration(labelText: 'Tu dirección', hintText: 'Calle 92 # 15-30, Bogotá'),
-                  textInputAction: TextInputAction.next,
-                  validator: (v) => _text(v, min: 5, max: 300),
-                ),
-                _section(context, 'Medicamentos o productos'),
-                for (final (index, item) in _items.indexed) _itemRow(index, item),
-                if (_items.length < maxItems)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      onPressed: () => setState(() => _items.add(_ItemFields())),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Agregar otro'),
-                    ),
+            children: [
+              const Text(
+                'Un repartidor recoge tu pedido en la farmacia y lo sigues en el mapa hasta tu puerta.',
+                style: FgText.bodyLg,
+              ),
+              const SizedBox(height: FgSpace.sp5),
+              ErrorBanner(error: widget.controller.error),
+              // Mismas cajas de texto que el resto de la app (no la línea inferior por defecto).
+              Builder(
+                builder: (context) => Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: AppTheme.light.inputDecorationTheme.copyWith(helperMaxLines: 2),
                   ),
-                const SizedBox(height: AppSpacing.m),
-                TextFormField(
-                  controller: _notes,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'Indicaciones (opcional)', hintText: 'Portería, torre, apartamento…'),
-                  validator: (v) => (v ?? '').trim().isEmpty ? null : _text(v, min: 1, max: 500),
+                  child: _formulario(),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-                AppButton(
-                  label: widget.controller.submitting ? 'Publicando…' : 'Pedir domicilio',
-                  icon: Icons.delivery_dining,
-                  onPressed: widget.controller.submitting ? null : _submit,
-                ),
-              ]),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
+      );
+
+  Widget _formulario() => Form(
+        key: _form,
+        // Avisa al salir de cada campo, no solo al final.
+        autovalidateMode: AutovalidateMode.onUnfocus,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          _section('1. ¿Dónde lo recogemos?', [
+            TextFormField(
+              controller: _pharmacyName,
+              decoration: const InputDecoration(labelText: 'Nombre de la farmacia'),
+              textInputAction: TextInputAction.next,
+              validator: (v) => _text(v),
+            ),
+            const SizedBox(height: FgSpace.sp4),
+            TextFormField(
+              controller: _pharmacyAddress,
+              decoration: const InputDecoration(
+                labelText: 'Dirección de la farmacia',
+                helperText: 'Ejemplo: Calle 72 # 10-20, Bogotá',
+              ),
+              textInputAction: TextInputAction.next,
+              validator: (v) => _text(v, min: 5, max: 300),
+            ),
+          ]),
+          _section('2. ¿A dónde lo llevamos?', [
+            TextFormField(
+              controller: _address,
+              decoration: InputDecoration(
+                labelText: 'Tu dirección',
+                helperText: (widget.defaultAddress ?? '').isNotEmpty
+                    ? 'Es la de tu perfil. Cámbiala si este pedido va a otro lugar.'
+                    : 'Ejemplo: Calle 92 # 15-30, Bogotá',
+              ),
+              textInputAction: TextInputAction.next,
+              validator: (v) => _text(v, min: 5, max: 300),
+            ),
+            const SizedBox(height: FgSpace.sp4),
+            TextFormField(
+              controller: _notes,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Indicaciones (opcional)',
+                helperText: 'Para el repartidor: portería, torre, apartamento…',
+              ),
+              validator: (v) => (v ?? '').trim().isEmpty ? null : _text(v, min: 1, max: 500),
+            ),
+          ]),
+          _section('3. ¿Qué te llevamos?', [
+            for (final (index, item) in _items.indexed) _itemRow(index, item),
+            if (_items.length < maxItems)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: FgButton(
+                  label: 'Agregar otro producto',
+                  icon: Icons.add_rounded,
+                  variant: FgButtonVariant.ghost,
+                  onPressed: () => setState(() => _items.add(_ItemFields())),
+                ),
+              ),
+          ]),
+        ]),
       );
 
   void _removeItem(int index) {
@@ -151,37 +210,81 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => removed.dispose());
   }
 
-  Widget _section(BuildContext context, String title) => Padding(
-        padding: const EdgeInsets.only(top: AppSpacing.l, bottom: AppSpacing.s),
-        child: Semantics(header: true, child: Text(title, style: context.text.titleMedium)),
+  /// Cada paso en su tarjeta: se ve qué va junto y cuánto falta.
+  Widget _section(String title, List<Widget> children) => Padding(
+        padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+        child: FgCard(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [SectionHeading(title), ...children]),
+        ),
       );
 
   Widget _itemRow(int index, _ItemFields item) => Padding(
-        padding: const EdgeInsets.only(bottom: AppSpacing.m),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Expanded(
-            child: TextFormField(
-              controller: item.name,
-              decoration: InputDecoration(labelText: 'Producto ${index + 1}', hintText: 'Acetaminofén 500 mg'),
-              validator: (v) => _text(v),
+        padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          TextFormField(
+            controller: item.name,
+            decoration: InputDecoration(
+              labelText: _items.length == 1 ? 'Medicamento o producto' : 'Producto ${index + 1}',
+              helperText: index == 0 ? 'Ejemplo: Acetaminofén 500 mg' : null,
             ),
+            textInputAction: TextInputAction.next,
+            validator: (v) => _text(v),
           ),
-          const SizedBox(width: AppSpacing.s),
+          const SizedBox(height: FgSpace.sp2),
+          Row(children: [
+            QuantityStepper(
+              value: item.quantity,
+              label: 'Cantidad del producto ${index + 1}',
+              onChanged: (value) => setState(() => item.quantity = value),
+            ),
+            const Spacer(),
+            if (_items.length > 1)
+              FgButton(
+                label: 'Quitar',
+                icon: Icons.delete_outline_rounded,
+                variant: FgButtonVariant.ghost,
+                size: FgButtonSize.sm,
+                onPressed: () => _removeItem(index),
+              ),
+          ]),
+        ]),
+      );
+}
+
+/// Cantidad con botones − y +: no deja escribir valores inválidos (1 a 99).
+class QuantityStepper extends StatelessWidget {
+  const QuantityStepper({super.key, required this.value, required this.onChanged, required this.label});
+
+  static const min = 1, max = 99;
+
+  final int value;
+  final ValueChanged<int> onChanged;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        container: true,
+        label: label,
+        value: '$value',
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          const Text('Cantidad', style: FgText.label),
+          const SizedBox(width: FgSpace.sp3),
+          IconButton.outlined(
+            tooltip: 'Quitar uno',
+            onPressed: value > min ? () => onChanged(value - 1) : null,
+            icon: const Icon(Icons.remove_rounded),
+          ),
           SizedBox(
-            width: 84,
-            child: TextFormField(
-              controller: item.quantity,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Cant.'),
-              validator: _quantity,
+            width: 44,
+            child: ExcludeSemantics(
+              child: Text('$value', textAlign: TextAlign.center, style: FgText.num(FgText.h3)),
             ),
           ),
-          if (_items.length > 1)
-            IconButton(
-              tooltip: 'Quitar producto ${index + 1}',
-              onPressed: () => _removeItem(index),
-              icon: const Icon(Icons.close),
-            ),
+          IconButton.outlined(
+            tooltip: 'Agregar uno',
+            onPressed: value < max ? () => onChanged(value + 1) : null,
+            icon: const Icon(Icons.add_rounded),
+          ),
         ]),
       );
 }

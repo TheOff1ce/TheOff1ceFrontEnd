@@ -178,10 +178,11 @@ void main() {
       await tester.tap(find.text('Repartidor').last);
       await tester.pumpAndSettle();
       expect(find.text('¿Cambiar el rol?'), findsOneWidget);
-      await tester.tap(find.text('Sí, cambiar'));
+      await tester.tap(find.text('Cambiar a Repartidor'));
       await tester.pumpAndSettle();
       expect(backend.requests.last.method, 'PATCH');
       expect(find.text('Rol actualizado: Repartidor.'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 7)); // el aviso se cierra solo
       c.dispose();
     });
 

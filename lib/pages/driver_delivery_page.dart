@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
+import '../components/delivery_code.dart';
 import '../components/delivery_map.dart';
+import '../components/farmago/buttons.dart';
+import '../components/farmago/dialogs.dart';
+import '../components/farmago/feedback.dart';
 import '../components/delivery_widgets.dart';
 import '../components/feedback.dart';
 import '../hooks/driver_delivery_controller.dart';
@@ -28,7 +32,6 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
   static const _actionLabels = {
     DeliveryStatus.pickedUp: ('Ya recogí el pedido', Icons.inventory_2_outlined),
     DeliveryStatus.inTransit: ('Empezar viaje', Icons.navigation_outlined),
-    DeliveryStatus.delivered: ('Marcar como entregado', Icons.check_circle_outline),
   };
 
   @override
@@ -45,22 +48,19 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
 
   Future<void> _advance(DeliveryStatus status) async {
     final error = await _controller.advance(status);
-    if (mounted && error != null) showAppSnackBar(context, error.userMessage);
+    if (mounted && error != null) showAppSnackBar(context, error.userMessage, error: true);
   }
 
   Future<void> _fail() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿No se pudo entregar?'),
-        content: const Text('El domicilio quedará como no entregado y dejarás de compartir tu ubicación.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Volver')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirmar')),
-        ],
-      ),
+    final confirmed = await showFgConfirm(
+      context,
+      titulo: '¿No pudiste entregar el pedido?',
+      mensaje: 'El domicilio quedará como no entregado y dejarás de compartir tu ubicación. Esto no se puede deshacer.',
+      confirmar: 'Marcar como no entregado',
+      cancelar: 'Seguir con la entrega',
+      peligro: true,
     );
-    if (confirmed == true) await _advance(DeliveryStatus.failed);
+    if (confirmed) await _advance(DeliveryStatus.failed);
   }
 
   @override
@@ -81,43 +81,88 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
         },
       );
 
+  /// Paso del repartidor: 1 recoger, 2 salir, 3 entregar con el código.
+  static int? _step(DeliveryStatus status) => switch (status) {
+        DeliveryStatus.assigned => 1,
+        DeliveryStatus.pickedUp => 2,
+        DeliveryStatus.inTransit || DeliveryStatus.arriving => 3,
+        _ => null,
+      };
+
   List<Widget> _content(BuildContext context, Delivery d) {
     final next = _controller.nextStep;
     final action = next == null ? null : _actionLabels[next];
+    final step = _step(d.status);
     return [
       TitleWithStatus(
         title: d.status.label,
-        style: context.text.headlineSmall,
+        style: FgText.h2,
         status: _controller.sharing ? const StatusChip(label: 'Compartiendo ubicación', tone: StatusTone.success) : null,
       ),
-      const SizedBox(height: AppSpacing.s),
+      const SizedBox(height: FgSpace.sp3),
       ErrorBanner(error: _controller.locationError),
-      DeliveryMap(delivery: d, height: 240),
-      const SizedBox(height: AppSpacing.l),
-      if (action != null)
-        FilledButton.icon(
-          onPressed: _controller.updating ? null : () => _advance(next!),
-          icon: Icon(action.$2),
-          label: Text(action.$1),
+      // Qué hacer ahora, antes que el mapa: es lo que el repartidor necesita con el pedido en la mano.
+      if (d.status == DeliveryStatus.delivered)
+        const FgBanner(kind: FgBannerKind.exito, message: 'El paciente confirmó la entrega con tu código.')
+      else if (d.status.driverHint.isNotEmpty)
+        FgCard(
+          destacada: step != null,
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            if (step != null) Text('Paso $step de 3', style: FgText.caption),
+            if (step != null) const SizedBox(height: FgSpace.sp1),
+            Text(d.status.driverHint, style: FgText.bodyLg),
+            if (d.deliveryCode != null && d.awaitsCode) ...[
+              const SizedBox(height: FgSpace.sp4),
+              DriverDeliveryCodeCard(code: d.deliveryCode!, awaitingPatient: true),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: FgSpace.sp4),
+              FgButton(
+                label: action.$1,
+                icon: action.$2,
+                size: FgButtonSize.lg,
+                expand: true,
+                loading: _controller.updating,
+                loadingLabel: 'Guardando…',
+                onPressed: () => _advance(next!),
+              ),
+            ],
+          ]),
         ),
-      if (_controller.canFail)
-        TextButton(onPressed: _controller.updating ? null : _fail, child: const Text('No se pudo entregar')),
-      if (_controller.lastSentAt != null)
-        Text('Última ubicación enviada: ${DeliveryFormat.clock(_controller.lastSentAt!)}', style: context.text.bodySmall),
-      const SizedBox(height: AppSpacing.l),
-      Semantics(header: true, child: Text('Recoger', style: context.text.titleMedium)),
-      Text('${widget.order.pharmacy.name} — ${widget.order.pharmacy.address}', style: context.text.bodyMedium),
-      const SizedBox(height: AppSpacing.s),
-      OrderItemsList(items: widget.order.items),
-      const SizedBox(height: AppSpacing.m),
-      Semantics(header: true, child: Text('Entregar', style: context.text.titleMedium)),
-      Text(widget.order.deliveryAddress, style: context.text.bodyMedium),
-      if (widget.order.notes != null) Text('Indicaciones: ${widget.order.notes}', style: context.text.bodySmall),
-      const SizedBox(height: AppSpacing.s),
-      Text(
-        'Ruta: ${DeliveryFormat.distance(d.route.distanceMeters)} · ${DeliveryFormat.duration(d.route.durationSeconds)}',
-        style: context.text.bodySmall,
+      const SizedBox(height: FgSpace.sp5),
+      DeliveryMap(delivery: d, height: 240),
+      if (_controller.lastSentAt != null) ...[
+        const SizedBox(height: FgSpace.sp2),
+        Text('Última ubicación enviada: ${DeliveryFormat.clock(_controller.lastSentAt!)}', style: FgText.caption),
+      ],
+      const SizedBox(height: FgSpace.sp5),
+      FgCard(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const SectionHeading('Recoger'),
+          InfoLine(icon: Icons.storefront_outlined, text: '${widget.order.pharmacy.name} — ${widget.order.pharmacy.address}'),
+          const SizedBox(height: FgSpace.sp1),
+          OrderItemsList(items: widget.order.items),
+          const SizedBox(height: FgSpace.sp4),
+          const SectionHeading('Entregar'),
+          InfoLine(icon: Icons.place_outlined, text: widget.order.deliveryAddress),
+          if (widget.order.notes != null) InfoLine(icon: Icons.sticky_note_2_outlined, text: widget.order.notes!),
+          InfoLine(
+            icon: Icons.route_outlined,
+            text: '${DeliveryFormat.distance(d.route.distanceMeters)} · unos ${DeliveryFormat.duration(d.route.durationSeconds)}',
+          ),
+        ]),
       ),
+      if (_controller.canFail) ...[
+        const SizedBox(height: FgSpace.sp5),
+        // Salida de emergencia, lejos del botón principal para no tocarla por error.
+        Center(
+          child: FgButton(
+            label: 'No se pudo entregar',
+            variant: FgButtonVariant.ghost,
+            onPressed: _controller.updating ? null : _fail,
+          ),
+        ),
+      ],
     ];
   }
 }
@@ -138,7 +183,7 @@ class MissingDeliveryPage extends StatelessWidget {
             title: 'Abre la entrega desde tus domicilios',
             message: 'No encontramos este pedido entre los que tomaste. Vuelve a la lista para abrirlo.',
           ),
-          FilledButton(onPressed: onBack, child: const Text('Ir a mis domicilios')),
+          Center(child: FgButton(label: 'Ir a mis domicilios', onPressed: onBack)),
         ],
       );
 }
