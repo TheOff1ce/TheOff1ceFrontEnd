@@ -73,7 +73,15 @@ class ExitoDomicilio {
 /// Los filtros son locales sobre la respuesta actual (no hacen otra consulta a la EPS ni cambian
 /// `consultadoEn`). Solo se leen banderas del backend; ninguna regla se recalcula aquí.
 class OrdenesController extends ChangeNotifier {
-  OrdenesController(this._service, {Duration avisoLento = NetworkTimeouts.ordenesLento}) : _avisoLento = avisoLento;
+  OrdenesController(
+    this._service, {
+    Duration avisoLento = NetworkTimeouts.ordenesLento,
+    String Function()? direccionPerfil,
+  })  : _avisoLento = avisoLento,
+        _direccionPerfil = direccionPerfil ?? (() => '');
+
+  /// Dirección del perfil del paciente para precargar la entrega (vacía si no la tiene).
+  final String Function() _direccionPerfil;
 
   final OrdenesService _service;
   final Duration _avisoLento;
@@ -240,7 +248,12 @@ class OrdenesController extends ChangeNotifier {
       for (final m in orden.medicamentos)
         if (seleccion!.ids.contains(m.id)) m.id,
     ];
-    return DomicilioOrdenController(service: _service, orden: orden, medicamentoIds: ids);
+    return DomicilioOrdenController(
+      service: _service,
+      orden: orden,
+      medicamentoIds: ids,
+      direccionInicial: _direccionPerfil(),
+    );
   }
 
   /// Aplica lo que dejó el diálogo al cerrarse. No recarga nada por su cuenta (AC-21).

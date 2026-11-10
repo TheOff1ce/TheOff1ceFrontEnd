@@ -27,11 +27,16 @@ class OrdenesService {
       );
 
   /// Envía el pedido a Domicilios. `solicitudId` es idempotente: se reutiliza en cada reintento.
-  Future<DomicilioAceptado> enviarDomicilio(String ordenId, String solicitudId, List<String> medicamentoIds) async =>
+  Future<DomicilioAceptado> enviarDomicilio(
+    String ordenId,
+    String solicitudId,
+    List<String> medicamentoIds,
+    String direccionEntrega,
+  ) async =>
       _convertir(
         await _client.post(
           '/ordenes/${Uri.encodeComponent(ordenId)}/domicilio',
-          {'solicitudId': solicitudId, 'medicamentoIds': medicamentoIds},
+          {'solicitudId': solicitudId, 'medicamentoIds': medicamentoIds, 'direccionEntrega': direccionEntrega},
         ),
         DomicilioAceptado.fromJson,
       );
