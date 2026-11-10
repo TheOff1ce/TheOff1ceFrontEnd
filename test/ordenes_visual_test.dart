@@ -123,6 +123,8 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('Confirmar pedido'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).last, 'Calle 100 # 15-20, Bogotá');
+      await tester.pump();
       await capturar('ordenes_dialogo_listo_${ancho.toInt()}');
       await tester.tap(find.text('Confirmar pedido'));
       await tester.pump();

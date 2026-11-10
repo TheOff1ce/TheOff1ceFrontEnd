@@ -123,7 +123,8 @@ class AppDependencies {
 
   /// Un controlador por visita a la pantalla de órdenes: nada se conserva al salir (lo libera la
   /// pantalla que lo crea).
-  OrdenesController crearOrdenes() => OrdenesController(ordenesService!);
+  OrdenesController crearOrdenes() =>
+      OrdenesController(ordenesService!, direccionPerfil: () => auth.user?.profile.address ?? '');
 
   /// Un detalle por pantalla o panel (lo libera quien lo crea).
   PendienteDetailController pendienteDetailFor(String id) => PendienteDetailController(pendientesService, id);

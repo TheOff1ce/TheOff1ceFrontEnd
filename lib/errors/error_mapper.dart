@@ -107,6 +107,7 @@ abstract final class ErrorMapper {
     'ELEGIBILIDAD_CAMBIADA': (AppErrorKind.conflict, ErrorMessages.conflict, false),
     'ORDEN_VENCIDA': (AppErrorKind.conflict, ErrorMessages.conflict, false),
     'DOMICILIO_NO_DISPONIBLE': (AppErrorKind.server, ErrorMessages.server, true),
+    'DOMICILIO_RECHAZADO': (AppErrorKind.validation, ErrorMessages.domicilioRechazado, true),
     'AFILIACION_NO_DISPONIBLE': (AppErrorKind.server, ErrorMessages.ordenesUnavailable, true),
   };
 

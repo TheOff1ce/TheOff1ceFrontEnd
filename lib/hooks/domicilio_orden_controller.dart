@@ -31,8 +31,10 @@ class DomicilioOrdenController extends ChangeNotifier {
     required this.orden,
     required List<String> medicamentoIds,
     this.escalon = const Duration(milliseconds: 140),
+    String direccionInicial = '',
     String Function()? generarSolicitudId,
   })  : _service = service,
+        direccionEntrega = direccionInicial,
         medicamentoIds = List.unmodifiable(medicamentoIds),
         _generarId = generarSolicitudId ?? uuidV4;
 
@@ -55,6 +57,23 @@ class DomicilioOrdenController extends ChangeNotifier {
 
   /// Cuántos medicamentos ya muestran su ✓ (revelado escalonado).
   int revelados = 0;
+
+  /// Mismos límites que exige Domicilios (el backend de órdenes los vuelve a validar).
+  static const direccionMinima = 5;
+  static const direccionMaxima = 300;
+
+  /// Dirección de entrega; arranca con la del perfil del paciente si la tiene.
+  String direccionEntrega;
+
+  bool get direccionValida {
+    final largo = direccionEntrega.trim().length;
+    return largo >= direccionMinima && largo <= direccionMaxima;
+  }
+
+  void cambiarDireccion(String valor) {
+    direccionEntrega = valor;
+    _notificar();
+  }
 
   /// `null` hasta la primera vez que se pulsa «Confirmar pedido».
   String? solicitudId;
@@ -109,13 +128,13 @@ class DomicilioOrdenController extends ChangeNotifier {
 
   /// «Confirmar pedido» y «Reintentar»: el `solicitudId` se genera una sola vez por intento.
   Future<void> confirmar() async {
-    if (_enCurso) return;
+    if (_enCurso || !direccionValida) return;
     _enCurso = true;
     solicitudId ??= _generarId();
     _temporizador?.cancel();
     _poner(FaseDomicilio.enviando);
     try {
-      final aceptado = await _service.enviarDomicilio(orden.id, solicitudId!, medicamentoIds);
+      final aceptado = await _service.enviarDomicilio(orden.id, solicitudId!, medicamentoIds, direccionEntrega.trim());
       if (_disposed) return;
       referencia = aceptado.referencia;
       _poner(FaseDomicilio.exito);
