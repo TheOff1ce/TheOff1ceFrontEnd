@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
 import '../components/delivery_widgets.dart';
+import '../components/farmago/buttons.dart';
 import '../components/feedback.dart';
 import '../hooks/driver_board_controller.dart';
+import '../types/delivery.dart';
 import '../types/order.dart';
 import '../utils/delivery_format.dart';
 
@@ -30,7 +32,7 @@ class _DriverBoardPageState extends State<DriverBoardPage> {
     final (taken, error) = await widget.controller.take(order.id);
     if (!mounted) return;
     if (error != null) {
-      showAppSnackBar(context, error.userMessage);
+      showAppSnackBar(context, error.userMessage, error: true);
     } else if (taken != null) {
       widget.onOpen(taken);
     }
@@ -49,71 +51,109 @@ class _DriverBoardPageState extends State<DriverBoardPage> {
             children: [
               ErrorBanner(error: c.error),
               if (active.isNotEmpty) ...[
-                Semantics(header: true, child: Text('Mis entregas', style: context.text.titleLarge)),
-                const SizedBox(height: AppSpacing.s),
-                for (final order in active) ...[
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.delivery_dining),
-                      title: Text(order.pharmacy.name),
-                      subtitle: Text(
-                        '${c.deliveryStatuses[order.deliveryId]?.label ?? order.status.label} · '
-                        'Entregar en ${order.deliveryAddress}',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => widget.onOpen(order),
+                const SectionHeading('Tus entregas en curso'),
+                for (final order in active)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+                    child: _ActiveCard(
+                      order: order,
+                      status: c.deliveryStatuses[order.deliveryId],
+                      onOpen: () => widget.onOpen(order),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.s),
-                ],
-                const SizedBox(height: AppSpacing.l),
+                const SizedBox(height: FgSpace.sp4),
               ],
-              Semantics(header: true, child: Text('Disponibles', style: context.text.titleLarge)),
-              const SizedBox(height: AppSpacing.s),
+              const SectionHeading('Pedidos disponibles'),
               if (c.loading && c.available.isEmpty) const Center(child: DelayedSpinner()),
-              if (!c.loading && c.available.isEmpty)
+              if (!c.loading && c.available.isEmpty) ...[
                 const EmptyState(
                   icon: Icons.inbox_outlined,
                   title: 'No hay pedidos por ahora',
-                  message: 'Desliza hacia abajo para actualizar.',
+                  message: 'Cuando un paciente pida un domicilio aparecerá aquí.',
                 ),
-              for (final order in c.available) ...[
-                _AvailableCard(order: order, busy: c.takingId == order.id, onTake: () => _take(order)),
-                const SizedBox(height: AppSpacing.m),
+                Center(
+                  child: FgButton(
+                    label: 'Actualizar',
+                    icon: Icons.refresh_rounded,
+                    variant: FgButtonVariant.secondary,
+                    onPressed: c.load,
+                  ),
+                ),
               ],
+              for (final order in c.available)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: FgSpace.sp4),
+                  child: _AvailableCard(
+                    order: order,
+                    busy: c.takingId == order.id,
+                    // Mientras se toma uno, los demás esperan: evita tomar dos por error.
+                    enabled: c.takingId == null,
+                    onTake: () => _take(order),
+                  ),
+                ),
             ],
           );
         },
       );
 }
 
+/// Entrega que el repartidor ya tomó: lo primero de la pantalla, con qué hacer ahora.
+class _ActiveCard extends StatelessWidget {
+  const _ActiveCard({required this.order, required this.status, required this.onOpen});
+
+  final DriverOrder order;
+  final DeliveryStatus? status;
+  final VoidCallback onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final hint = status?.driverHint ?? '';
+    return FgCard(
+      destacada: true,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        StatusChip(label: status?.label ?? order.status.label),
+        const SizedBox(height: FgSpace.sp3),
+        Text(order.pharmacy.name, style: FgText.h3),
+        if (hint.isNotEmpty) ...[
+          const SizedBox(height: FgSpace.sp1),
+          Text(hint, style: FgText.body),
+        ],
+        const SizedBox(height: FgSpace.sp3),
+        InfoLine(icon: Icons.place_outlined, text: 'Entregar en ${order.deliveryAddress}'),
+        const SizedBox(height: FgSpace.sp3),
+        FgButton(label: 'Continuar entrega', icon: Icons.arrow_forward_rounded, onPressed: onOpen),
+      ]),
+    );
+  }
+}
+
 class _AvailableCard extends StatelessWidget {
-  const _AvailableCard({required this.order, required this.busy, required this.onTake});
+  const _AvailableCard({required this.order, required this.busy, required this.enabled, required this.onTake});
 
   final AvailableOrder order;
-  final bool busy;
+  final bool busy, enabled;
   final VoidCallback onTake;
 
   @override
-  Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.l),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(order.pharmacy.name, style: context.text.titleMedium),
-            Text('Recoger en ${order.pharmacy.address}', style: context.text.bodySmall),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '${DeliveryFormat.items(order.itemCount)} · ${DeliveryFormat.distance(order.routeSummary.distanceMeters)} · '
-              'aprox. ${DeliveryFormat.duration(order.routeSummary.durationSeconds)}',
-              style: context.text.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.m),
-            FilledButton.icon(
-              onPressed: busy ? null : onTake,
-              icon: const Icon(Icons.check),
-              label: Text(busy ? 'Tomando…' : 'Tomar pedido'),
-            ),
-          ]),
-        ),
+  Widget build(BuildContext context) => FgCard(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(order.pharmacy.name, style: FgText.h3),
+          const SizedBox(height: FgSpace.sp2),
+          InfoLine(icon: Icons.storefront_outlined, text: 'Recoger en ${order.pharmacy.address}'),
+          InfoLine(
+            icon: Icons.route_outlined,
+            text: '${DeliveryFormat.distance(order.routeSummary.distanceMeters)} · '
+                'unos ${DeliveryFormat.duration(order.routeSummary.durationSeconds)}',
+          ),
+          InfoLine(icon: Icons.medication_outlined, text: DeliveryFormat.items(order.itemCount)),
+          const SizedBox(height: FgSpace.sp3),
+          FgButton(
+            label: 'Tomar pedido',
+            icon: Icons.check_rounded,
+            loading: busy,
+            loadingLabel: 'Tomando…',
+            onPressed: enabled || busy ? onTake : null,
+          ),
+        ]),
       );
 }

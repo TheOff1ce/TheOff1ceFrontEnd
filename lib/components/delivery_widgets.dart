@@ -208,3 +208,62 @@ class TitleWithStatus extends StatelessWidget {
         children: [Text(title, style: style), if (status != null) status!],
       );
 }
+
+/// Tarjeta del manual: superficie blanca, borde fino y radio medio. Agrupa lo que va junto.
+class FgCard extends StatelessWidget {
+  const FgCard({super.key, required this.child, this.destacada = false});
+
+  final Widget child;
+
+  /// Borde azul grueso para lo que pide atención ahora (una sola por pantalla).
+  final bool destacada;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(FgSpace.sp5),
+        decoration: BoxDecoration(
+          color: FgColors.superficie,
+          borderRadius: BorderRadius.circular(FgRadius.md),
+          border: Border.all(
+            color: destacada ? FgColors.azul600 : FgColors.linea,
+            width: destacada ? FgBorder.w2 : FgBorder.w1,
+          ),
+        ),
+        child: child,
+      );
+}
+
+/// Título de un grupo dentro de una pantalla.
+class SectionHeading extends StatelessWidget {
+  const SectionHeading(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: FgSpace.sp3),
+        child: Semantics(header: true, child: Text(text, style: FgText.h3)),
+      );
+}
+
+/// Dato secundario con su icono: se reconoce de un vistazo sin leer una etiqueta.
+class InfoLine extends StatelessWidget {
+  const InfoLine({super.key, required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: FgSpace.sp1),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: ExcludeSemantics(child: Icon(icon, size: FgSize.iconoSm, color: FgColors.inkSoft)),
+          ),
+          const SizedBox(width: FgSpace.sp2),
+          Expanded(child: Text(text, style: FgText.body.copyWith(color: FgColors.inkSoft))),
+        ]),
+      );
+}

@@ -143,15 +143,15 @@ class _DelayedSpinnerState extends State<DelayedSpinner> {
       );
 }
 
-/// Shows a snackbar that stays at least 6 seconds and can be dismissed.
-void showAppSnackBar(BuildContext context, String message, {SnackBarAction? action}) {
+/// Aviso breve de algo que ya ocurrió. Sin acción usa el toast del manual, para que los avisos de
+/// la app se vean y se comporten igual (los errores no se cierran solos). Con acción (por ejemplo
+/// "Deshacer") usa la barra inferior, que es la que admite un botón.
+void showAppSnackBar(BuildContext context, String message, {SnackBarAction? action, bool error = false}) {
+  if (action == null) {
+    showFgToast(context, message, kind: error ? FgToastKind.error : FgToastKind.exito);
+    return;
+  }
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 6),
-      showCloseIcon: action == null,
-      closeIconColor: Colors.white,
-      action: action,
-    ));
+    ..showSnackBar(SnackBar(content: Text(message), duration: const Duration(seconds: 6), action: action));
 }

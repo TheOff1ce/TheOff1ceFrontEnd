@@ -25,6 +25,24 @@ class TrackingController extends ChangeNotifier {
   bool loading = true;
   bool _disposed = false;
 
+  bool confirming = false;
+
+  /// El paciente escribe el código del repartidor para cerrar la entrega. `null` = entregado.
+  Future<AppError?> confirm(String code) async {
+    if (confirming) return null;
+    confirming = true;
+    _notify();
+    try {
+      delivery = await _deliveries.confirm(deliveryId, code);
+      return null;
+    } catch (e) {
+      return ErrorMapper.fromException(e);
+    } finally {
+      confirming = false;
+      _notify();
+    }
+  }
+
   Future<void> start() async {
     loading = true;
     error = null;

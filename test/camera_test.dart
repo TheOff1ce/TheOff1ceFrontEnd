@@ -49,7 +49,7 @@ void main() {
     expect(cameraOpened, 1);
     expect(images.cameraCalls, 0, reason: 'the file-input camera of image_picker is not used');
     expect(images.galleryCalls, 0);
-    expect(find.text('Imagen seleccionada.'), findsOneWidget);
+    expect(find.text('Revisa tu foto.'), findsOneWidget);
   });
 
   testWidgets('"Elegir de galería" still uses the gallery picker', (tester) async {

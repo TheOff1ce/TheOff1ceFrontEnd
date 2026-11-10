@@ -1,3 +1,4 @@
+import '../components/farmago/dialogs.dart';
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
@@ -29,23 +30,18 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
   }
 
   Future<void> _cancel(AdminOrder order) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Cancelar este domicilio?'),
-        content: Text(
-          'Se cancelará el pedido a ${order.order.pharmacy.name} para ${order.order.deliveryAddress}. '
+    final confirmed = await showFgConfirm(
+      context,
+      titulo: '¿Cancelar este domicilio?',
+      mensaje: 'Se cancelará el pedido a ${order.order.pharmacy.name} para ${order.order.deliveryAddress}. '
           'El paciente y el repartidor lo verán cancelado.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
-          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sí, cancelar')),
-        ],
-      ),
+      confirmar: 'Cancelar domicilio',
+      cancelar: 'Conservar pedido',
+      peligro: true,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
     final error = await widget.controller.cancel(order);
-    if (mounted) showAppSnackBar(context, error?.userMessage ?? 'Domicilio cancelado.');
+    if (mounted) showAppSnackBar(context, error?.userMessage ?? 'Domicilio cancelado.', error: error != null);
   }
 
   @override

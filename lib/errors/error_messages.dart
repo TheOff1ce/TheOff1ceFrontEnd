@@ -93,6 +93,12 @@ abstract final class ErrorMessages {
       'El estado del domicilio cambió. Actualiza la pantalla para ver el estado actual.';
   static const trackingNotActive =
       'La ubicación solo se comparte mientras llevas el pedido.';
+  static const deliveryCodeInvalid =
+      'El código no coincide. Pídele al repartidor que te lo repita. Tras 5 intentos se bloquea 15 minutos.';
+  static const deliveryCodeLocked =
+      'Hiciste demasiados intentos con un código incorrecto. Espera 15 minutos e inténtalo de nuevo.';
+  static const codeConfirmationRequired =
+      'La entrega la confirma el paciente con tu código. Díselo cuando le entregues el pedido.';
   static const locationDisabled =
       'Activa la ubicación del teléfono para compartir tu recorrido con el paciente.';
   static const locationPermission =

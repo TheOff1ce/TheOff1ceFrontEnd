@@ -137,11 +137,7 @@ class _LoginPageState extends State<LoginPage> {
               ]),
               const SizedBox(height: AppSpacing.l),
               if (widget.googleEnabled)
-                OutlinedButton.icon(
-                  onPressed: _submitting ? null : _google,
-                  icon: const GoogleMark(),
-                  label: const Text('Continuar con Google'),
-                )
+                GoogleSignInButton(onPressed: _submitting ? null : _google)
               else
                 Text(
                   'El acceso con Google está disponible en la versión web. Aquí puedes entrar con tu correo y contraseña.',
