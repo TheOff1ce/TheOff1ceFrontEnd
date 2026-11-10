@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/farmago_tokens.dart';
-import '../../types/pendiente.dart';
-import '../../utils/plazo_vista.dart';
 import '../farmago/buttons.dart';
-import '../farmago/deadline_ring.dart';
-import '../farmago/status_badge.dart';
 
 /// Ancho desde el que la landing usa dos columnas (manual §10).
 bool landingAncha(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= FgBreakpoint.tablet;
 
-/// Escritorio: el hero pone el pendiente de ejemplo al lado del texto y el recorrido va en fila.
+/// Escritorio: el hero pone el logo al lado del texto y el recorrido va en fila.
 bool landingEscritorio(BuildContext context) =>
     MediaQuery.sizeOf(context).width >= FgBreakpoint.desktop;
 
@@ -64,11 +60,8 @@ class _Medida extends StatelessWidget {
       );
 }
 
-/// Ancho de la tarjeta de ejemplo del hero en escritorio y tablet.
-const double _anchoTarjeta = 400;
-
-/// Hero: el texto y, a su lado, un pendiente de ejemplo con el reloj de 48 h. El reloj es lo que
-/// FarmaGo muestra a cada paciente, así que es la imagen de la página.
+/// Hero: el texto y, en escritorio, el logo oficial a la derecha (es el único logo de la página en
+/// escritorio: no hay cabecera). En tablet y móvil solo el texto: la marca va en la cabecera.
 class LandingHero extends StatelessWidget {
   const LandingHero(
       {super.key, required this.onLogin, required this.onRegister});
@@ -81,29 +74,19 @@ class LandingHero extends StatelessWidget {
     final ancha = landingAncha(context);
     final texto =
         _HeroTexto(onLogin: onLogin, onRegister: onRegister, ancha: ancha);
-    if (escritorio) {
-      return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: FgSize.lectura),
-              child: texto,
-            ),
+    if (!escritorio) return _Medida(child: texto);
+    return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      Expanded(
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: FgSize.lectura),
+            child: texto,
           ),
         ),
-        const SizedBox(width: FgSpace.sp8),
-        const SizedBox(width: _anchoTarjeta, child: _TarjetaEjemplo()),
-      ]);
-    }
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      _Medida(child: texto),
-      SizedBox(height: ancha ? FgSpace.sp8 : FgSpace.sp7),
-      if (ancha)
-        const Center(
-            child: SizedBox(width: _anchoTarjeta, child: _TarjetaEjemplo()))
-      else
-        const _TarjetaEjemplo(),
+      ),
+      const SizedBox(width: FgSpace.sp8),
+      const LogoOficial(ancho: 360),
     ]);
   }
 }
@@ -162,82 +145,6 @@ class _HeroTexto extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Datos del reloj de ejemplo. Son ilustrativos: no provienen de ningún pendiente real.
-const _vistaEjemplo = PlazoVista(
-  estado: CumplimientoPlazo.vigente,
-  titular: '31 h 20 min',
-  palabraEstado: 'Vigente',
-  fecha: 'Vence 1 nov 2026, 3:30 p. m.',
-  fraccion: .65,
-  centroPrincipal: '31 h',
-  centroSecundario: '20 min',
-  semantica: '',
-);
-
-/// Pendiente de ejemplo, con la forma de la tarjeta que ve el paciente en la app: quién, cuándo
-/// vence, el reloj y su estado. La franja de marca arriba la une con la bienvenida (manual §22).
-class _TarjetaEjemplo extends StatelessWidget {
-  const _TarjetaEjemplo();
-
-  @override
-  Widget build(BuildContext context) => Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: FgColors.superficie,
-          borderRadius: BorderRadius.circular(FgRadius.lg),
-          border: Border.all(color: FgColors.linea),
-          boxShadow: FgShadow.e3,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const DecoratedBox(
-              decoration: BoxDecoration(gradient: FgGradients.marca),
-              child: SizedBox(height: FgBorder.w4),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(FgSpace.sp6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: FgSpace.sp3,
-                    runSpacing: FgSpace.sp2,
-                    children: [
-                      Text('Pendiente OM-1042',
-                          style: FgText.num(FgText.label)),
-                      const StatusBadge(
-                          estado: CumplimientoPlazo.vigente, fraccion: .65),
-                    ],
-                  ),
-                  const SizedBox(height: FgSpace.sp1),
-                  // Espacios duros en "p. m.": la hora no se parte entre líneas.
-                  Text('Vence 1 nov 2026, 3:30 p. m.',
-                      style: FgText.num(FgText.caption)),
-                  const SizedBox(height: FgSpace.sp6),
-                  const Center(
-                    child: ExcludeSemantics(
-                      child: DeadlineRing(
-                          vista: _vistaEjemplo,
-                          size: DeadlineRingSize.l,
-                          decorativo: true),
-                    ),
-                  ),
-                  const SizedBox(height: FgSpace.sp6),
-                  const Divider(height: 1, color: FgColors.linea),
-                  const SizedBox(height: FgSpace.sp3),
-                  const Text('Ejemplo ilustrativo. No es un pendiente real.',
-                      style: FgText.caption),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
 }
 
 /// Recorrido de un pendiente: cuatro pasos en orden, numerados porque son una secuencia.
@@ -531,8 +438,9 @@ class _LandingCaminosState extends State<LandingCaminos>
           width: double.infinity,
           padding: EdgeInsets.all(ancha ? FgSpace.sp7 : FgSpace.sp5),
           decoration: BoxDecoration(
-            color: FgColors.fondo,
+            gradient: FgGradients.suave,
             borderRadius: BorderRadius.circular(FgRadius.lg),
+            border: Border.all(color: FgColors.azul100),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -903,46 +811,24 @@ class LandingNoHace extends StatelessWidget {
       );
 }
 
-/// Cierre con una sola acción: crear cuenta. Va sobre azul oscuro de marca para marcar el final del
-/// recorrido; el botón secundario tiene fondo blanco opaco, así se lee sobre el azul.
+/// Cierre: invita a crear la cuenta. La acción ya está en el hero, así que aquí solo va el mensaje,
+/// sobre el degradado profundo de marca.
 class LandingCierre extends StatelessWidget {
-  const LandingCierre({super.key, required this.onRegister});
-
-  final VoidCallback onRegister;
+  const LandingCierre({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ancha = landingAncha(context);
-    final texto = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _Titular('¿Tu medicamento quedó pendiente?',
-            color: FgColors.blanco),
-        const SizedBox(height: FgSpace.sp3),
-        Text(
-          'Si eres paciente, crea tu cuenta para ver el estado de tus medicamentos. Las cuentas de las EPS las asigna un administrador.',
-          style: FgText.bodyLg.copyWith(color: FgColors.azul100),
+  Widget build(BuildContext context) => _Medida(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const _Titular('¿Tu medicamento quedó pendiente?',
+                color: FgColors.blanco),
+            const SizedBox(height: FgSpace.sp3),
+            Text(
+              'Si eres paciente, crea tu cuenta para ver el estado de tus medicamentos. Las cuentas de las EPS las asigna un administrador.',
+              style: FgText.bodyLg.copyWith(color: FgColors.azul100),
+            ),
+          ],
         ),
-      ],
-    );
-    final boton = FgButton(
-      label: 'Crear cuenta',
-      variant: FgButtonVariant.secondary,
-      size: FgButtonSize.lg,
-      expand: !ancha,
-      onPressed: onRegister,
-    );
-    if (!ancha) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        texto,
-        const SizedBox(height: FgSpace.sp6),
-        boton,
-      ]);
-    }
-    return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-      Expanded(child: _Medida(child: texto)),
-      const SizedBox(width: FgSpace.sp6),
-      boton,
-    ]);
-  }
+      );
 }
