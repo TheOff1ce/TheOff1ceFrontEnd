@@ -23,6 +23,7 @@
 ## 📑 Table of Contents
 
 1. [Overview](#-overview)
+1. [📲 Install the App](#-install-the-app)
 2. [The FarmaGo Ecosystem](#-the-farmago-ecosystem)
 3. [Tech Stack](#️-tech-stack)
 4. [Architecture](#️-architecture)
@@ -49,6 +50,42 @@
 | 👑 **Admin** | Manage users and roles, see and cancel any home-delivery order, follow any delivery. |
 
 🔒 **No keys or secrets are ever configured in Flutter.** Auth's access token lives **only in memory** and is sent to every service as `Authorization: Bearer`.
+
+---
+
+## 📲 Install the App
+
+| Device | How |
+|---|---|
+| 🤖 **Android** | Download `FarmaGo-vX.Y.Z.apk` from the [latest release](https://github.com/TheOff1ce/TheOff1ceFrontEnd/releases/latest) **on the phone**, open it and allow *Install unknown apps* for your browser when asked. |
+| 🍎 **iPhone / iPad** | Open the web app in **Safari** → *Share* → **Add to Home Screen**. (A native iOS build needs a Mac and an Apple Developer account.) |
+| 💻 **Desktop** | Open the web app in Chrome or Edge → install icon in the address bar (*Install FarmaGo*). |
+
+### 🚀 Publishing a new version
+
+1. Bump `version:` in `pubspec.yaml` (e.g. `1.0.1+2` — the number after `+` must always grow, or phones will refuse the update).
+2. Tag and push:
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+3. `.github/workflows/release.yml` runs the tests, builds the signed APK and publishes it as a **GitHub Release** with the file `FarmaGo-v1.0.1.apk`. It can also be run by hand from *Actions → Release → Run workflow*.
+
+### 🔑 Signing (repository secrets)
+
+Android only installs an update if it is signed with **the same key** as the installed app. The release key lives in `android/farmago-release.jks` + `android/key.properties` (both git-ignored — **back them up and never commit them**). For CI, add these secrets in *Settings → Secrets and variables → Actions*:
+
+| Secret | Value |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | The keystore in base64 (`[Convert]::ToBase64String([IO.File]::ReadAllBytes("android\farmago-release.jks"))` in PowerShell) |
+| `ANDROID_KEYSTORE_PASSWORD` | `storePassword` from `android/key.properties` |
+| `ANDROID_KEY_PASSWORD` | `keyPassword` from `android/key.properties` |
+| `ANDROID_KEY_ALIAS` | `farmago` |
+| `MAPS_API_KEY` | *(optional)* Google Maps client key restricted to `com.example.farma_go` + SHA-1 `12:FF:5A:11:F3:21:15:DE:84:02:E3:FC:98:41:FD:1E:81:B9:7F:20` |
+
+Without the keystore secret, CI still publishes an APK, signed with a temporary debug key (it will not update an installed release build).
+
+Local signed build: `flutter build apk --release` (uses `android/key.properties` automatically).
 
 ---
 
