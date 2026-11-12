@@ -116,8 +116,8 @@ class OrderItemsList extends StatelessWidget {
 }
 
 /// Marco de las pantallas de domicilios y administración: [FgScreen] del manual (encabezado de
-/// 56/64 px con "Volver", título `h1` en pantallas anchas), contenido a ancho de lectura y barra de
-/// acción fija opcional para la acción principal.
+/// 56/64 px con "Volver"), contenido centrado a ancho de lectura (§23: antes quedaba pegado a la
+/// izquierda) y barra de acción fija opcional alineada con el contenido.
 class DeliveryScaffold extends StatelessWidget {
   const DeliveryScaffold({
     super.key,
@@ -143,14 +143,9 @@ class DeliveryScaffold extends StatelessWidget {
           onBack: onBack,
           onRefresh: onRefresh,
           barraAccion: barraAccion,
+          anchoMaximo: FgSize.lectura,
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: FgSize.lectura),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-              ),
-            ),
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
           ],
         ),
       );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/farmago_tokens.dart';
 import '../auth/auth_controller.dart';
+import '../components/farmago/acciones.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/estampado.dart';
 import '../components/farmago/deadline_ring.dart';
@@ -141,7 +142,7 @@ class _HomePageState extends State<HomePage> {
       inicio,
       FgDestino(icono: Icons.document_scanner_outlined, etiqueta: 'Analizar fórmula', onTap: widget.onAnalyze),
       if (widget.onRequestDelivery != null)
-        FgDestino(icono: Icons.home_outlined, etiqueta: 'Pedir a casa', onTap: widget.onRequestDelivery!),
+        FgDestino(icono: Icons.add_home_outlined, etiqueta: 'Pedir a casa', onTap: widget.onRequestDelivery!),
       if (widget.onOrdenes != null)
         FgDestino(icono: Icons.assignment_outlined, etiqueta: 'Órdenes y autorizaciones', onTap: widget.onOrdenes!),
       if (widget.onMyOrders != null)
@@ -248,8 +249,6 @@ class _Contenido extends StatelessWidget {
                       saludo,
                       const SizedBox(height: FgSpace.sp6),
                       _acciones(incluyeAnalizar: true),
-                      const SizedBox(height: FgSpace.sp7),
-                      _Banda(child: _proximamente()),
                     ]),
                   ),
                   const SizedBox(width: FgSpace.sp7),
@@ -263,8 +262,6 @@ class _Contenido extends StatelessWidget {
                 if (pantalla.isPatient) ...[
                   const SizedBox(height: FgSpace.sp6),
                   _acciones(incluyeAnalizar: _w.inicio.foco is! FocoVacio),
-                  const SizedBox(height: FgSpace.sp7),
-                  _Banda(child: _proximamente()),
                 ],
               ]);
             }),
@@ -278,7 +275,7 @@ class _Contenido extends StatelessWidget {
     final name = _w.auth.user?.name.trim();
     final firstName = name?.isNotEmpty == true ? name!.split(RegExp(r'\s+')).first : null;
     final subtitulo = pantalla.isAdmin
-        ? 'Administra los usuarios y los domicilios de FARMA GO.'
+        ? 'Administra los usuarios y los domicilios de FarmaGo.'
         : pantalla.isDriver
             ? 'Aquí ves los domicilios que puedes tomar y los que ya llevas.'
             : 'Aquí puedes ver lo que más importa de tu tratamiento.';
@@ -434,7 +431,8 @@ class _Contenido extends StatelessWidget {
         ),
       ]);
 
-  /// Roles sin datos de paciente: solo su acción principal.
+  /// Roles sin datos de paciente: su acción principal y, debajo, el resto de lo que pueden hacer
+  /// (§23: antes la pantalla quedaba vacía; reconocer antes que recordar).
   Widget _focoRol() {
     final admin = pantalla.isAdmin;
     final icono = admin ? Icons.pending_actions_outlined : Icons.delivery_dining_outlined;
@@ -450,95 +448,81 @@ class _Contenido extends StatelessWidget {
       ),
       const SizedBox(height: FgSpace.sp5),
       FgButton(label: titulo, icon: icono, size: FgButtonSize.lg, expand: movil, onPressed: accion),
+      const SizedBox(height: FgSpace.sp7),
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: FgSize.contenidoPaciente),
+        child: FgAcciones(acciones: [
+          if (admin && _w.onAdminUsers != null)
+            FgAccionTarjeta(
+              icono: Icons.manage_accounts_outlined,
+              titulo: 'Usuarios y roles',
+              descripcion: 'Busca personas, corrige documentos y cambia roles.',
+              onTap: _w.onAdminUsers,
+            ),
+          if (pantalla._pendientesVisible)
+            FgAccionTarjeta(
+              icono: Icons.medication_outlined,
+              titulo: pantalla._rol!.tituloEntrada,
+              descripcion: pantalla._rol!.descripcionEntrada,
+              onTap: _w.onPendientes,
+            ),
+          if (admin)
+            FgAccionTarjeta(
+              icono: Icons.document_scanner_outlined,
+              titulo: 'Analizar fórmula',
+              descripcion: 'Toma una foto y te decimos qué medicamentos indica.',
+              onTap: _w.onAnalyze,
+            ),
+          FgAccionTarjeta(
+            icono: Icons.account_circle_outlined,
+            titulo: 'Mi cuenta',
+            descripcion: 'Tus datos, tu contraseña y cerrar sesión.',
+            onTap: _w.onAccount,
+          ),
+        ]),
+      ),
     ]);
   }
 
-  /// Acciones secundarias del paciente. Un solo botón primario por pantalla: aquí van en ghost.
-  Widget _acciones({required bool incluyeAnalizar}) => Wrap(
-        spacing: FgSpace.sp4,
-        runSpacing: FgSpace.sp3,
-        children: [
-          if (incluyeAnalizar)
-            FgButton(
-              label: 'Analizar fórmula',
-              icon: Icons.document_scanner_outlined,
-              variant: _w.inicio.foco is FocoVacio ? FgButtonVariant.marca : FgButtonVariant.secondary,
-              onPressed: _w.onAnalyze,
-            ),
-          if (_w.onRequestDelivery != null)
-            FgButton(
-              label: 'Pedir medicamento a casa',
-              icon: Icons.home_outlined,
-              variant: _w.inicio.foco is FocoVacio ? FgButtonVariant.marca : FgButtonVariant.secondary,
-              onPressed: _w.onRequestDelivery,
-            ),
-          if (_w.onOrdenes != null)
-            FgButton(
-              label: 'Ver mis órdenes',
-              icon: Icons.assignment_outlined,
-              variant: FgButtonVariant.secondary,
-              onPressed: _w.onOrdenes,
-            ),
-        ],
-      );
-
-  Widget _proximamente() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Semantics(header: true, child: Text('Próximamente', style: FgText.label.copyWith(color: FgColors.inkSoft))),
-        const SizedBox(height: FgSpace.sp1),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: FgSize.medidaTexto),
-          child: const Text(
-            'Estamos preparando estas funciones para conectarte con droguerías y repartidores de FARMA GO.',
-            style: FgText.body,
+  /// Acciones secundarias del paciente como tarjetas del mismo tamaño (§23, ley de Hick y
+  /// similitud). El único botón primario de la pantalla está en el panel del estado.
+  /// Se quitó la caja «Próximamente»: no llevaba a ninguna acción (diseño minimalista).
+  Widget _acciones({required bool incluyeAnalizar}) => FgAcciones(acciones: [
+        if (incluyeAnalizar)
+          FgAccionTarjeta(
+            icono: Icons.document_scanner_outlined,
+            titulo: 'Analizar fórmula',
+            descripcion: 'Toma una foto y te decimos qué medicamentos indica.',
+            onTap: _w.onAnalyze,
           ),
-        ),
+        if (_w.onRequestDelivery != null)
+          FgAccionTarjeta(
+            icono: Icons.add_home_outlined,
+            titulo: 'Pedir medicamento a casa',
+            descripcion: 'Un repartidor lo recoge en la farmacia y lo lleva a tu puerta.',
+            onTap: _w.onRequestDelivery,
+          ),
+        if (_w.onOrdenes != null)
+          FgAccionTarjeta(
+            icono: Icons.assignment_outlined,
+            titulo: 'Ver mis órdenes',
+            descripcion: 'Tus órdenes médicas y qué puedes pedir a domicilio.',
+            onTap: _w.onOrdenes,
+          ),
       ]);
 }
 
-/// Panel del estado principal: superficie, línea fina y sombra de tarjeta en reposo (`--e1`).
+/// Panel del estado principal (§23): tarjeta blanca con sombra baja. Se quitó la franja de
+/// degradado de marca: decoraba sin informar (diseño minimalista); la jerarquía la da el botón
+/// primario del panel (Von Restorff).
 class _Panel extends StatelessWidget {
   const _Panel({required this.child});
 
   final Widget child;
 
-  /// Barra de marca de 4 px en el borde superior (manual §22, categoría identidad). Va sin texto:
-  /// el contenido empieza debajo, con su propio padding.
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: FgColors.azul100,
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-          boxShadow: FgShadow.e1,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const DecoratedBox(
-                decoration: BoxDecoration(gradient: FgGradients.marca),
-                child: SizedBox(height: FgBorder.w4),
-              ),
-              Padding(padding: const EdgeInsets.all(FgSpace.sp5), child: child),
-            ],
-          ),
-        ),
-      );
-}
-
-/// Banda de contexto: una zona con fondo hundido para información secundaria.
-class _Banda extends StatelessWidget {
-  const _Banda({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: FgColors.fondoHundido,
-          borderRadius: BorderRadius.circular(FgRadius.md),
-        ),
+        decoration: FgDecor.tarjeta(),
         child: Padding(padding: const EdgeInsets.all(FgSpace.sp5), child: child),
       );
 }

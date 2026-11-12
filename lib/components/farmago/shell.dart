@@ -20,6 +20,40 @@ class FgDestino {
   final bool seleccionado;
 }
 
+/// Marca el subárbol que ya tiene la barra lateral fija de la app ([FgNavLateral]). Así
+/// [FgAppShell] y [FgScreen] no dibujan una segunda barra y adaptan su encabezado.
+class FgShellScope extends InheritedWidget {
+  const FgShellScope({super.key, required super.child});
+
+  static bool of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<FgShellScope>() != null;
+
+  @override
+  bool updateShouldNotify(FgShellScope oldWidget) => false;
+}
+
+/// Barra lateral fija para todas las pantallas privadas en tablet y escritorio (§23, ley de Jakob y
+/// consistencia): la navegación no desaparece al entrar a una pantalla interna. En móvil devuelve el
+/// contenido tal cual: cada pantalla interna conserva su encabezado con «Volver».
+class FgNavLateral extends StatelessWidget {
+  const FgNavLateral({super.key, required this.destinos, required this.child});
+
+  final List<FgDestino> destinos;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final ancho = MediaQuery.sizeOf(context).width;
+    if (FgBreakpoint.esCompacto(ancho) || destinos.isEmpty) return child;
+    return Material(
+      color: FgColors.fondo,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        _BarraLateral(destinos: destinos, colapsada: !FgBreakpoint.esDesktop(ancho)),
+        Expanded(child: FgShellScope(child: child)),
+      ]),
+    );
+  }
+}
+
 /// Shell de la aplicación: separa la navegación del contenido.
 ///
 /// - ≥ 1200 px: barra lateral de 264 px con todos los destinos, barra superior de 64 px y
@@ -58,6 +92,16 @@ class FgAppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ancho = MediaQuery.sizeOf(context).width;
+    // Dentro de [FgNavLateral] la barra lateral ya está: solo la barra superior y el contenido.
+    if (!FgBreakpoint.esCompacto(ancho) && FgShellScope.of(context)) {
+      return Scaffold(
+        backgroundColor: FgColors.fondo,
+        body: Column(children: [
+          _BarraSuperior(titulo: titulo, acciones: accionesSuperiores),
+          Expanded(child: cuerpo),
+        ]),
+      );
+    }
     if (ancho >= FgBreakpoint.desktop) {
       return Scaffold(
         backgroundColor: FgColors.fondo,
