@@ -109,7 +109,7 @@ class _BarraLateral extends StatelessWidget {
           width: colapsada ? FgSize.sidebarColapsado : FgSize.sidebar,
           decoration: const BoxDecoration(
             color: FgColors.superficie,
-            border: Border(right: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
+            border: Border(right: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
           ),
           child: SafeArea(
             right: false,
@@ -173,20 +173,18 @@ class _ItemLateralState extends State<_ItemLateral> {
       child: Row(
         mainAxisSize: widget.colapsada ? MainAxisSize.min : MainAxisSize.max,
         children: [
-          // Con texto visible no hay icono: solo la versión colapsada, sin etiqueta, lo necesita.
-          if (widget.colapsada)
-            ExcludeSemantics(
-              child: Icon(d.icono, size: FgSize.iconoMd, color: activo ? FgColors.azul800 : FgColors.verde700),
-            ),
+          // Icono + etiqueta (§23): se reconoce el destino sin leer. Inactivos en tinta suave.
+          ExcludeSemantics(
+            child: Icon(d.icono, size: FgSize.iconoMd, color: activo ? FgColors.azul800 : FgColors.navInactivo),
+          ),
           if (!widget.colapsada) ...[
             const SizedBox(width: FgSpace.sp3),
             Expanded(
               child: Text(
                 d.etiqueta,
-
-                style: FgText.label.copyWith(
+                style: (activo ? FgText.label : FgText.labelMedio).copyWith(
                   color: activo ? FgColors.azul800 : FgColors.ink,
-                  fontWeight: activo ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight: activo ? FgWeight.bold : FgWeight.medio,
                 ),
               ),
             ),
@@ -208,7 +206,7 @@ class _ItemLateralState extends State<_ItemLateral> {
             focusNode: _focus,
             borderRadius: BorderRadius.circular(FgRadius.md),
             onTap: d.onTap,
-            hoverColor: activo ? FgColors.azul200 : FgColors.fondo,
+            hoverColor: activo ? FgColors.azul200 : FgColors.azul50,
             child: contenido,
           ),
         ),
@@ -231,7 +229,7 @@ class _BarraSuperior extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp6),
         decoration: const BoxDecoration(
           color: FgColors.superficie,
-          border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
+          border: Border(bottom: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
         ),
         child: Row(children: [
           Expanded(child: Text(titulo, style: FgText.h3, overflow: TextOverflow.ellipsis)),
@@ -252,8 +250,8 @@ class _BarraInferior extends StatelessWidget {
   Widget build(BuildContext context) => DecoratedBox(
         decoration: const BoxDecoration(
           color: FgColors.superficie,
-          border: Border(top: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
-          boxShadow: FgShadow.eArriba,
+          border: Border(top: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
+          boxShadow: FgShadow.barra,
         ),
         child: SafeArea(
           top: false,
@@ -308,13 +306,21 @@ class _ItemInferiorState extends State<_ItemInferior> {
             child: Center(
               child: ExcludeSemantics(
                 child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  // Destino activo: línea de marca de 4 px sobre la etiqueta; sin icono.
-                  Container(
+                  // Icono + etiqueta (§23, ley de Jakob): el destino activo lleva el icono dentro de
+                  // una píldora azul 100; los inactivos van en tinta suave, no en verde.
+                  AnimatedContainer(
+                    duration: FgMotion.reducir(context, FgMotion.micro),
+                    curve: FgMotion.ease,
                     width: FgSize.navIndicadorAncho,
-                    height: FgBorder.w4,
+                    height: FgSize.navIndicadorAlto,
                     decoration: BoxDecoration(
-                      color: activo ? FgColors.azul600 : Colors.transparent,
+                      color: activo ? FgColors.azul100 : Colors.transparent,
                       borderRadius: BorderRadius.circular(FgRadius.pill),
+                    ),
+                    child: Icon(
+                      d.icono,
+                      size: FgSize.iconoMd,
+                      color: activo ? FgColors.azul800 : FgColors.navInactivo,
                     ),
                   ),
                   const SizedBox(height: FgSpace.sp1),
@@ -322,8 +328,8 @@ class _ItemInferiorState extends State<_ItemInferior> {
                     d.etiqueta,
                     overflow: TextOverflow.ellipsis,
                     style: FgText.navMovil.copyWith(
-                      color: activo ? FgColors.azul800 : FgColors.verde700,
-                      fontWeight: activo ? FontWeight.w700 : FontWeight.w600,
+                      color: activo ? FgColors.azul800 : FgColors.navInactivo,
+                      fontWeight: activo ? FgWeight.bold : FgWeight.medio,
                     ),
                   ),
                 ]),
@@ -348,7 +354,7 @@ class FgAccionSuperior extends StatelessWidget {
   Widget build(BuildContext context) => FgIconButton(icon: icono, tooltip: etiqueta, onPressed: onPressed);
 }
 
-/// Respuesta al presionar para destinos de navegación: escala 0.96, interrumpible y sin movimiento
+/// Respuesta al presionar para destinos de navegación: escala 0.98 en 150 ms (§23), interrumpible y sin movimiento
 /// si el sistema lo reduce (mismo criterio que `FgButton`, manual §8.1).
 class _Presionable extends StatefulWidget {
   const _Presionable({required this.child});
@@ -370,8 +376,8 @@ class _PresionableState extends State<_Presionable> {
         onPointerUp: (_) => _marcar(false),
         onPointerCancel: (_) => _marcar(false),
         child: AnimatedScale(
-          scale: _presionado ? .96 : 1,
-          duration: FgMotion.reducir(context, FgMotion.rapida),
+          scale: _presionado ? FgMotion.escalaPresion : 1,
+          duration: FgMotion.reducir(context, FgMotion.micro),
           curve: FgMotion.ease,
           child: widget.child,
         ),

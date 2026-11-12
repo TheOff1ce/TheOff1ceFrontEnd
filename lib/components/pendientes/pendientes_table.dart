@@ -37,11 +37,7 @@ class PendientesTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: FgColors.superficie,
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-        ),
+        decoration: FgDecor.tarjeta(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

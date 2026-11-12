@@ -36,7 +36,7 @@ class _Box extends StatelessWidget {
       decoration: BoxDecoration(
         color: FgColors.superficie,
         borderRadius: BorderRadius.circular(FgRadius.sm),
-        border: Border.all(color: color, width: active || error ? FgBorder.w2 + 1 : FgBorder.w2),
+        border: Border.all(color: color, width: active || error ? FgBorder.controlActivo : FgBorder.control),
       ),
       child: Text(char, style: FgText.num(FgText.h2).copyWith(color: FgColors.ink, height: 1)),
     );

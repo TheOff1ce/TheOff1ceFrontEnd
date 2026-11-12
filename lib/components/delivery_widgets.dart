@@ -222,14 +222,7 @@ class FgCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(FgSpace.sp5),
-        decoration: BoxDecoration(
-          color: FgColors.superficie,
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(
-            color: destacada ? FgColors.azul600 : FgColors.linea,
-            width: destacada ? FgBorder.w2 : FgBorder.w1,
-          ),
-        ),
+        decoration: FgDecor.tarjeta(destacada: destacada),
         child: child,
       );
 }

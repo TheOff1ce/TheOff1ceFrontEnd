@@ -94,7 +94,7 @@ class FgBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: FgColors.superficie,
           borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(color: FgColors.linea, width: FgBorder.w1),
+          border: Border.all(color: FgColors.lineaSuave, width: FgBorder.w1),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

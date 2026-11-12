@@ -15,7 +15,7 @@ class AppCard extends StatelessWidget {
   final Color? color;
   final bool bordered;
 
-  /// Tarjeta del manual (§8.9): superficie, borde 1 px `--linea`, radio 14, padding 20/24.
+  /// Tarjeta del manual (§8.9, §23): [FgDecor.tarjeta], padding 20/24.
   /// [bordered] la resalta (borde de 2 px en tono de aviso) cuando algo pide revisión.
   @override
   Widget build(BuildContext context) {
@@ -23,13 +23,8 @@ class AppCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(compacto ? FgSpace.sp4h : FgSpace.sp5),
-      decoration: BoxDecoration(
-        color: color ?? FgColors.superficie,
-        borderRadius: BorderRadius.circular(FgRadius.md),
-        border: Border.all(
-          color: bordered ? FgColors.riesgoSolid : FgColors.linea,
-          width: bordered ? FgBorder.w2 : FgBorder.w1,
-        ),
+      decoration: FgDecor.tarjeta(color: color ?? FgColors.superficie).copyWith(
+        border: bordered ? Border.all(color: FgColors.riesgoSolid, width: FgBorder.w2) : null,
       ),
       child: child,
     );

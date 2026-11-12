@@ -48,7 +48,7 @@ class _LandingPageState extends State<LandingPage> {
     final aire = ancha ? FgSpace.sp9 : FgSpace.sp7;
     return Scaffold(
       backgroundColor: FgColors.fondo,
-      body: FgFondo(child: SafeArea(
+      body: FgFondo(estampado: true, child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

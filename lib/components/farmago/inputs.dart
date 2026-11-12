@@ -92,9 +92,10 @@ class _FgTextFieldState extends State<FgTextField> {
     if (widget.limpiable && mounted) setState(() {});
   }
 
-  OutlineInputBorder _borde(Color color) => OutlineInputBorder(
+  /// Borde de 1 px en reposo y 2 px con foco o error (§23): el grosor marca el cambio sin color.
+  OutlineInputBorder _borde(Color color, {bool activo = false}) => OutlineInputBorder(
         borderRadius: BorderRadius.circular(FgRadius.sm),
-        borderSide: BorderSide(color: color, width: FgBorder.w2),
+        borderSide: BorderSide(color: color, width: activo ? FgBorder.controlActivo : FgBorder.control),
       );
 
   @override
@@ -141,10 +142,10 @@ class _FgTextFieldState extends State<FgTextField> {
               vertical: widget.multilinea ? FgSpace.sp3 : FgSpace.sp2,
             ),
             border: _borde(bordeReposo),
-            enabledBorder: _borde(bordeReposo),
-            focusedBorder: _borde(bordeFoco),
-            errorBorder: _borde(FgColors.peligro),
-            focusedErrorBorder: _borde(FgColors.peligro),
+            enabledBorder: _borde(bordeReposo, activo: hayError),
+            focusedBorder: _borde(bordeFoco, activo: true),
+            errorBorder: _borde(FgColors.peligro, activo: true),
+            focusedErrorBorder: _borde(FgColors.peligro, activo: true),
             prefixIcon: widget.iconoInicial == null
                 ? null
                 : Icon(widget.iconoInicial, size: FgSize.iconoMd, color: FgColors.inkSoft),

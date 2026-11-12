@@ -203,7 +203,7 @@ class _Contenido extends StatelessWidget {
     return FarmaGoThemed(
       child: ColoredBox(
         color: FgColors.fondo,
-        child: FgEstampado(opacidad: movil ? FgOpacity.estampadoMovil : null, child: ListView(
+        child: FgFondo(child: ListView(
           padding: EdgeInsets.fromLTRB(margen, movil ? FgSpace.sp4 : FgSpace.sp6, margen, FgSpace.sp7),
           children: [
             if (movil) ...[

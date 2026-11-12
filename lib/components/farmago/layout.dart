@@ -104,7 +104,7 @@ class _Encabezado extends StatelessWidget {
       color: FgColors.superficie,
       child: Container(
         decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
+          border: Border(bottom: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
         ),
         child: SafeArea(
           bottom: false,

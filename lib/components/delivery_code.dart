@@ -101,11 +101,7 @@ class _PatientConfirmDeliveryState extends State<PatientConfirmDelivery> {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(FgSpace.sp5),
-        decoration: BoxDecoration(
-          color: FgColors.superficie,
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-        ),
+        decoration: FgDecor.tarjeta(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

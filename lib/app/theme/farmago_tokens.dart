@@ -60,6 +60,9 @@ abstract final class FgColors {
   /// marca en la navegación: el verde se lee como «éxito».
   static const navInactivo = inkSoft;
 
+  /// Color de sombra para widgets de Material con `elevation` (§23): `ink` al 18 %.
+  static const sombraMaterial = Color(0x2E12303F);
+
   static const neutroFg = Color(0xFF35505E);
   static const neutroBg = Color(0xFFEEF2F4);
   static const peligro = Color(0xFFB3261E);
@@ -233,6 +236,27 @@ abstract final class FgShadow {
 
   /// Barra superior o de acción cuando el contenido pasa por debajo (§23).
   static const barra = <BoxShadow>[BoxShadow(color: Color(0x0F12303F), offset: Offset(0, 1), blurRadius: 8)];
+}
+
+/// Decoraciones compartidas (§23). Una sola definición de tarjeta para toda la app.
+abstract final class FgDecor {
+  /// Tarjeta en reposo: superficie, borde `lineaSuave`, radio 14 y sombra baja.
+  /// [destacada]: borde azul de 2 px para lo que pide atención ahora (una sola por pantalla).
+  static BoxDecoration tarjeta({bool destacada = false, Color color = FgColors.superficie}) => BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(FgRadius.md),
+        border: Border.all(
+          color: destacada ? FgColors.azul600 : FgColors.lineaSuave,
+          width: destacada ? FgBorder.w2 : FgBorder.w1,
+        ),
+        boxShadow: FgShadow.tarjeta,
+      );
+
+  /// Forma de tarjeta interactiva (Material + InkWell): mismo borde que [tarjeta].
+  static RoundedRectangleBorder formaTarjeta() => RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(FgRadius.md),
+        side: const BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1),
+      );
 }
 
 /// Tamaños de controles y estructura.

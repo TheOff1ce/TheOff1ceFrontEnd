@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import '../../app/theme/farmago_tokens.dart';
 import 'focus_ring.dart';
 
-/// `marca`: secundario de marca en `--verde-700` (manual §3.1). Mismo tratamiento que `secondary`.
+/// `secondary`: tonal (§23), fondo azul 100 sin borde. `marca`: contorno de 1 px en `--verde-700`
+/// (manual §3.1).
 enum FgButtonVariant { primary, secondary, ghost, danger, marca }
 
 enum FgButtonSize { lg, md, sm }
@@ -53,7 +54,7 @@ class _FgButtonState extends State<FgButton> {
     super.dispose();
   }
 
-  /// Respuesta al presionar: escala de 0.96 (manual §8.1), interrumpible y sin movimiento si se reduce.
+  /// Respuesta al presionar: escala de 0.98 en 150 ms (§23), interrumpible y sin movimiento si se reduce.
   bool _presionado = false;
 
   double get _alto => switch (widget.size) {
@@ -88,6 +89,9 @@ class _FgButtonState extends State<FgButton> {
         if (presionado) return FgColors.peligroPressed;
         return encima ? FgColors.peligroHover : FgColors.peligro;
       case FgButtonVariant.secondary:
+        // Tonal (§23): fondo azul 100 sin borde. Se distingue del primario sin competir con él.
+        if (deshabilitado) return FgColors.deshabilitadoBg;
+        return presionado || encima ? FgColors.azul200 : FgColors.azul100;
       case FgButtonVariant.marca:
         // Con borde, el fondo es opaco: nada del fondo de la pantalla se ve a través del botón.
         if (deshabilitado) return FgColors.deshabilitadoBg;
@@ -110,8 +114,8 @@ class _FgButtonState extends State<FgButton> {
   }
 
   ButtonStyle _estilo() {
-    final conBorde = widget.variant == FgButtonVariant.secondary || widget.variant == FgButtonVariant.marca;
-    final colorBorde = widget.variant == FgButtonVariant.marca ? FgColors.verde700 : FgColors.azul600;
+    final conBorde = widget.variant == FgButtonVariant.marca;
+    const colorBorde = FgColors.verde700;
     return ButtonStyle(
       minimumSize: WidgetStatePropertyAll(Size(widget.expand ? 0 : 120, _alto)),
       padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: _paddingX)),
@@ -119,7 +123,7 @@ class _FgButtonState extends State<FgButton> {
       shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md))),
       side: WidgetStateProperty.resolveWith(
         (estados) => conBorde && !estados.contains(WidgetState.disabled)
-            ? BorderSide(color: colorBorde, width: FgBorder.w2)
+            ? const BorderSide(color: colorBorde, width: FgBorder.control)
             : BorderSide.none,
       ),
       backgroundColor: WidgetStateProperty.resolveWith(_fondo),
@@ -163,8 +167,8 @@ class _FgButtonState extends State<FgButton> {
       onPointerUp: (_) => setState(() => _presionado = false),
       onPointerCancel: (_) => setState(() => _presionado = false),
       child: AnimatedScale(
-        scale: _presionado && activo ? .96 : 1,
-        duration: FgMotion.reducir(context, FgMotion.rapida),
+        scale: _presionado && activo ? FgMotion.escalaPresion : 1,
+        duration: FgMotion.reducir(context, FgMotion.micro),
         curve: FgMotion.ease,
         child: boton,
       ),
@@ -271,7 +275,10 @@ class _FgChipState extends State<FgChip> {
   Widget build(BuildContext context) {
     final seleccionado = widget.selected;
     final forma = StadiumBorder(
-      side: BorderSide(color: seleccionado ? FgColors.azul600 : FgColors.lineaControl, width: FgBorder.w2),
+      side: BorderSide(
+        color: seleccionado ? FgColors.azul600 : FgColors.lineaControl,
+        width: seleccionado ? FgBorder.controlActivo : FgBorder.control,
+      ),
     );
     return Semantics(
       button: true,

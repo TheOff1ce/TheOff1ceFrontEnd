@@ -64,8 +64,8 @@ class OrdenCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: FgColors.superficie,
           borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(color: conSeleccion ? FgColors.azul600 : FgColors.linea, width: FgBorder.w1),
-          boxShadow: conSeleccion ? FgShadow.e2 : FgShadow.e0,
+          border: Border.all(color: conSeleccion ? FgColors.azul600 : FgColors.lineaSuave, width: FgBorder.w1),
+          boxShadow: conSeleccion ? FgShadow.tarjetaHover : FgShadow.tarjeta,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
