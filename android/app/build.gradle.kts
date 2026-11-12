@@ -6,6 +6,19 @@ plugins {
 
 import java.util.Properties
 
+/**
+ * Release signing: android/key.properties (local) or the ANDROID_KEYSTORE_* environment variables
+ * (CI). Without either, the release build is signed with the debug key so it still builds.
+ * Keep the same keystore forever: phones only accept updates signed with the same key.
+ */
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+fun signingValue(property: String, env: String): String? =
+    keystoreProperties.getProperty(property) ?: System.getenv(env)?.takeIf { it.isNotBlank() }
+val releaseStoreFile = signingValue("storeFile", "ANDROID_KEYSTORE_PATH")
+
 /** Google Maps client key: Gradle property MAPS_API_KEY, or android/local.properties. */
 val mapsApiKey: String = (project.findProperty("MAPS_API_KEY") as String?)
     ?: Properties().apply {
@@ -39,11 +52,24 @@ android {
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = signingValue("storePassword", "ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("keyAlias", "ANDROID_KEY_ALIAS")
+                keyPassword = signingValue("keyPassword", "ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (releaseStoreFile != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
