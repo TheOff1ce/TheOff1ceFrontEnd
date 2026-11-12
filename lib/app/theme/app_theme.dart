@@ -22,7 +22,7 @@ abstract final class _Palette {
   static const successContainer = FgColors.cumplidoBg;
 }
 
-/// Spacing scale (multiples of 4).
+/// Spacing scale (multiples of 4). Legacy aliases of [FgSpace]; new code uses [FgSpace] directly.
 abstract final class AppSpacing {
   static const xs = 4.0;
   static const s = 8.0;
@@ -32,7 +32,8 @@ abstract final class AppSpacing {
   static const xxl = 32.0;
 }
 
-/// Radii of the manual: 8 controls, 14 buttons and cards, 24 windows.
+/// Radii of the manual: 8 controls, 14 buttons and cards, 24 windows. Legacy aliases of
+/// [FgRadius]; new code uses [FgRadius] directly.
 abstract final class AppRadii {
   static const s = FgRadius.sm;
   static const m = FgRadius.md;

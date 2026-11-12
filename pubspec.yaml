@@ -31,23 +31,10 @@ flutter:
     # Logo de Google para "Continuar con Google" (descargar de la guía oficial de marca).
     # Descomenta esta línea cuando el archivo exista; sin él el botón muestra una "G" neutra.
     - assets/images/google_g.png
-  # Manrope (SIL OFL 1.1, see assets/fonts/OFL.txt) is bundled so text never
-  # depends on a runtime download (FE-018).
+  # Atkinson Hyperlegible Next es la única tipografía de la app (manual §4). Va en el paquete
+  # para que el texto nunca dependa de una descarga en tiempo de ejecución (FE-018).
   fonts:
-    - family: Manrope
-      fonts:
-        - asset: assets/fonts/Manrope-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Manrope-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Manrope-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Manrope-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Manrope-ExtraBold.ttf
-          weight: 800
-    # Atkinson Hyperlegible Next (SIL OFL 1.1, see assets/fonts/atkinson/OFL.txt): tipografía del
-    # manual unificado FarmaGo (§4). Solo la usan las pantallas de pendientes por ahora.
+    # SIL OFL 1.1, see assets/fonts/atkinson/OFL.txt.
     - family: Atkinson Hyperlegible Next
       fonts:
         - asset: assets/fonts/atkinson/AtkinsonHyperlegibleNext-400.ttf

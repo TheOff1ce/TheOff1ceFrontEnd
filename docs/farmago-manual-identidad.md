@@ -6,7 +6,7 @@ Este documento define la imagen de marca de FarmaGo y las reglas para mantenerla
 
 ## Contenido
 
-§0 Cómo usar este manual · §1 Esencia · §2 Logo · §3 Color · §4 Tipografía · §5 Espaciado, rejilla y estructura · §6 Forma · §7 Ventanas y avisos · §8 Componentes · §9 Patrones de composición · §10 Responsivo · §11 Voz · §12 Formatos de datos · §13 Iconos, imágenes y movimiento · §14 Accesibilidad · §15 Implementación · §16 Inventario · §17 Reglas de oro · §18 Lista de verificación · §19 Pendientes · Anexo A: tokens de diseño
+§0 Cómo usar este manual · §1 Esencia · §2 Logo · §3 Color · §4 Tipografía · §5 Espaciado, rejilla y estructura · §6 Forma · §7 Ventanas y avisos · §8 Componentes · §9 Patrones de composición · §10 Responsivo · §11 Voz · §12 Formatos de datos · §13 Iconos, imágenes y movimiento · §14 Accesibilidad · §15 Implementación · §16 Inventario · §17 Reglas de oro · §18 Lista de verificación · §19 Pendientes · §23 Modernización visual · Anexo A: tokens de diseño · Anexo B: tokens de la modernización
 
 ## 0. Cómo usar este manual (reglas para el agente)
 
@@ -866,6 +866,24 @@ Esta sección implementa la política de `PRODUCT.md` (sección "Imágenes, ilus
 
 ---
 
+## 23. Modernización visual (decisión aprobada, nov. 2026)
+
+**Por qué:** las personas que probaron la app dijeron que funciona bien y que los colores sirven, pero que se ve rústica y antigua. Se aligera la forma **sin cambiar la paleta, los tamaños de texto ni la tipografía** (Atkinson Hyperlegible Next se mantiene). Esta sección prevalece sobre §6, §8 y §13 donde las contradice. Los valores están en el Anexo B y en `farmago_tokens.dart` (marcados «§23»).
+
+| Qué cambia | Antes | Ahora | Principio |
+|---|---|---|---|
+| Borde de controles en reposo (input, select, chip) | 2 px `--linea-control` | **1 px** `--linea-control` (3,80:1); **2 px** con foco o error (`--bw-control-activo`) | Estético-usabilidad; el cambio de grosor marca el foco sin depender del color (WCAG 1.4.1) |
+| Tarjeta | borde 1 px `--linea` + `--e1` | borde 1 px `--linea-suave` + `--e-tarjeta`; hover/foco de la interactiva: `--e-tarjeta-hover` | Gestalt figura-fondo; región común |
+| Fondo de las pantallas de la app | estampado de figuras | **liso** `--fondo`. El estampado queda solo en la landing | Diseño estético y minimalista |
+| Navegación inactiva | `--verde-700` | `--nav-inactivo` (= `--ink-soft`) | Similitud: el verde se lee como «éxito» |
+| Peso tipográfico | 600–700 en casi todo | 700 solo en títulos, cifras y botones; 500/600 en etiquetas (`--fw-*`) | Von Restorff; jerarquía |
+| Presión | solo cambio de color | escala `.98` en 150 ms (`--dur-micro`) | Visibilidad del estado; umbral de Doherty |
+| Fondos sutiles | — | `--azul-50` para hover de filas y zonas activas | Consistencia (derivado de `--azul-100`) |
+
+- **Texto sobre `--azul-100`:** siempre `--azul-800` (7,70:1). `--azul-600` sobre `--azul-100` da 4,44:1 y no se usa para texto.
+- Se mantienen: radios (§6.1), escala de espaciado (§5.1), tamaños de control y de toque (48 px), anillo de foco de 3 px, contraste AAA del texto y la regla de movimiento reducido.
+- Nada de esto cambia comportamiento, textos de negocio ni llamadas al backend.
+
 ## Anexo A — `farmago-tokens.css`
 
 Guárdalo como archivo de tokens del proyecto (por ejemplo `farmago-tokens.css`) y cárgalo una vez en la raíz. Si el proyecto no usa CSS plano, se traduce con los mismos nombres y valores. (En este repo: `lib/app/theme/farmago_tokens.dart`.)
@@ -1026,5 +1044,28 @@ h1, h2, h3 { margin: 0; }
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+```
+
+
+## Anexo B — Tokens de la modernización (§23)
+
+```css
+:root {
+  --azul-50: #F1F8FC;        /* hover de filas y tarjetas, zonas activas; nunca texto */
+  --linea-suave: #DFEAEF;    /* borde decorativo de tarjetas con sombra */
+  --nav-inactivo: var(--ink-soft);
+
+  --bw-control: 1px;         /* controles en reposo */
+  --bw-control-activo: 2px;  /* controles con foco o error */
+
+  --e-tarjeta: 0 1px 3px rgb(18 48 63 / .05), 0 6px 16px rgb(18 48 63 / .04);
+  --e-tarjeta-hover: 0 2px 6px rgb(18 48 63 / .07), 0 10px 24px rgb(18 48 63 / .08);
+  --e-barra: 0 1px 8px rgb(18 48 63 / .06);
+
+  --dur-micro: 150ms;        /* presión */
+  --escala-presion: .98;
+
+  --fw-regular: 400; --fw-medio: 500; --fw-semibold: 600; --fw-bold: 700;
 }
 ```

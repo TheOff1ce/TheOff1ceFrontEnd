@@ -125,7 +125,7 @@ All services trust the same access token issued by **TheOff1ceAuth** (HS256 JWT,
 | Layer | Technology |
 |---|---|
 | Framework | **Flutter** (stable, CI uses 3.47.8) + **Dart ≥ 3.3** |
-| UI | **Material 3** with FarmaGo design tokens; fonts **Manrope** and **Atkinson Hyperlegible Next** (SIL OFL) |
+| UI | **Material 3** with FarmaGo design tokens; font **Atkinson Hyperlegible Next** (SIL OFL) |
 | Routing | **go_router** |
 | HTTP | `http`, `http_parser` |
 | Real time | `socket_io_client` |
@@ -174,7 +174,7 @@ lib/
 ├── types/          # Models: auth, medication, analysis, order, delivery, ordenes, pendiente, admin…
 └── utils/          # Constants (service URLs), validators, formatters, polyline decoding
 assets/
-├── fonts/          # Manrope and Atkinson Hyperlegible Next (OFL)
+├── fonts/          # Atkinson Hyperlegible Next (OFL)
 └── images/         # FarmaGo logo, symbol, Google "G"
 docs/               # Business context, identity manual, design notes
 test/               # Unit, widget and golden tests
@@ -307,7 +307,7 @@ flutter run -d web-server --web-hostname localhost --web-port 5173 `
 
 `pendientes-service` must allow the frontend origin (`FRONTEND_URL=http://localhost:5173`; in deployment, the `FRONTEND_URL` variable of the repository's `production` environment) and share `JWT_SECRET` with Auth.
 
-🎨 These screens follow the **unified FarmaGo identity manual** (tokens in `lib/app/theme/farmago_tokens.dart`, `Fg*` components in `lib/components/farmago/`, Atkinson Hyperlegible Next font); the rest of the app keeps the previous theme (Manrope) for now.
+🎨 These screens follow the **unified FarmaGo identity manual** (tokens in `lib/app/theme/farmago_tokens.dart`, `Fg*` components in `lib/components/farmago/`, Atkinson Hyperlegible Next font). The whole app shares this design system.
 
 ---
 

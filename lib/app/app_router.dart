@@ -461,6 +461,7 @@ class AppRouter {
             return _gate(TrackingPage(
               key: ValueKey('admin-$deliveryId'),
               createController: () => _deps.trackingFor(deliveryId),
+              showPatientActions: false,
               onBack: () => AppRoutes.backOrGo(context, AppRoutes.adminOrders),
             ));
           },
