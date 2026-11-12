@@ -29,6 +29,19 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Google sign-in: TheOff1ceAuth returns to farmago://auth/callback#code=… and this
+             activity hands the URL back to the in-app browser tab (flutter_web_auth_2). -->
+        <activity
+            android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+            android:exported="true"
+            android:taskAffinity="">
+            <intent-filter android:label="flutter_web_auth_2">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="farmago" android:host="auth" android:path="/callback" />
+            </intent-filter>
+        </activity>
         <!-- Google Maps client key (restricted to this package + SHA-1). Set MAPS_API_KEY in
              android/local.properties or as a Gradle property; never the server key. -->
         <meta-data

@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
+import '../auth/google_mobile_sign_in.dart';
 import '../components/auth_ui.dart';
 import '../components/feedback.dart';
 import '../errors/app_error.dart';
@@ -18,14 +19,19 @@ class LoginPage extends StatefulWidget {
     required this.onRegister,
     required this.onForgotPassword,
     required this.onBack,
-    this.googleEnabled = kIsWeb,
+    this.googleEnabled = true,
+    this.googleMobile,
   });
 
   final AuthController auth;
   final VoidCallback onRegister, onForgotPassword, onBack;
 
-  /// Google sign-in needs the web callback of the auth service (FE-013).
+  /// Google sign-in: on the web through the Auth redirect; on Android/iOS through an in-app browser
+  /// tab that returns to the app deep link (FE-013).
   final bool googleEnabled;
+
+  /// Test seam for the mobile flow; defaults to [GoogleMobileSignIn.authenticate].
+  final Future<GoogleCallback?> Function()? googleMobile;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -80,12 +86,44 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _google() async {
+    if (!kIsWeb) return _googleMobile();
     final opened = await launchUrl(
       Uri.parse('${AppConfig.authBaseUrl}/auth/google'),
       mode: LaunchMode.platformDefault,
       webOnlyWindowName: '_self',
     );
     if (!opened && mounted) setState(() => _error = ErrorMapper.network('launchUrl failed'));
+  }
+
+  Future<void> _googleMobile() async {
+    widget.auth.clearNotice();
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
+    AppError? error;
+    try {
+      final callback = await (widget.googleMobile ?? () => GoogleMobileSignIn.authenticate(AppConfig.authBaseUrl))();
+      if (callback == null) {
+        // La persona cerró la pestaña de Google: no es un error.
+      } else if (callback.code != null) {
+        error = await widget.auth.signInWithGoogleCode(callback.code!);
+      } else {
+        error = AppError(
+          kind: AppErrorKind.unauthorized,
+          userMessage: ErrorMapper.googleRedirectMessage(callback.error),
+          retryable: true,
+          code: callback.error,
+        );
+      }
+    } catch (e) {
+      error = ErrorMapper.network('google sign-in failed: $e');
+    }
+    if (!mounted) return;
+    setState(() {
+      _submitting = false;
+      _error = error;
+    });
   }
 
   @override

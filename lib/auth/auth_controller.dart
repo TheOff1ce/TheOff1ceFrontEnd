@@ -135,6 +135,10 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
     return _run(() async => _acceptSession(await _repository.verifyCode(email: email, code: code)));
   }
 
+  /// Google en la app móvil: canjea el código de un solo uso que Auth devolvió al deep link.
+  Future<AppError?> signInWithGoogleCode(String code) =>
+      _run(() async => _acceptSession(await _repository.exchangeGoogleCode(code)));
+
   /// HU-005: changes the password and keeps this device signed in with the new session.
   Future<AppError?> changePassword({required String currentPassword, required String newPassword}) =>
       _run(() async {
