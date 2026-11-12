@@ -4,7 +4,10 @@ import '../types/user_profile.dart';
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
+import '../components/farmago/buttons.dart';
 import '../components/delivery_widgets.dart';
+import '../components/farmago/feedback.dart';
 import '../components/feedback.dart';
 import '../hooks/admin_users_controller.dart';
 import '../types/admin.dart';
@@ -105,7 +108,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
               ),
               const SizedBox(height: AppSpacing.s),
               ErrorBanner(error: c.error),
-              if (c.loading && c.users.isEmpty) const Center(child: DelayedSpinner()),
+              if (c.loading && c.users.isEmpty) const FgListaCargando(etiqueta: 'Cargando usuarios'),
               if (!c.loading && c.users.isEmpty && c.error == null)
                 const EmptyState(
                   icon: Icons.person_search_outlined,
@@ -167,15 +170,19 @@ class _UserCard extends StatelessWidget {
           ]),
           const SizedBox(height: AppSpacing.xs),
           SelectableText(user.email, style: context.text.bodySmall),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            [
-              user.isGoogle ? 'Cuenta de Google' : 'Correo y contraseña',
-              user.emailVerified ? 'correo verificado' : 'correo sin verificar',
-              if (created != null) 'desde ${_date(created)}',
-            ].join(' · '),
-            style: context.text.bodySmall?.copyWith(color: context.status.mutedText),
-          ),
+          const SizedBox(height: AppSpacing.s),
+          // §23: cada dato con su icono, en vez de una línea larga unida con «·» (ley de Miller).
+          Wrap(spacing: FgSpace.sp4, runSpacing: FgSpace.sp1, children: [
+            _Meta(
+              icono: user.isGoogle ? Icons.account_circle_outlined : Icons.mail_outline,
+              texto: user.isGoogle ? 'Cuenta de Google' : 'Correo y contraseña',
+            ),
+            _Meta(
+              icono: user.emailVerified ? Icons.verified_outlined : Icons.error_outline,
+              texto: user.emailVerified ? 'Correo verificado' : 'Correo sin verificar',
+            ),
+            if (created != null) _Meta(icono: Icons.calendar_today_outlined, texto: 'Desde el ${_date(created)}'),
+          ]),
           const SizedBox(height: AppSpacing.xs),
           Wrap(
             spacing: AppSpacing.s,
@@ -193,28 +200,35 @@ class _UserCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.s),
+          const SizedBox(height: AppSpacing.m),
+          // §23: el mismo campo con etiqueta que el resto de formularios (consistencia), no el
+          // desplegable subrayado de Material.
           Row(children: [
-            Text('Rol', style: context.text.labelLarge),
-            const SizedBox(width: AppSpacing.m),
             Expanded(
-              child: DropdownButton<UserRole>(
-                value: user.role,
-                isExpanded: true,
-                hint: const Text('Sin rol'),
-                items: [
-                  for (final role in UserRole.values) DropdownMenuItem(value: role, child: Text(role.label)),
-                ],
-                onChanged: isSelf || saving
-                    ? null
-                    : (role) {
-                        if (role != null && role != user.role) onRole(role);
-                      },
+              // Controlado por `user.role`: si se cancela la confirmación, vuelve a mostrar el rol real.
+              child: InputDecorator(
+                decoration: InputDecoration(labelText: 'Rol', enabled: !isSelf),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<UserRole>(
+                    value: user.role,
+                    isExpanded: true,
+                    isDense: true,
+                    hint: const Text('Sin rol'),
+                    items: [
+                      for (final role in UserRole.values) DropdownMenuItem(value: role, child: Text(role.label)),
+                    ],
+                    onChanged: isSelf || saving
+                        ? null
+                        : (role) {
+                            if (role != null && role != user.role) onRole(role);
+                          },
+                  ),
+                ),
               ),
             ),
             if (saving) ...[
-              const SizedBox(width: AppSpacing.s),
-              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+              const SizedBox(width: AppSpacing.m),
+              const FgSpinner(),
             ],
           ]),
           if (isSelf)
@@ -233,6 +247,21 @@ class _UserCard extends StatelessWidget {
   }
 }
 
+
+/// Dato secundario de la tarjeta de usuario: icono de 20 px y texto 16 px en tinta suave.
+class _Meta extends StatelessWidget {
+  const _Meta({required this.icono, required this.texto});
+
+  final IconData icono;
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(icono, size: FgSize.iconoSm, color: FgColors.inkSoft),
+        const SizedBox(width: FgSpace.sp1),
+        Text(texto, style: FgText.caption),
+      ]);
+}
 
 /// Corrección del documento por un administrador. Valida el formato antes de enviar.
 class _DocumentDialog extends StatefulWidget {

@@ -49,15 +49,14 @@ class _AccountPageState extends State<AccountPage> {
           listenable: widget.auth,
           builder: (context, _) {
             final user = widget.auth.user;
+            // §23: contenido centrado a ancho de lectura (antes pegado a la izquierda).
             return FgScreen(
               titulo: 'Mi cuenta',
               onBack: widget.onBack,
+              anchoMaximo: FgSize.lectura,
               children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: FgSize.lectura),
-                    child: Column(
+                Builder(
+                  builder: (context) => Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         if (user != null) _Identity(user: user),
@@ -71,11 +70,7 @@ class _AccountPageState extends State<AccountPage> {
                             child: _editingProfile
                                 ? Container(
                                     padding: const EdgeInsets.all(FgSpace.sp5),
-                                    decoration: BoxDecoration(
-                                      color: FgColors.superficie,
-                                      borderRadius: BorderRadius.circular(FgRadius.md),
-                                      border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-                                    ),
+                                    decoration: FgDecor.tarjeta(),
                                     child: ProfileForm(
                                       auth: widget.auth,
                                       onDone: _profileSaved,
@@ -123,7 +118,7 @@ class _AccountPageState extends State<AccountPage> {
                           alignment: Alignment.centerLeft,
                           child: FgButton(
                             label: 'Cerrar sesión',
-                            icon: Icons.logout_rounded,
+                            icon: Icons.logout,
                             variant: FgButtonVariant.danger,
                             loading: _signingOut,
                             loadingLabel: 'Cerrando sesión…',
@@ -132,7 +127,6 @@ class _AccountPageState extends State<AccountPage> {
                         ),
                       ],
                     ),
-                  ),
                 ),
               ],
             );
@@ -149,7 +143,8 @@ String _initials(String name, String email) {
   return '$first$last'.toUpperCase();
 }
 
-/// Bloque de identidad: la franja de marca de 8 px (manual §3.4) y el monograma.
+/// Bloque de identidad: monograma, nombre, correo y rol. §23: sin la franja de degradado de marca
+/// (decoraba sin informar); tarjeta con sombra baja.
 class _Identity extends StatelessWidget {
   const _Identity({required this.user});
 
@@ -194,28 +189,14 @@ class _Identity extends StatelessWidget {
       ],
     );
     return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: FgColors.superficie,
-        borderRadius: BorderRadius.circular(FgRadius.md),
-        border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-        boxShadow: FgShadow.e1,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      padding: EdgeInsets.all(compacto ? FgSpace.sp4 : FgSpace.sp5),
+      decoration: FgDecor.tarjeta(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(height: FgSpace.sp2, decoration: const BoxDecoration(gradient: FgGradients.marca)),
-          Padding(
-            padding: EdgeInsets.all(compacto ? FgSpace.sp4 : FgSpace.sp5),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                monograma,
-                SizedBox(width: compacto ? FgSpace.sp4 : FgSpace.sp5),
-                Expanded(child: datos),
-              ],
-            ),
-          ),
+          monograma,
+          SizedBox(width: compacto ? FgSpace.sp4 : FgSpace.sp5),
+          Expanded(child: datos),
         ],
       ),
     );
@@ -234,7 +215,8 @@ class _SectionTitle extends StatelessWidget {
       );
 }
 
-/// Lista de datos: etiqueta y valor en una fila (pantallas anchas) o apilados (móvil).
+/// Datos agrupados por tema (§23, ley de Miller y Gestalt proximidad): antes eran 12 filas seguidas
+/// en una sola caja. Cada grupo es una tarjeta; los grupos sin datos no se muestran.
 class _Details extends StatelessWidget {
   const _Details({required this.user});
 
@@ -242,48 +224,65 @@ class _Details extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final created = user.createdAt;
-    final lastLogin = user.lastLoginAt;
-    final rows = <(String, Widget)>[
-      ('Nombre', _value(user.name.isEmpty ? 'Sin nombre' : user.name)),
-      ('Correo', _EmailValue(user: user)),
-      ..._profileRows(user),
-      if (created != null) ('Cuenta creada', _value(PendienteFormat.fecha(created), numeric: true)),
-      if (lastLogin != null) ('Último ingreso', _value(PendienteFormat.fechaHora(lastLogin), numeric: true)),
-    ];
-    return Container(
-      decoration: BoxDecoration(
-        color: FgColors.superficie,
-        borderRadius: BorderRadius.circular(FgRadius.md),
-        border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final (index, (label, value)) in rows.indexed) ...[
-            if (index > 0) const Divider(height: FgBorder.w1, thickness: FgBorder.w1, color: FgColors.linea),
-            _DetailRow(label: label, value: value),
-          ],
-        ],
-      ),
-    );
-  }
-
-  /// Datos del rol. Solo se muestran los que la persona ya llenó.
-  static List<(String, Widget)> _profileRows(AuthUser user) {
     final p = user.profile;
     final birth = p.birthDate;
-    return [
-      if (p.hasDocument) ('Documento', _value('${p.documentType!.code} ${p.documentNumber}', numeric: true)),
-      if (p.phone != null) ('Celular', _value(p.phone!, numeric: true)),
-      if (birth != null) ('Fecha de nacimiento', _value(PendienteFormat.fecha(birth), numeric: true)),
-      if (p.eps != null) ('EPS', _value(p.eps!)),
-      if (p.address != null) ('Dirección de entrega', _value(p.address!)),
-      if (p.vehicleType != null)
-        ('Vehículo', _value(p.vehiclePlate == null ? p.vehicleType!.label : '${p.vehicleType!.label} · ${p.vehiclePlate}')),
-      if (p.organization != null) ('EPS donde trabajas', _value(p.organization!)),
-      if (p.position != null) ('Cargo', _value(p.position!)),
+    final created = user.createdAt;
+    final lastLogin = user.lastLoginAt;
+    final grupos = <(String, List<(String, Widget)>)>[
+      ('Datos personales', [
+        ('Nombre', _value(user.name.isEmpty ? 'Sin nombre' : user.name)),
+        if (p.hasDocument) ('Documento', _value('${p.documentType!.code} ${p.documentNumber}', numeric: true)),
+        if (birth != null) ('Fecha de nacimiento', _value(PendienteFormat.fecha(birth), numeric: true)),
+        if (p.eps != null) ('EPS', _value(p.eps!)),
+      ]),
+      ('Contacto', [
+        ('Correo', _EmailValue(user: user)),
+        if (p.phone != null) ('Celular', _value(p.phone!, numeric: true)),
+        if (p.address != null) ('Dirección de entrega', _value(p.address!)),
+      ]),
+      ('Trabajo', [
+        if (p.vehicleType != null)
+          ('Vehículo', _value(p.vehiclePlate == null ? p.vehicleType!.label : '${p.vehicleType!.label} · ${p.vehiclePlate}')),
+        if (p.organization != null) ('EPS donde trabajas', _value(p.organization!)),
+        if (p.position != null) ('Cargo', _value(p.position!)),
+      ]),
+      ('Actividad', [
+        if (created != null) ('Cuenta creada', _value(PendienteFormat.fecha(created), numeric: true)),
+        if (lastLogin != null) ('Último ingreso', _value(PendienteFormat.fechaHora(lastLogin), numeric: true)),
+      ]),
     ];
+    final visibles = [for (final g in grupos) if (g.$2.isNotEmpty) g];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final (i, (titulo, filas)) in visibles.indexed) ...[
+          if (i > 0) const SizedBox(height: FgSpace.sp4),
+          Container(
+            decoration: FgDecor.tarjeta(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(FgSpace.sp4, FgSpace.sp4, FgSpace.sp4, FgSpace.sp1),
+                  child: Semantics(header: true, child: Text(titulo, style: FgText.captionFuerte)),
+                ),
+                for (final (index, (label, value)) in filas.indexed) ...[
+                  if (index > 0)
+                    const Divider(
+                      height: FgBorder.w1,
+                      thickness: FgBorder.w1,
+                      color: FgColors.lineaSuave,
+                      indent: FgSpace.sp4,
+                      endIndent: FgSpace.sp4,
+                    ),
+                  _DetailRow(label: label, value: value),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   static Widget _value(String text, {bool numeric = false}) =>
@@ -339,7 +338,7 @@ class _EmailValue extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                verified ? Icons.verified_outlined : Icons.error_outline_rounded,
+                verified ? Icons.verified_outlined : Icons.error_outline,
                 size: FgSize.iconoSm,
                 color: verified ? FgColors.cumplidoFg : FgColors.riesgoFg,
               ),
@@ -377,7 +376,7 @@ class _PasswordSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!user.hasPassword) {
       return Text(
-        'Entras con tu cuenta de Google, así que FARMA GO no guarda una contraseña tuya. '
+        'Entras con tu cuenta de Google, así que FarmaGo no guarda una contraseña tuya. '
         'Si quieres cambiarla, hazlo desde tu cuenta de Google.',
         style: FgText.body.copyWith(color: FgColors.inkSoft),
       );
@@ -389,11 +388,7 @@ class _PasswordSection extends StatelessWidget {
       child: open
           ? Container(
               padding: const EdgeInsets.all(FgSpace.sp5),
-              decoration: BoxDecoration(
-                color: FgColors.superficie,
-                borderRadius: BorderRadius.circular(FgRadius.md),
-                border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-              ),
+              decoration: FgDecor.tarjeta(),
               child: ChangePasswordForm(auth: auth, onDone: onDone, onCancel: onCancel),
             )
           : Column(
@@ -407,7 +402,7 @@ class _PasswordSection extends StatelessWidget {
                 const SizedBox(height: FgSpace.sp4),
                 FgButton(
                   label: 'Cambiar contraseña',
-                  icon: Icons.lock_reset_rounded,
+                  icon: Icons.lock_reset,
                   variant: FgButtonVariant.secondary,
                   onPressed: onOpen,
                 ),

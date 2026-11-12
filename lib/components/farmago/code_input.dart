@@ -181,7 +181,7 @@ class _FgCodeInputState extends State<FgCodeInput> {
               if (hasError) ...[
                 const Padding(
                   padding: EdgeInsets.only(top: 2),
-                  child: Icon(Icons.error_outline_rounded, size: 16, color: FgColors.peligro),
+                  child: Icon(Icons.error_outline, size: 16, color: FgColors.peligro),
                 ),
                 const SizedBox(width: FgSpace.sp2),
               ],

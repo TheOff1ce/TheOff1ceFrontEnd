@@ -83,7 +83,7 @@ class _PendienteCardState extends State<PendienteCard> {
                               ],
                             ),
                           ),
-                          const Icon(Icons.chevron_right_rounded, size: FgSize.iconoMd, color: FgColors.inkSoft),
+                          const Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
                         ],
                       ),
                       const SizedBox(height: FgSpace.sp4),

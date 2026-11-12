@@ -480,9 +480,27 @@ class FarmaGoThemed extends StatelessWidget {
 
   final Widget child;
 
+  /// Hereda del tema de la app los estilos de campos, botones, chips, tarjetas y diálogos (§23):
+  /// así los widgets de Material dentro de estas pantallas se ven igual que en el resto de la app
+  /// (antes salían con el campo subrayado y el botón de contorno por defecto).
   @override
-  Widget build(BuildContext context) => Theme(
-        data: FarmaGoTheme.light,
-        child: DefaultTextStyle(style: FgText.body, child: child),
-      );
+  Widget build(BuildContext context) {
+    final app = Theme.of(context);
+    return Theme(
+      data: FarmaGoTheme.light.copyWith(
+        inputDecorationTheme: app.inputDecorationTheme,
+        filledButtonTheme: app.filledButtonTheme,
+        outlinedButtonTheme: app.outlinedButtonTheme,
+        textButtonTheme: app.textButtonTheme,
+        iconButtonTheme: app.iconButtonTheme,
+        chipTheme: app.chipTheme,
+        cardTheme: app.cardTheme,
+        dialogTheme: app.dialogTheme,
+        snackBarTheme: app.snackBarTheme,
+        progressIndicatorTheme: app.progressIndicatorTheme,
+        dividerTheme: app.dividerTheme,
+      ),
+      child: DefaultTextStyle(style: FgText.body, child: child),
+    );
+  }
 }

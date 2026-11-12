@@ -65,9 +65,9 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground, symbol) = switch (tone) {
-      StatusTone.success => (FgColors.cumplidoBg, FgColors.cumplidoFg, Icons.check_rounded),
-      StatusTone.warning => (FgColors.riesgoBg, FgColors.riesgoFg, Icons.schedule_rounded),
-      StatusTone.error => (FgColors.incumplidoBg, FgColors.incumplidoFg, Icons.close_rounded),
+      StatusTone.success => (FgColors.cumplidoBg, FgColors.cumplidoFg, Icons.check),
+      StatusTone.warning => (FgColors.riesgoBg, FgColors.riesgoFg, Icons.schedule_outlined),
+      StatusTone.error => (FgColors.incumplidoBg, FgColors.incumplidoFg, Icons.close),
       StatusTone.neutral => (FgColors.vigenteBg, FgColors.vigenteFg, Icons.circle),
     };
     return Semantics(

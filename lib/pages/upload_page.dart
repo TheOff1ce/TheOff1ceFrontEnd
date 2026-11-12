@@ -263,7 +263,7 @@ class _UploadChoice extends StatelessWidget {
                     Text(detail, style: context.text.bodySmall),
                   ]),
                 ),
-                ExcludeSemantics(child: Icon(Icons.chevron_right_rounded, color: context.colors.secondary)),
+                ExcludeSemantics(child: Icon(Icons.chevron_right, color: context.colors.secondary)),
               ]),
             ),
           ),

@@ -118,7 +118,7 @@ class _Encabezado extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: compacto ? FgSpace.sp2 : FgSpace.sp4),
               child: Row(
                 children: [
-                  FgIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Volver', onPressed: onBack),
+                  FgIconButton(icon: Icons.arrow_back, tooltip: 'Volver', onPressed: onBack),
                   const SizedBox(width: FgSpace.sp2),
                   Expanded(
                     child: titulo == null

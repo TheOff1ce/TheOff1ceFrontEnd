@@ -160,6 +160,37 @@ class FgEmptyState extends StatelessWidget {
       );
 }
 
+/// Lista cargando (§23, umbral de Doherty): tarjetas esqueleto con la forma del contenido que viene,
+/// en vez de un spinner centrado. Se anuncia una sola vez a lectores de pantalla.
+class FgListaCargando extends StatelessWidget {
+  const FgListaCargando({super.key, this.cantidad = 3, this.etiqueta = 'Cargando'});
+
+  final int cantidad;
+  final String etiqueta;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+        label: etiqueta,
+        liveRegion: true,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          for (var i = 0; i < cantidad; i++) ...[
+            if (i > 0) const SizedBox(height: FgSpace.sp4),
+            Container(
+              padding: const EdgeInsets.all(FgSpace.sp5),
+              decoration: FgDecor.tarjeta(),
+              child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                FgSkeleton(ancho: FgSize.panel / 2, alto: FgSpace.sp5),
+                SizedBox(height: FgSpace.sp3),
+                FgSkeleton(alto: FgSpace.sp4),
+                SizedBox(height: FgSpace.sp2),
+                FgSkeleton(ancho: FgSize.panel / 3, alto: FgSpace.sp4),
+              ]),
+            ),
+          ],
+        ]),
+      );
+}
+
 /// Esqueleto de carga (§8.15): bloque `--skeleton` con brillo de 1400 ms (sin brillo si se reduce el movimiento).
 class FgSkeleton extends StatefulWidget {
   const FgSkeleton({super.key, this.ancho, required this.alto, this.radio = FgRadius.sm});

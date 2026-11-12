@@ -99,7 +99,7 @@ class _PendientesPageState extends State<PendientesPage> {
               onBack: widget.onBack,
               onRefresh: c.recargar,
               acciones: [
-                FgIconButton(icon: Icons.refresh_rounded, tooltip: 'Actualizar', onPressed: c.loading ? null : c.recargar),
+                FgIconButton(icon: Icons.refresh, tooltip: 'Actualizar', onPressed: c.loading ? null : c.recargar),
               ],
               children: [
                 if (rol == PendientesRol.paciente) ...[
@@ -192,7 +192,7 @@ class _Filtros extends StatelessWidget {
     final campo = FgTextField(
       label: 'Buscar por orden',
       controller: busqueda,
-      iconoInicial: Icons.search_rounded,
+      iconoInicial: Icons.search,
       limpiable: true,
       ayuda: 'Escribe el código y presiona Intro.',
       textInputAction: TextInputAction.search,
@@ -259,7 +259,7 @@ class _ListaTarjetas extends StatelessWidget {
               Expanded(
                 child: FgButton(
                   label: 'Anterior',
-                  icon: Icons.chevron_left_rounded,
+                  icon: Icons.chevron_left,
                   variant: FgButtonVariant.secondary,
                   expand: true,
                   onPressed: pagina.hayAnterior && !controller.loading ? controller.anterior : null,
@@ -310,7 +310,7 @@ class _PaginacionAncha extends StatelessWidget {
                 const SizedBox(width: FgSpace.sp4),
                 FgButton(
                   label: 'Anterior',
-                  icon: Icons.chevron_left_rounded,
+                  icon: Icons.chevron_left,
                   variant: FgButtonVariant.secondary,
                   onPressed: pagina.hayAnterior && !controller.loading ? controller.anterior : null,
                 ),
@@ -349,7 +349,7 @@ class _SelectorFilas extends StatelessWidget {
               style: FgText.body,
               borderRadius: BorderRadius.circular(FgRadius.md),
               dropdownColor: FgColors.superficie,
-              icon: const Icon(Icons.expand_more_rounded, size: FgSize.iconoMd),
+              icon: const Icon(Icons.expand_more, size: FgSize.iconoMd),
               items: [
                 for (final limite in PendientesListController.limitesPermitidos)
                   DropdownMenuItem(value: limite, child: Text('$limite')),

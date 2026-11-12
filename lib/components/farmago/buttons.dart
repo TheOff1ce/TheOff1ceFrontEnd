@@ -307,7 +307,7 @@ class _FgChipState extends State<FgChip> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (seleccionado) ...[
-                      const Icon(Icons.check_rounded, size: FgSize.iconoSm, color: FgColors.azul800),
+                      const Icon(Icons.check, size: FgSize.iconoSm, color: FgColors.azul800),
                       const SizedBox(width: FgSpace.sp2),
                     ],
                     // En pantallas angostas o con texto grande la etiqueta baja de línea, no se corta.

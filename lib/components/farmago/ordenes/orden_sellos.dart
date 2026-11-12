@@ -14,14 +14,14 @@ extension AutorizacionSello on Autorizacion {
             forma: FormaAnillo.completo,
             solido: FgColors.cumplidoSolid,
             texto: FgColors.cumplidoFg,
-            simbolo: Icons.check_rounded,
+            simbolo: Icons.check,
           ),
         Autorizacion.noRequiere => SelloEstado(
             palabra: etiqueta,
             forma: FormaAnillo.completo,
             solido: FgColors.vigenteSolid,
             texto: FgColors.vigenteFg,
-            simbolo: Icons.remove_rounded,
+            simbolo: Icons.remove,
           ),
         Autorizacion.porAutorizar => SelloEstado(
             palabra: etiqueta,
@@ -47,14 +47,14 @@ extension VigenciaSello on Vigencia {
             forma: FormaAnillo.parcial,
             solido: FgColors.vigenteSolid,
             texto: FgColors.vigenteFg,
-            simbolo: Icons.schedule_rounded,
+            simbolo: Icons.schedule_outlined,
           ),
         Vigencia.vencida => SelloEstado(
             palabra: etiqueta,
             forma: FormaAnillo.discontinuo,
             solido: FgColors.lineaControl,
             texto: FgColors.neutroFg,
-            simbolo: Icons.close_rounded,
+            simbolo: Icons.close,
           ),
         Vigencia.sinInformacion => SelloEstado(
             palabra: etiqueta,
@@ -74,8 +74,8 @@ class ReclamacionTexto extends StatelessWidget {
 
   IconData get _icono => switch (reclamacion) {
         Reclamacion.pendienteDeReclamar => Icons.inventory_2_outlined,
-        Reclamacion.reclamado => Icons.task_alt_rounded,
-        Reclamacion.sinInformacion => Icons.help_outline_rounded,
+        Reclamacion.reclamado => Icons.task_alt,
+        Reclamacion.sinInformacion => Icons.help_outline,
       };
 
   @override

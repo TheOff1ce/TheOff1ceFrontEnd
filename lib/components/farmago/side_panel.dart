@@ -88,7 +88,7 @@ class FgPanelScaffold extends StatelessWidget {
     required this.cuerpo,
     required this.onCerrar,
     this.pie,
-    this.iconoCerrar = Icons.close_rounded,
+    this.iconoCerrar = Icons.close,
     this.tooltipCerrar = 'Cerrar',
   });
 

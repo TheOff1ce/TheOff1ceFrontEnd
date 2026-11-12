@@ -71,7 +71,7 @@ class ErrorStateView extends StatelessWidget {
             child: Semantics(
               liveRegion: true,
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const FgGlifo(color: FgColors.peligro, simbolo: Icons.close_rounded, diametro: 56, tamanoSimbolo: 32),
+                const FgGlifo(color: FgColors.peligro, simbolo: Icons.close, diametro: 56, tamanoSimbolo: 32),
                 const SizedBox(height: FgSpace.sp5),
                 Semantics(
                   header: true,

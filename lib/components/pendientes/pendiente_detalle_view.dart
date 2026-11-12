@@ -313,7 +313,7 @@ class _Paso extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              hecho ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              hecho ? Icons.check_circle : Icons.radio_button_unchecked,
               size: FgSize.iconoMd,
               color: hecho ? FgColors.azul600 : FgColors.lineaControl,
             ),

@@ -163,7 +163,7 @@ class _FgTextFieldState extends State<FgTextField> {
                 : widget.limpiable && texto.isNotEmpty
                 ? IconButton(
                     tooltip: 'Limpiar búsqueda',
-                    icon: const Icon(Icons.close_rounded, size: FgSize.iconoMd),
+                    icon: const Icon(Icons.close, size: FgSize.iconoMd),
                     constraints: const BoxConstraints(minWidth: FgSize.tapMin, minHeight: FgSize.tapMin),
                     onPressed: () {
                       widget.controller.clear();
@@ -204,7 +204,7 @@ class _FgTextFieldState extends State<FgTextField> {
               children: [
                 const Padding(
                   padding: EdgeInsets.only(top: 2),
-                  child: Icon(Icons.error_outline_rounded, size: FgSize.iconoSm, color: FgColors.incumplidoFg),
+                  child: Icon(Icons.error_outline, size: FgSize.iconoSm, color: FgColors.incumplidoFg),
                 ),
                 const SizedBox(width: FgSpace.sp2),
                 Expanded(child: Text(widget.error!, style: FgText.caption.copyWith(color: FgColors.incumplidoFg))),

@@ -140,6 +140,6 @@ void main() {
     useTallScreen(tester);
     await tester.pumpWidget(app(const Scaffold(body: ConfidenceIndicator(confidence: 0.6, requiresReview: true))));
     expect(find.text('Confianza de extracción: 60 % · Revísalo'), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.warning_amber), findsOneWidget);
   });
 }

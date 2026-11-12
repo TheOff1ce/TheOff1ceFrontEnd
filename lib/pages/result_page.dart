@@ -102,7 +102,7 @@ class _ReviewNotice extends StatelessWidget {
       color: status.warningContainer,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Icon(Icons.warning_amber_rounded, color: status.onWarningContainer),
+          Icon(Icons.warning_amber, color: status.onWarningContainer),
           const SizedBox(width: AppSpacing.s),
           Expanded(
             child: Text(

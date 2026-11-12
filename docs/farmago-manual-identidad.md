@@ -879,6 +879,13 @@ Esta sección implementa la política de `PRODUCT.md` (sección "Imágenes, ilus
 | Peso tipográfico | 600–700 en casi todo | 700 solo en títulos, cifras y botones; 500/600 en etiquetas (`--fw-*`) | Von Restorff; jerarquía |
 | Presión | solo cambio de color | escala `.98` en 150 ms (`--dur-micro`) | Visibilidad del estado; umbral de Doherty |
 | Fondos sutiles | — | `--azul-50` para hover de filas y zonas activas | Consistencia (derivado de `--azul-100`) |
+| Botón secundario | fondo blanco + borde 2 px `--azul-600` | **tonal**: fondo `--azul-100`, sin borde, texto `--azul-800` | Von Restorff: solo el primario resalta |
+| Navegación en tablet y escritorio | barra lateral solo en el inicio | **barra lateral fija** en todas las pantallas privadas (las URLs no cambian); en móvil, barra inferior con icono + etiqueta | Consistencia; ley de Jakob |
+| Acciones del inicio | botones de contorno de anchos distintos | **tarjetas de acción** del mismo tamaño (`FgAccionTarjeta`): icono, qué hace y chevron | Hick; Fitts; similitud |
+| Mi cuenta | 12 datos en una lista | grupos: Datos personales, Contacto, Trabajo y Actividad | Miller; proximidad |
+| Pantallas de acceso | dos marcos distintos | todas con el marco del inicio de sesión | Consistencia |
+| Listas cargando | spinner centrado | tarjetas esqueleto (`FgListaCargando`) | Umbral de Doherty |
+| Iconos | mezcla de _rounded, _outlined y base | familia de contorno (outlined/base); los rellenos solo para estados (check lleno = hecho) | Consistencia; similitud |
 
 - **Texto sobre `--azul-100`:** siempre `--azul-800` (7,70:1). `--azul-600` sobre `--azul-100` da 4,44:1 y no se usa para texto.
 - Se mantienen: radios (§6.1), escala de espaciado (§5.1), tamaños de control y de toque (48 px), anillo de foco de 3 px, contraste AAA del texto y la regla de movimiento reducido.
