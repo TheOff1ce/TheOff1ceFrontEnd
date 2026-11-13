@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/hooks/tracking_controller.dart';
 import 'package:farma_go/pages/tracking_page.dart';
 import 'package:farma_go/services/delivery_service.dart';
@@ -57,7 +58,7 @@ Future<void> _montar(
   tester.view.physicalSize = const Size(400, 2400);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
-  await tester.pumpWidget(MaterialApp(
+  await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
     home: TrackingPage(
       createController: () => _ControladorFalso(_entrega(estado), conectado: conectado),
       onBack: () {},
@@ -128,7 +129,7 @@ void captura() {
     tester.view.physicalSize = const Size(360, 2000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: TrackingPage(
         createController: () => _ControladorFalso(_entrega(DeliveryStatus.inTransit, sinEta: true)),
         onBack: () {},

@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/google_mobile_sign_in.dart';
 import 'package:farma_go/pages/login_page.dart';
@@ -46,7 +47,7 @@ void main() {
       ..on('google/exchange', session)
       ..on('me', me);
     final auth = controllerFor(server);
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: LoginPage(
         auth: auth,
         onRegister: () {},
@@ -68,7 +69,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final auth = controllerFor(FakeAuthServer());
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: LoginPage(
         auth: auth,
         onRegister: () {},

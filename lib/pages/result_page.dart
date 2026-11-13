@@ -4,8 +4,9 @@ import '../app/theme/app_theme.dart';
 import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
 import '../components/medication_card.dart';
-import '../components/ui.dart';
-import '../types/analysis_response.dart';
+import '../types/analysis_response.dart';
+import '../components/farmago/card.dart';
+import '../components/farmago/buttons.dart';
 
 class ResultPage extends StatelessWidget {
   const ResultPage({super.key, required this.result, required this.onHome, required this.onAnalyzeAnother});
@@ -78,9 +79,21 @@ class ResultPage extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(height: AppSpacing.m),
-                AppButton(label: 'Analizar otra fórmula', icon: Icons.add_a_photo_outlined, onPressed: onAnalyzeAnother),
+                FgButton(
+                  label: 'Analizar otra fórmula',
+                  icon: Icons.add_a_photo_outlined,
+                  size: FgButtonSize.lg,
+                  expand: true,
+                  onPressed: onAnalyzeAnother,
+                ),
                 const SizedBox(height: AppSpacing.s + 2),
-                AppButton(label: 'Volver al inicio', icon: Icons.home_outlined, outlined: true, onPressed: onHome),
+                FgButton(
+                  label: 'Volver al inicio',
+                  icon: Icons.home_outlined,
+                  variant: FgButtonVariant.secondary,
+                  expand: true,
+                  onPressed: onHome,
+                ),
               ]),
             ),
           ),
@@ -98,7 +111,7 @@ class _ReviewNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = context.status;
-    return AppCard(
+    return FgCard(
       color: status.warningContainer,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -127,7 +140,7 @@ class _EmptyResult extends StatelessWidget {
   const _EmptyResult();
 
   @override
-  Widget build(BuildContext context) => AppCard(
+  Widget build(BuildContext context) => FgCard(
         child: Column(children: [
           ExcludeSemantics(child: Icon(Icons.search_off_outlined, size: 42, color: context.colors.secondary)),
           const SizedBox(height: AppSpacing.m),
@@ -146,8 +159,8 @@ class _PatientCard extends StatelessWidget {
   final PrescriptionPatient patient;
 
   @override
-  Widget build(BuildContext context) => AppCard(
-        bordered: true,
+  Widget build(BuildContext context) => FgCard(
+        aviso: true,
         child: Row(children: [
           Icon(Icons.person_outline, color: context.colors.primary),
           const SizedBox(width: AppSpacing.m),

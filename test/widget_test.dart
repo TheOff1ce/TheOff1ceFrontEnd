@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/app/theme/farmago_tokens.dart';
 import 'package:farma_go/components/farmago/buttons.dart';
 import 'package:farma_go/pages/landing_page.dart';
@@ -19,7 +20,7 @@ Future<void> _cargarAtkinson() async {
 void main() {
   testWidgets('landing leads a visitor to sign in', (tester) async {
     var openedLogin = false;
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: LandingPage(onLogin: () => openedLogin = true, onRegister: () {}),
     ));
     expect(find.text('Tu medicamento, de la farmacia a tu puerta.'),
@@ -39,7 +40,7 @@ void main() {
       tester.view.physicalSize = Size(ancho, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
         home: LandingPage(onLogin: () {}, onRegister: () {}),
       ));
       await tester.pumpAndSettle();
@@ -56,7 +57,7 @@ void main() {
       tester.view.physicalSize = Size(ancho, 900);
       tester.view.devicePixelRatio = 1;
       await tester.pumpWidget(
-          MaterialApp(home: LandingPage(onLogin: () {}, onRegister: () {})));
+          MaterialApp(theme: AppTheme.light, home: LandingPage(onLogin: () {}, onRegister: () {})));
       await tester.pumpAndSettle();
       for (final etiqueta in ['Iniciar sesión', 'Crear cuenta']) {
         final boton = find.widgetWithText(FgButton, etiqueta).first;
@@ -76,7 +77,7 @@ void main() {
       tester.view.physicalSize = Size(ancho * 3, 1800);
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: const TextScaler.linear(1.5)),
@@ -92,7 +93,7 @@ void main() {
   testWidgets('keyboard focus follows the reading order of the hero actions',
       (tester) async {
     await tester.runAsync(_cargarAtkinson);
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: LandingPage(onLogin: () {}, onRegister: () {}),
     ));
     await tester.pumpAndSettle();
@@ -114,7 +115,7 @@ void main() {
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-        MaterialApp(home: LandingPage(onLogin: () {}, onRegister: () {})));
+        MaterialApp(theme: AppTheme.light, home: LandingPage(onLogin: () {}, onRegister: () {})));
     await tester.pumpAndSettle();
     expect(find.text('Pendiente registrado'), findsOneWidget);
     expect(find.text('Tú, con una tarifa de conveniencia.'), findsNothing);
@@ -134,7 +135,7 @@ void main() {
       tester.view.physicalSize = Size(ancho, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(MaterialApp(
+      await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
         home: LandingPage(onLogin: () {}, onRegister: () {}),
       ));
       await tester.pumpAndSettle();

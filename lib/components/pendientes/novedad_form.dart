@@ -220,26 +220,24 @@ Future<bool> registrarNovedadEnVentana(
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(FgRadius.lg)),
           ),
-          builder: (contexto) => FarmaGoThemed(child: _VentanaNovedad(controller: controller, compacto: true)),
+          builder: (contexto) => _VentanaNovedad(controller: controller, compacto: true),
         )
       : await showDialog<bool>(
           context: context,
           barrierColor: FgColors.scrim,
-          builder: (contexto) => FarmaGoThemed(
-            child: Dialog(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              insetPadding: const EdgeInsets.all(FgSpace.sp6),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: FgSize.dialogMd),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: FgColors.superficie,
-                    borderRadius: BorderRadius.circular(FgRadius.lg),
-                    boxShadow: FgShadow.e4,
-                  ),
-                  child: _VentanaNovedad(controller: controller, compacto: false),
+          builder: (contexto) => Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            insetPadding: const EdgeInsets.all(FgSpace.sp6),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: FgSize.dialogMd),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: FgColors.superficie,
+                  borderRadius: BorderRadius.circular(FgRadius.lg),
+                  boxShadow: FgShadow.e4,
                 ),
+                child: _VentanaNovedad(controller: controller, compacto: false),
               ),
             ),
           ),

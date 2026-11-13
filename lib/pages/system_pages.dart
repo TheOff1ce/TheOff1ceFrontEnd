@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
 import '../components/farmago/estampado.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../errors/app_error.dart';
 import '../errors/error_messages.dart';
+import '../components/farmago/buttons.dart';
 
 class SessionLoadingPage extends StatelessWidget {
   const SessionLoadingPage({super.key});
@@ -25,7 +26,8 @@ class SessionUnavailablePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: FgFondo(child: SafeArea(
+        body: FgFondo(
+            child: SafeArea(
           child: ErrorStateView(
             title: 'No pudimos comprobar tu sesión',
             error: error ??
@@ -67,7 +69,7 @@ class _CenteredMessage extends StatelessWidget {
               const SizedBox(height: AppSpacing.s),
               Text(message, style: context.text.bodyLarge, textAlign: TextAlign.center),
               const SizedBox(height: AppSpacing.xl),
-              FilledButton.icon(onPressed: onAction, icon: Icon(actionIcon), label: Text(actionLabel)),
+              FgButton(label: actionLabel, icon: actionIcon, onPressed: onAction),
             ]),
           ),
         ),
@@ -83,9 +85,11 @@ class MissingAnalysisStepPage extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
           title: const Text('Analizar fórmula'),
-          leading: IconButton(tooltip: 'Volver a seleccionar la fórmula', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
+          leading: IconButton(
+              tooltip: 'Volver a seleccionar la fórmula', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
         ),
-        body: FgFondo(child: _CenteredMessage(
+        body: FgFondo(
+            child: _CenteredMessage(
           icon: Icons.photo_library_outlined,
           title: 'Primero selecciona una fórmula',
           message: 'Este paso necesita una imagen para continuar con el análisis.',
@@ -104,7 +108,8 @@ class UnknownRoutePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text('Página no encontrada')),
-        body: FgFondo(child: _CenteredMessage(
+        body: FgFondo(
+            child: _CenteredMessage(
           icon: Icons.explore_off_outlined,
           title: 'No encontramos esta pantalla',
           message: 'Puede que el enlace haya cambiado. Vuelve al inicio para continuar.',

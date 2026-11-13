@@ -6,11 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import '../app/theme/app_theme.dart';
 import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../components/ui.dart';
 import '../errors/app_error.dart';
 import '../hooks/prescription_hook.dart';
 import '../utils/constants.dart';
+import '../components/farmago/buttons.dart';
 
 class AnalysisPage extends StatefulWidget {
   const AnalysisPage({
@@ -90,7 +91,8 @@ class _AnalysisPageState extends State<AnalysisPage> {
         title: const Text('Analizar fórmula'),
         leading: IconButton(tooltip: 'Volver a la foto', onPressed: _cancel, icon: const Icon(Icons.arrow_back)),
       ),
-      body: FgFondo(child: SafeArea(
+      body: FgFondo(
+          child: SafeArea(
         child: switch (state) {
           AnalysisFailed(:final error) => _failure(error),
           _ => _AnalysisInProgress(image: widget.image, slow: _slow, onCancel: _cancel),
@@ -164,7 +166,7 @@ class _AnalysisInProgress extends StatelessWidget {
                 ]),
               ),
               const SizedBox(height: AppSpacing.xl),
-              TextButton(onPressed: onCancel, child: const Text('Cancelar análisis')),
+              FgButton(label: 'Cancelar análisis', variant: FgButtonVariant.ghost, onPressed: onCancel),
             ]),
           ),
         ),

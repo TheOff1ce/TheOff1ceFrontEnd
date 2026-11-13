@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../auth/password_reset_controller.dart';
 import '../components/auth_ui.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../errors/app_error.dart';
 import '../utils/validators.dart';
+import '../components/farmago/buttons.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key, required this.reset, required this.onLogin, required this.onBack});
@@ -89,16 +90,25 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         listenable: _reset,
         builder: (context, _) {
           final (title, subtitle) = switch (_reset.step) {
-            ResetStep.done => ('Contraseña actualizada.', 'Tus sesiones anteriores se cerraron. Inicia sesión con tu nueva contraseña.'),
-            ResetStep.choosePassword => ('Elige una contraseña nueva.', 'Crea una contraseña segura para volver a ingresar.'),
-            _ => ('Confirma tu código.', 'Escribe el código de seis dígitos que enviamos a ${maskEmail(_reset.email)}. Vence en 5 minutos.'),
+            ResetStep.done => (
+                'Contraseña actualizada.',
+                'Tus sesiones anteriores se cerraron. Inicia sesión con tu nueva contraseña.'
+              ),
+            ResetStep.choosePassword => (
+                'Elige una contraseña nueva.',
+                'Crea una contraseña segura para volver a ingresar.'
+              ),
+            _ => (
+                'Confirma tu código.',
+                'Escribe el código de seis dígitos que enviamos a ${maskEmail(_reset.email)}. Vence en 5 minutos.'
+              ),
           };
           return AuthShell(
             onBack: widget.onBack,
             title: title,
             subtitle: subtitle,
             child: switch (_reset.step) {
-              ResetStep.done => FilledButton(onPressed: widget.onLogin, child: const Text('Ir a iniciar sesión')),
+              ResetStep.done => FgButton(label: 'Ir a iniciar sesión', onPressed: widget.onLogin),
               ResetStep.choosePassword => _passwordStep(),
               _ => _codeStep(),
             },
@@ -122,7 +132,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           onPressed: Validators.isCode(_code.text) ? _verifyCode : null,
         ),
         const SizedBox(height: AppSpacing.s),
-        TextButton(onPressed: _busy ? null : _resendCode, child: const Text('Reenviar código')),
+        FgButton(label: 'Reenviar código', variant: FgButtonVariant.ghost, onPressed: _busy ? null : _resendCode),
       ]);
 
   Widget _passwordStep() => AutofillGroup(
@@ -158,10 +168,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
               onPressed: _submitPassword,
             ),
             const SizedBox(height: AppSpacing.s),
-            TextButton(
-              onPressed: _busy ? null : _reset.backToCode,
-              child: const Text('Usar otro código'),
-            ),
+            FgButton(
+                label: 'Usar otro código', variant: FgButtonVariant.ghost, onPressed: _busy ? null : _reset.backToCode),
           ]),
         ),
       );

@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -37,7 +38,7 @@ Future<OrdenesController> montarOrdenes(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   late OrdenesController controlador;
-  await tester.pumpWidget(MaterialApp(
+  await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
     debugShowCheckedModeBanner: false,
     builder: (context, child) => MediaQuery(
       data: MediaQuery.of(context).copyWith(disableAnimations: true, textScaler: TextScaler.linear(texto)),

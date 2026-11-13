@@ -1,6 +1,6 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'dart:convert';
 
-import 'package:farma_go/app/theme/farmago_tokens.dart';
 import 'package:farma_go/components/farmago/status_badge.dart';
 import 'package:farma_go/components/pendientes/novedad_form.dart';
 import 'package:farma_go/components/pendientes/pendiente_card.dart';
@@ -82,7 +82,7 @@ PendientesService serviceWith(MockClientHandler handler) => PendientesService(Au
       errorMapper: ErrorMapper.fromPendientes,
     ));
 
-Widget app(Widget child) => MaterialApp(theme: FarmaGoTheme.light, home: Scaffold(body: child));
+Widget app(Widget child) => MaterialApp(theme: AppTheme.light, home: Scaffold(body: child));
 
 void useScreen(WidgetTester tester, Size size) {
   tester.view.physicalSize = size;
@@ -201,7 +201,7 @@ void main() {
           return ok(detalleJson());
         });
 
-    Widget pagina(PendientesService s, PendientesRol rol, {List<String>? abiertos}) => MaterialApp(
+    Widget pagina(PendientesService s, PendientesRol rol, {List<String>? abiertos}) => MaterialApp(theme: AppTheme.light, 
           home: PendientesPage(
             controller: PendientesListController(s),
             rol: rol,

@@ -86,71 +86,69 @@ class _PendientesPageState extends State<PendientesPage> {
   }
 
   @override
-  Widget build(BuildContext context) => FarmaGoThemed(
-        child: ListenableBuilder(
-          listenable: widget.controller,
-          builder: (context, _) {
-            final c = widget.controller;
-            final rol = widget.rol;
-            final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
-            final pagina = c.pagina;
-            return FgScreen(
-              titulo: rol?.tituloLista ?? 'Pendientes',
-              onBack: widget.onBack,
-              onRefresh: c.recargar,
-              acciones: [
-                FgIconButton(icon: Icons.refresh, tooltip: 'Actualizar', onPressed: c.loading ? null : c.recargar),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: widget.controller,
+        builder: (context, _) {
+          final c = widget.controller;
+          final rol = widget.rol;
+          final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
+          final pagina = c.pagina;
+          return FgScreen(
+            titulo: rol?.tituloLista ?? 'Pendientes',
+            onBack: widget.onBack,
+            onRefresh: c.recargar,
+            acciones: [
+              FgIconButton(icon: Icons.refresh, tooltip: 'Actualizar', onPressed: c.loading ? null : c.recargar),
+            ],
+            children: [
+              if (rol == PendientesRol.paciente) ...[
+                const FgNota(texto: 'Esta información no reemplaza a tu médico ni a tu EPS.'),
+                const SizedBox(height: FgSpace.sp5),
               ],
-              children: [
-                if (rol == PendientesRol.paciente) ...[
-                  const FgNota(texto: 'Esta información no reemplaza a tu médico ni a tu EPS.'),
-                  const SizedBox(height: FgSpace.sp5),
-                ],
-                _Filtros(controller: c, busqueda: _busqueda, compacto: compacto),
-                SizedBox(height: compacto ? FgSpace.sp4 : FgSpace.sp5),
-                if (c.error != null) ...[
-                  FgBanner(
-                    kind: FgBannerKind.error,
-                    title: 'No pudimos cargar los pendientes',
-                    message: c.error!.userMessage,
-                    referencia: c.error!.showsReference ? c.error!.referenceId : null,
-                  ),
-                  const SizedBox(height: FgSpace.sp4),
-                  FgButton(label: 'Reintentar', variant: FgButtonVariant.secondary, onPressed: c.recargar),
-                  const SizedBox(height: FgSpace.sp5),
-                ],
-                if (pagina == null && c.error == null)
-                  _EsqueletoLista(compacto: compacto)
-                else if (pagina != null && pagina.items.isEmpty)
-                  FgEmptyState(
-                    titulo: c.filtrosActivos ? 'No encontramos pendientes' : (rol?.vacioTitulo ?? 'No hay pendientes'),
-                    mensaje: c.filtrosActivos
-                        ? 'Prueba con otro estado o revisa el código de la orden.'
-                        : (rol?.vacioMensaje ?? 'Cuando una entrega quede incompleta, la verás aquí.'),
-                    accionLabel: c.filtrosActivos ? 'Quitar filtros' : null,
-                    onAccion: c.filtrosActivos ? _quitarFiltros : null,
-                  )
-                else if (pagina != null)
-                  // Cada minuto se reconstruye para refrescar los relojes.
-                  MinuteTicker(
-                    builder: (context) => AnimatedOpacity(
-                      opacity: c.loading ? .5 : 1,
-                      duration: FgMotion.reducir(context, FgMotion.rapida),
-                      child: compacto
-                          ? _ListaTarjetas(pagina: pagina, controller: c, onOpen: _abrir)
-                          : PendientesTable(
-                              items: pagina.items,
-                              desdeCarga: c.desdeCarga,
-                              idSeleccionado: _seleccionado,
-                              onOpen: _abrir,
-                              pie: _PaginacionAncha(pagina: pagina, controller: c),
-                            ),
-                    ),
-                  ),
+              _Filtros(controller: c, busqueda: _busqueda, compacto: compacto),
+              SizedBox(height: compacto ? FgSpace.sp4 : FgSpace.sp5),
+              if (c.error != null) ...[
+                FgBanner(
+                  kind: FgBannerKind.error,
+                  title: 'No pudimos cargar los pendientes',
+                  message: c.error!.userMessage,
+                  referencia: c.error!.showsReference ? c.error!.referenceId : null,
+                ),
+                const SizedBox(height: FgSpace.sp4),
+                FgButton(label: 'Reintentar', variant: FgButtonVariant.secondary, onPressed: c.recargar),
+                const SizedBox(height: FgSpace.sp5),
               ],
-            );
-          },
-        ),
+              if (pagina == null && c.error == null)
+                _EsqueletoLista(compacto: compacto)
+              else if (pagina != null && pagina.items.isEmpty)
+                FgEmptyState(
+                  titulo: c.filtrosActivos ? 'No encontramos pendientes' : (rol?.vacioTitulo ?? 'No hay pendientes'),
+                  mensaje: c.filtrosActivos
+                      ? 'Prueba con otro estado o revisa el código de la orden.'
+                      : (rol?.vacioMensaje ?? 'Cuando una entrega quede incompleta, la verás aquí.'),
+                  accionLabel: c.filtrosActivos ? 'Quitar filtros' : null,
+                  onAccion: c.filtrosActivos ? _quitarFiltros : null,
+                )
+              else if (pagina != null)
+                // Cada minuto se reconstruye para refrescar los relojes.
+                MinuteTicker(
+                  builder: (context) => AnimatedOpacity(
+                    opacity: c.loading ? .5 : 1,
+                    duration: FgMotion.reducir(context, FgMotion.rapida),
+                    child: compacto
+                        ? _ListaTarjetas(pagina: pagina, controller: c, onOpen: _abrir)
+                        : PendientesTable(
+                            items: pagina.items,
+                            desdeCarga: c.desdeCarga,
+                            idSeleccionado: _seleccionado,
+                            onOpen: _abrir,
+                            pie: _PaginacionAncha(pagina: pagina, controller: c),
+                          ),
+                  ),
+                ),
+            ],
+          );
+        },
       );
 }
 

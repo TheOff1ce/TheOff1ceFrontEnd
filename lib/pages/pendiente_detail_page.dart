@@ -43,48 +43,46 @@ class _PendienteDetailPageState extends State<PendienteDetailPage> {
       registrarNovedadEnVentana(context, _controller, separacionToast: conBarra ? FgSize.barraAccion : 0);
 
   @override
-  Widget build(BuildContext context) => FarmaGoThemed(
-        child: ListenableBuilder(
-          listenable: _controller,
-          builder: (context, _) {
-            final detalle = _controller.detalle;
-            final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
-            final puedeRegistrar = (widget.rol?.puedeRegistrarNovedad ?? false) && detalle != null;
-            return FgScreen(
-              titulo: detalle == null ? 'Pendiente' : 'Orden ${detalle.resumen.ordenMedicamentoId}',
-              onBack: widget.onBack,
-              onRefresh: () => _controller.load(silencioso: true),
-              acciones: [
-                FgIconButton(
-                  icon: Icons.refresh,
-                  tooltip: 'Actualizar',
-                  onPressed: _controller.loading ? null : () => _controller.load(silencioso: _controller.detalle != null),
-                ),
-              ],
-              barraAccion: compacto && puedeRegistrar
-                  ? FgButton(
-                      label: 'Registrar novedad',
-                      size: FgButtonSize.lg,
-                      expand: true,
-                      onPressed: () => _registrar(context, conBarra: true),
-                    )
-                  : null,
-              children: [
-                if (!compacto && puedeRegistrar) ...[
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FgButton(
-                      label: 'Registrar novedad',
-                      icon: Icons.add,
-                      onPressed: () => _registrar(context, conBarra: false),
-                    ),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          final detalle = _controller.detalle;
+          final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
+          final puedeRegistrar = (widget.rol?.puedeRegistrarNovedad ?? false) && detalle != null;
+          return FgScreen(
+            titulo: detalle == null ? 'Pendiente' : 'Orden ${detalle.resumen.ordenMedicamentoId}',
+            onBack: widget.onBack,
+            onRefresh: () => _controller.load(silencioso: true),
+            acciones: [
+              FgIconButton(
+                icon: Icons.refresh,
+                tooltip: 'Actualizar',
+                onPressed: _controller.loading ? null : () => _controller.load(silencioso: _controller.detalle != null),
+              ),
+            ],
+            barraAccion: compacto && puedeRegistrar
+                ? FgButton(
+                    label: 'Registrar novedad',
+                    size: FgButtonSize.lg,
+                    expand: true,
+                    onPressed: () => _registrar(context, conBarra: true),
+                  )
+                : null,
+            children: [
+              if (!compacto && puedeRegistrar) ...[
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FgButton(
+                    label: 'Registrar novedad',
+                    icon: Icons.add,
+                    onPressed: () => _registrar(context, conBarra: false),
                   ),
-                  const SizedBox(height: FgSpace.sp5),
-                ],
-                PendienteDetalleCuerpo(controller: _controller, rol: widget.rol),
+                ),
+                const SizedBox(height: FgSpace.sp5),
               ],
-            );
-          },
-        ),
+              PendienteDetalleCuerpo(controller: _controller, rol: widget.rol),
+            ],
+          );
+        },
       );
 }

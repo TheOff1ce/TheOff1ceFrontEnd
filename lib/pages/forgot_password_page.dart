@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../auth/password_reset_controller.dart';
 import '../components/auth_ui.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../errors/app_error.dart';
 import '../utils/validators.dart';
 
