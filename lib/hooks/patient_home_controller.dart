@@ -72,6 +72,36 @@ FocoInicio elegirFoco({
   return FocoPendiente(vigentes.isNotEmpty ? vigentes.first : pendientes.first);
 }
 
+/// Entrega recibida que el paciente aún no califica: la home se lo recuerda.
+final class PorCalificar {
+  const PorCalificar({required this.deliveryId, this.farmacia});
+
+  final String deliveryId;
+
+  /// Nombre de la farmacia del pedido, si se conoce.
+  final String? farmacia;
+}
+
+/// Solo se recuerda durante unos días: después ya no aporta.
+const ventanaRecordatorio = Duration(days: 7);
+
+/// La entrega más reciente que se puede calificar (recibida hace menos de [ventanaRecordatorio]).
+/// Pura y sin red.
+PorCalificar? elegirPorCalificar({
+  required List<Delivery> entregas,
+  required List<PatientOrder> pedidos,
+  required DateTime ahora,
+}) {
+  final candidatas = entregas
+      .where((d) => d.canBeRated && (d.deliveredAt == null || ahora.difference(d.deliveredAt!) <= ventanaRecordatorio))
+      .toList()
+    ..sort((a, b) => (b.deliveredAt ?? DateTime(0)).compareTo(a.deliveredAt ?? DateTime(0)));
+  if (candidatas.isEmpty) return null;
+  final entrega = candidatas.first;
+  final pedido = pedidos.where((p) => p.deliveryId == entrega.id).firstOrNull;
+  return PorCalificar(deliveryId: entrega.id, farmacia: pedido?.pharmacy.name);
+}
+
 /// Carga la home del paciente con los controladores y servicios que ya existen.
 class PatientHomeController extends ChangeNotifier {
   PatientHomeController({
@@ -90,6 +120,9 @@ class PatientHomeController extends ChangeNotifier {
   static const limitePendientes = 25;
 
   FocoInicio? foco;
+
+  /// Recordatorio «¿Cómo estuvo tu entrega?» (null si no hay nada por calificar).
+  PorCalificar? porCalificar;
   List<PendienteResumen> pendientes = const [];
   Delivery? detalleEntrega;
   AppError? errorPedidos;
@@ -130,6 +163,7 @@ class PatientHomeController extends ChangeNotifier {
       estadoDe: _orders.deliveryStatusOf,
       pendientes: pendientes,
     );
+    porCalificar = elegirPorCalificar(entregas: _orders.deliveries, pedidos: _orders.orders, ahora: DateTime.now());
     detalleEntrega = null;
     if (elegido is FocoDomicilio) {
       detalleEntrega = await _detalle(elegido.pedido.deliveryId);

@@ -18,6 +18,9 @@ class PatientOrdersController extends ChangeNotifier {
 
   /// Live delivery status by `deliveryId` (from Geolocation), when available.
   Map<String, DeliveryStatus> deliveryStatuses = const {};
+
+  /// Entregas del paciente tal como las da Geolocation (vacía si no respondió).
+  List<Delivery> deliveries = const [];
   bool loading = false;
   bool submitting = false;
   AppError? error;
@@ -28,9 +31,10 @@ class PatientOrdersController extends ChangeNotifier {
     error = null;
     _notify();
     try {
-      final (mine, statuses) = await (_orders.myOrders(), _statuses()).wait;
+      final (mine, entregas) = await (_orders.myOrders(), _entregas()).wait;
       orders = mine;
-      deliveryStatuses = statuses;
+      deliveries = entregas;
+      deliveryStatuses = {for (final d in entregas) d.id: d.status};
     } catch (e) {
       error = ErrorMapper.fromException(e);
     } finally {
@@ -49,13 +53,13 @@ class PatientOrdersController extends ChangeNotifier {
   }
 
   /// The order list still works if Geolocation does not answer: statuses are optional.
-  Future<Map<String, DeliveryStatus>> _statuses() async {
+  Future<List<Delivery>> _entregas() async {
     final service = _deliveries;
-    if (service == null) return const {};
+    if (service == null) return const [];
     try {
-      return {for (final d in await service.listMine()) d.id: d.status};
+      return await service.listMine();
     } catch (_) {
-      return const {};
+      return const [];
     }
   }
 

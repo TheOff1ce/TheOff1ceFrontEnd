@@ -15,7 +15,7 @@ void main() {
   test('cada rol ve solo sus destinos', () {
     expect(etiquetas('PATIENT'), contains('Mis domicilios'));
     expect(etiquetas('PATIENT'), isNot(contains('Usuarios y roles')));
-    expect(etiquetas('ADMIN'), containsAll(['Domicilios pendientes', 'Usuarios y roles']));
+    expect(etiquetas('ADMIN'), containsAll(['Domicilios pendientes', 'Usuarios y roles', 'Calificaciones']));
     expect(etiquetas('DELIVERY_DRIVER'), contains('Domicilios disponibles'));
     expect(etiquetas('DELIVERY_DRIVER'), isNot(contains('Mis domicilios')));
     expect(etiquetas('EPS'), ['Inicio', 'Pendientes', 'Mi cuenta']);

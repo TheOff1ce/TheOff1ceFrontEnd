@@ -39,7 +39,7 @@ class _EntregasFalsas implements DeliveryService {
 
 /// Inicio del paciente con un foco fijo. No consulta nada.
 class InicioFalso extends PatientHomeController {
-  InicioFalso(this._foco)
+  InicioFalso(this._foco, {this.recordatorio})
       : super(
           orders: PatientOrdersController(_OrdenesFalsas()),
           pendientes: _PendientesFalsos(),
@@ -47,10 +47,12 @@ class InicioFalso extends PatientHomeController {
         );
 
   final FocoInicio? _foco;
+  final PorCalificar? recordatorio;
 
   @override
   Future<void> load() async {
     foco = _foco;
+    porCalificar = recordatorio;
     notifyListeners();
   }
 }
@@ -121,6 +123,8 @@ Future<void> montarInicio(
   void Function(String)? onTracking,
   void Function(String)? onPendienteDetalle,
   EpsResumenController? resumenEps,
+  PorCalificar? porCalificar,
+  void Function(String)? onCalificar,
 }) async {
   await tester.runAsync(cargarFuentesReales);
   tester.view.physicalSize = Size(ancho, altura);
@@ -141,7 +145,8 @@ Future<void> montarInicio(
     home: HomePage(
       auth: auth,
       notifications: NotificationController(NotificationRepository()),
-      inicio: InicioFalso(foco),
+      inicio: InicioFalso(foco, recordatorio: porCalificar),
+      onCalificar: onCalificar,
       resumenEps: resumenEps,
       onAnalyze: onAnalyze ?? noop,
       onNotifications: noop,
