@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/farmago_tokens.dart';
+import '../components/calificar_entrega.dart';
 import '../components/delivery_code.dart';
 import '../components/delivery_map.dart';
 import '../components/farmago/feedback.dart';
@@ -81,6 +82,12 @@ class _TrackingPageState extends State<TrackingPage> {
     return error;
   }
 
+  Future<AppError?> _calificar(int stars, String? comment) async {
+    final error = await _controller.rate(stars, comment: comment);
+    if (error == null && mounted) showFgToast(context, '¡Gracias por tu calificación!');
+    return error;
+  }
+
   List<Widget> _contenido(Delivery d) {
     final activo = !d.status.isFinished;
     final terminal = d.status == DeliveryStatus.cancelled || d.status == DeliveryStatus.failed;
@@ -121,6 +128,9 @@ class _TrackingPageState extends State<TrackingPage> {
       if (widget.showPatientActions && d.awaitsCode) ...[
         const SizedBox(height: FgSpace.sp2),
         PatientConfirmDelivery(busy: _controller.confirming, onConfirm: _confirmar),
+        const SizedBox(height: FgSpace.sp5),
+      ] else if (widget.showPatientActions && d.status == DeliveryStatus.delivered) ...[
+        CalificarEntrega(rating: d.rating, busy: _controller.rating, onRate: _calificar),
         const SizedBox(height: FgSpace.sp5),
       ] else if (widget.showPatientActions && activo && d.driverAssigned)
         Padding(

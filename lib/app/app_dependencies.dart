@@ -2,6 +2,7 @@ import '../auth/auth_controller.dart';
 import '../auth/auth_repository.dart';
 import '../auth/password_reset_controller.dart';
 import '../hooks/admin_orders_controller.dart';
+import '../hooks/eps_resumen_controller.dart';
 import '../hooks/admin_users_controller.dart';
 import '../hooks/driver_board_controller.dart';
 import '../hooks/driver_delivery_controller.dart';
@@ -121,6 +122,10 @@ class AppDependencies {
   final PendientesListController pendientes;
   final List<AuthorizedJsonClient> deliveryClients;
 
+  /// Cifras del plazo para el inicio de la EPS (se crea al primer uso).
+  EpsResumenController get epsResumen => _epsResumen ??= EpsResumenController(pendientesService);
+  EpsResumenController? _epsResumen;
+
   /// Un controlador por visita a la pantalla de órdenes: nada se conserva al salir (lo libera la
   /// pantalla que lo crea).
   OrdenesController crearOrdenes() =>
@@ -149,6 +154,7 @@ class AppDependencies {
     patientHome.dispose();
     driverBoard.dispose();
     pendientes.dispose();
+    _epsResumen?.dispose();
     adminUsers.dispose();
     adminOrders.dispose();
     for (final client in deliveryClients) {

@@ -13,15 +13,19 @@ import '../components/farmago/shell.dart';
 import '../components/farmago/status_badge.dart';
 import '../components/farmago/trail.dart';
 import '../components/farmago/wordmark.dart';
+import '../hooks/eps_resumen_controller.dart';
 import '../hooks/patient_home_controller.dart';
 import '../notifications/notification_controller.dart';
 import '../types/delivery.dart';
+import '../types/pendiente.dart';
 import '../utils/delivery_format.dart';
+import '../utils/pendiente_format.dart';
 import '../utils/pendientes_rol.dart';
 import '../utils/plazo_vista.dart';
 import 'notifications_page.dart';
 
 part 'home_contenido.dart';
+part 'home_eps.dart';
 
 /// Inicio de FarmaGo: el punto de entrada al estado real del paciente.
 ///
@@ -34,6 +38,7 @@ class HomePage extends StatefulWidget {
     required this.auth,
     required this.notifications,
     required this.inicio,
+    this.resumenEps,
     required this.onAnalyze,
     required this.onNotifications,
     required this.onAccount,
@@ -53,6 +58,9 @@ class HomePage extends StatefulWidget {
 
   /// Datos del paciente: domicilio en curso, pendientes y su estado de carga.
   final PatientHomeController inicio;
+
+  /// Cifras del plazo de 48 h para la EPS (solo ese rol).
+  final EpsResumenController? resumenEps;
 
   final VoidCallback onAnalyze;
   final VoidCallback onNotifications;
@@ -82,6 +90,7 @@ class _HomePageState extends State<HomePage> {
   bool get isPatient => widget.auth.user?.role == 'PATIENT';
   bool get isDriver => widget.auth.user?.role == 'DELIVERY_DRIVER';
   bool get isAdmin => widget.auth.user?.role == 'ADMIN';
+  bool get isEps => widget.auth.user?.role == 'EPS';
   PendientesRol? get _rol => PendientesRol.fromCode(widget.auth.user?.role);
   bool get _pendientesVisible => widget.onPendientes != null && _rol != null;
 
@@ -90,11 +99,17 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     // Solo los pacientes tienen pedidos y pendientes propios; los demás roles no consultan esos datos.
     if (isPatient) widget.inicio.load();
+    if (isEps) widget.resumenEps?.load();
   }
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-        listenable: Listenable.merge([widget.auth, widget.notifications, widget.inicio]),
+        listenable: Listenable.merge([
+          widget.auth,
+          widget.notifications,
+          widget.inicio,
+          if (widget.resumenEps != null) widget.resumenEps!,
+        ]),
         builder: (context, _) {
           final ancho = MediaQuery.sizeOf(context).width;
           return FgAppShell(

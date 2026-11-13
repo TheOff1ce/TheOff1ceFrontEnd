@@ -66,6 +66,8 @@ abstract final class ErrorMapper {
     'DELIVERY_CODE_INVALID': (AppErrorKind.validation, ErrorMessages.deliveryCodeInvalid, false),
     'DELIVERY_CODE_LOCKED': (AppErrorKind.rateLimit, ErrorMessages.deliveryCodeLocked, false),
     'CODE_CONFIRMATION_REQUIRED': (AppErrorKind.conflict, ErrorMessages.codeConfirmationRequired, false),
+    'RATING_NOT_ALLOWED': (AppErrorKind.conflict, ErrorMessages.ratingNotAllowed, false),
+    'ALREADY_RATED': (AppErrorKind.conflict, ErrorMessages.alreadyRated, false),
     'CONFLICT': (AppErrorKind.conflict, ErrorMessages.conflict, true),
     'TOKEN_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
     'TOKEN_REQUIRED': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),

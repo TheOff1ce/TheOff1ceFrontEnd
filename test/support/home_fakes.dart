@@ -1,6 +1,7 @@
 import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/auth_repository.dart';
+import 'package:farma_go/hooks/eps_resumen_controller.dart';
 import 'package:farma_go/hooks/patient_home_controller.dart';
 import 'package:farma_go/hooks/patient_orders_controller.dart';
 import 'package:farma_go/notifications/notification_controller.dart';
@@ -119,6 +120,7 @@ Future<void> montarInicio(
   VoidCallback? onMyOrders,
   void Function(String)? onTracking,
   void Function(String)? onPendienteDetalle,
+  EpsResumenController? resumenEps,
 }) async {
   await tester.runAsync(cargarFuentesReales);
   tester.view.physicalSize = Size(ancho, altura);
@@ -140,6 +142,7 @@ Future<void> montarInicio(
       auth: auth,
       notifications: NotificationController(NotificationRepository()),
       inicio: InicioFalso(foco),
+      resumenEps: resumenEps,
       onAnalyze: onAnalyze ?? noop,
       onNotifications: noop,
       onAccount: noop,
