@@ -137,17 +137,15 @@ class DeliveryScaffold extends StatelessWidget {
   final Widget? barraAccion;
 
   @override
-  Widget build(BuildContext context) => FarmaGoThemed(
-        child: FgScreen(
-          titulo: title,
-          onBack: onBack,
-          onRefresh: onRefresh,
-          barraAccion: barraAccion,
-          anchoMaximo: FgSize.lectura,
-          children: [
-            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-          ],
-        ),
+  Widget build(BuildContext context) => FgScreen(
+        titulo: title,
+        onBack: onBack,
+        onRefresh: onRefresh,
+        barraAccion: barraAccion,
+        anchoMaximo: FgSize.lectura,
+        children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+        ],
       );
 }
 
@@ -201,24 +199,6 @@ class TitleWithStatus extends StatelessWidget {
         runSpacing: FgSpace.sp2,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [Text(title, style: style), if (status != null) status!],
-      );
-}
-
-/// Tarjeta del manual: superficie blanca, borde fino y radio medio. Agrupa lo que va junto.
-class FgCard extends StatelessWidget {
-  const FgCard({super.key, required this.child, this.destacada = false});
-
-  final Widget child;
-
-  /// Borde azul grueso para lo que pide atención ahora (una sola por pantalla).
-  final bool destacada;
-
-  @override
-  Widget build(BuildContext context) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(FgSpace.sp5),
-        decoration: FgDecor.tarjeta(destacada: destacada),
-        child: child,
       );
 }
 

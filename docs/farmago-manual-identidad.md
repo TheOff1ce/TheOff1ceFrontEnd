@@ -2,7 +2,7 @@
 
 Este documento define la imagen de marca de FarmaGo y las reglas para mantenerla unificada en cualquier interfaz (escritorio y móvil): marca, color, tipografía, espaciado, forma, ventanas, componentes, voz y accesibilidad. Describe elementos y parámetros; no fija el diseño de pantallas concretas ni la tecnología con la que se implementen. El Anexo A reúne los tokens de diseño (valores exactos) en CSS.
 
-> **En este repo (Flutter):** el Anexo A está traducido 1:1 en `lib/app/theme/farmago_tokens.dart` (`FgColors`, `FgSpace`, `FgRadius`, `FgBorder`, `FgShadow`, `FgSize`, `FgBreakpoint`, `FgMotion`, `FgText`, `FarmaGoTheme`). Ese archivo es la fuente numérica en código.
+> **En este repo (Flutter):** el Anexo A está traducido 1:1 en `lib/app/theme/farmago_tokens.dart` (`FgColors`, `FgSpace`, `FgRadius`, `FgBorder`, `FgShadow`, `FgSize`, `FgBreakpoint`, `FgMotion`, `FgText`, `FgDecor`, `FgWeight`). Ese archivo es la fuente numérica en código; `lib/app/theme/app_theme.dart` arma con él el único tema de la app (`AppTheme.light`).
 
 ## Contenido
 

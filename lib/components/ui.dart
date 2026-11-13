@@ -8,52 +8,6 @@ import '../app/theme/app_theme.dart';
 import '../app/theme/farmago_tokens.dart';
 import 'farmago/feedback.dart';
 
-class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.color, this.bordered = false});
-
-  final Widget child;
-  final Color? color;
-  final bool bordered;
-
-  /// Tarjeta del manual (§8.9, §23): [FgDecor.tarjeta], padding 20/24.
-  /// [bordered] la resalta (borde de 2 px en tono de aviso) cuando algo pide revisión.
-  @override
-  Widget build(BuildContext context) {
-    final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(compacto ? FgSpace.sp4h : FgSpace.sp5),
-      decoration: FgDecor.tarjeta(color: color ?? FgColors.superficie).copyWith(
-        border: bordered ? Border.all(color: FgColors.riesgoSolid, width: FgBorder.w2) : null,
-      ),
-      child: child,
-    );
-  }
-}
-
-class AppButton extends StatelessWidget {
-  const AppButton({super.key, required this.label, required this.onPressed, this.icon, this.outlined = false});
-
-  final String label;
-  final VoidCallback? onPressed;
-  final IconData? icon;
-  final bool outlined;
-
-  @override
-  Widget build(BuildContext context) {
-    final iconWidget = icon == null ? null : Icon(icon);
-    final text = Text(label, textAlign: TextAlign.center);
-    final Widget button = outlined
-        ? (iconWidget == null
-            ? OutlinedButton(onPressed: onPressed, child: text)
-            : OutlinedButton.icon(onPressed: onPressed, icon: iconWidget, label: text))
-        : (iconWidget == null
-            ? FilledButton(onPressed: onPressed, child: text)
-            : FilledButton.icon(onPressed: onPressed, icon: iconWidget, label: text));
-    return SizedBox(width: double.infinity, child: button);
-  }
-}
-
 /// Prescription photo preview decoded at display size, not at camera size (FE-018).
 class PrescriptionImagePreview extends StatelessWidget {
   const PrescriptionImagePreview({super.key, required this.image, this.maxHeight = 240});

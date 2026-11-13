@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
 import '../types/medication.dart';
-import 'ui.dart';
+import 'farmago/card.dart';
 
 class MedicationCard extends StatelessWidget {
   const MedicationCard({super.key, required this.medication});
@@ -24,8 +24,8 @@ class MedicationCard extends StatelessWidget {
       'Cantidad': m.quantity,
       'Instrucciones': m.instructions,
     }.entries.where((entry) => entry.value != null);
-    return AppCard(
-      bordered: m.requiresReview,
+    return FgCard(
+      aviso: m.requiresReview,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _Header(medication: m),
         if (summary.isNotEmpty) ...[

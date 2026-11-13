@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../components/auth_ui.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../errors/app_error.dart';
 import '../utils/validators.dart';
+import '../components/farmago/buttons.dart';
 
 class VerifyEmailPage extends StatefulWidget {
   const VerifyEmailPage({super.key, required this.auth, required this.onBack});
@@ -88,10 +89,10 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
             onPressed: _complete && !_resending ? _verify : null,
           ),
           const SizedBox(height: AppSpacing.m),
-          TextButton(
-            onPressed: busy ? null : _resend,
-            child: Text(_resending ? 'Enviando código…' : 'Reenviar código'),
-          ),
+          FgButton(
+              label: _resending ? 'Enviando código…' : 'Reenviar código',
+              variant: FgButtonVariant.ghost,
+              onPressed: busy ? null : _resend),
         ]),
       ),
     );

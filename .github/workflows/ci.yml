@@ -30,7 +30,7 @@ jobs:
         run: flutter test --coverage
 
       - name: Build web
-        run: flutter build web --release
+        run: flutter build web --release --wasm
 
   deploy:
     name: Deploy to Vercel

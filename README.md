@@ -183,6 +183,16 @@ scripts/            # vercel-build.sh
 android/ ios/ web/  # Platform projects
 ```
 
+### ✍️ Code conventions
+
+| Rule | Why |
+|---|---|
+| **New code is written in Spanish** (classes, methods, variables, comments), like the design system (`FgCard`, `FgAccionTarjeta`, `AppNavigation.lateral`). Names imposed by Flutter, Dart or an API keep their own language (`build`, `onPressed`, `accessToken`). Existing English names are renamed only when that file is touched for another reason. | One language per concept avoids `_Contenido` next to `onTrack` |
+| **One theme**: `AppTheme.light` (`lib/app/theme/app_theme.dart`), built from `farmago_tokens.dart`. No screen wraps itself in another `Theme`. | One source of truth for colors, type and components |
+| **Design-system components only**: `FgButton`, `FgCard`, `FgTextField`, `FgBanner`… (`lib/components/farmago/`). No `FilledButton`/`TextButton` directly in pages. | Same look, press feedback and loading state everywhere |
+| **Menu destinations live in `AppNavigation`** (`lib/app/app_navigation.dart`), for both the side bar and the bottom bar. | Adding a screen in one place updates every menu |
+| Files over ~400 lines are split with `part` files by section. | Reviewable pull requests |
+
 ---
 
 ## 🚀 Getting Started
@@ -355,7 +365,7 @@ Without `MAPS_API_KEY` a simplified view is shown (route and points drawn, no ti
 ### Build for the web
 
 ```powershell
-flutter build web --release
+flutter build web --release --wasm
 node tool/local_web_server.js   # local test of build/web with direct (SPA) routes on port 5173
 ```
 
@@ -363,13 +373,15 @@ node tool/local_web_server.js   # local test of build/web with direct (SPA) rout
 
 `vercel.json` makes the project ready: `scripts/vercel-build.sh` downloads Flutter (`FLUTTER_VERSION`, default 3.47.8), builds to `build/web`, and every route rewrites to `index.html`. The project's environment variables in Vercel (`API_BASE_URL`, `AUTH_BASE_URL`, `PENDIENTES_BASE_URL`, `ORDERS_BASE_URL`, `GEOLOCATION_BASE_URL`, `ORDENES_BASE_URL`, `MAPS_API_KEY`) are passed as `--dart-define` only if they exist. The Vercel domain must be in Auth's and Pendientes' `FRONTEND_URL`.
 
+`--wasm` makes browsers with WasmGC (recent Chrome, Edge, Firefox) load `main.dart.wasm` and the lighter `skwasm` renderer; the rest fall back to JavaScript + CanvasKit automatically. `web/index.html` shows a loading screen until Flutter paints its first frame.
+
 You can publish `build/web` on any static hosting with a *fallback* to `index.html`. For the refresh cookie to work without cross-site mode, frontend and Auth should share a domain (e.g. `app.your-domain` and `auth.your-domain`).
 
 ### 🤖 CI (`.github/workflows/ci.yml`)
 
 | Step | Runs on |
 |---|---|
-| `flutter analyze` → `flutter test --coverage` → `flutter build web --release` | Push to `main`, `develop`, `feat/**` and PRs to `main`/`develop` |
+| `flutter analyze` → `flutter test --coverage` → `flutter build web --release --wasm` | Push to `main`, `develop`, `feat/**` and PRs to `main`/`develop` |
 | Deploy to Vercel | After quality checks pass on `main` or `develop` |
 
 ---

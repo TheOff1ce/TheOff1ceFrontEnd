@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/auth_repository.dart';
 import 'package:farma_go/hooks/patient_home_controller.dart';
@@ -133,7 +134,7 @@ Future<void> montarInicio(
   void noop() {}
   // El logo es una imagen: se espera su decodificación para que la captura no la omita.
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
-  await tester.pumpWidget(MaterialApp(
+  await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
     debugShowCheckedModeBanner: false,
     home: HomePage(
       auth: auth,

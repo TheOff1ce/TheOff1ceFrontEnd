@@ -5,9 +5,10 @@ import '../app/theme/farmago_tokens.dart';
 import '../components/delivery_widgets.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/dialogs.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../hooks/patient_orders_controller.dart';
-import '../types/order.dart';
+import '../types/order.dart';
+import '../components/farmago/card.dart';
 
 /// Patient asks for a home delivery: pharmacy, address and the medications wanted.
 class RequestDeliveryPage extends StatefulWidget {

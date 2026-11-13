@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/auth_repository.dart';
-import 'package:farma_go/components/feedback.dart';
+import 'package:farma_go/components/farmago/feedback.dart';
 import 'package:farma_go/components/medication_card.dart';
 import 'package:farma_go/errors/app_error.dart';
 import 'package:farma_go/errors/error_messages.dart';

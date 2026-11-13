@@ -25,9 +25,7 @@ Future<T?> showFgSidePanel<T>(
     barrierColor: FgColors.scrimSuave,
     transitionDuration: duracion,
     // La ruta del panel no hereda el tema de la pantalla que la abre: se aplica aquí.
-    pageBuilder: (contexto, _, __) => FarmaGoThemed(
-      child: _MarcoPanel(ancho: ancho, etiqueta: etiquetaSemantica, child: builder(contexto)),
-    ),
+    pageBuilder: (contexto, _, __) => _MarcoPanel(ancho: ancho, etiqueta: etiquetaSemantica, child: builder(contexto)),
     transitionBuilder: (contexto, animacion, _, hijo) => SlideTransition(
       position: animacion.drive(
         Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).chain(CurveTween(curve: FgMotion.ease)),
@@ -65,7 +63,8 @@ class _MarcoPanel extends StatelessWidget {
               width: math.min(ancho, disponible),
               height: double.infinity,
               child: DecoratedBox(
-                decoration: const BoxDecoration(color: FgColors.superficie, borderRadius: esquinas, boxShadow: FgShadow.e4),
+                decoration:
+                    const BoxDecoration(color: FgColors.superficie, borderRadius: esquinas, boxShadow: FgShadow.e4),
                 child: ClipRRect(
                   borderRadius: esquinas,
                   child: Material(color: FgColors.superficie, child: SafeArea(child: child)),

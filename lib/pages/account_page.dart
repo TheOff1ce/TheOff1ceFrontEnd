@@ -44,94 +44,92 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   @override
-  Widget build(BuildContext context) => FarmaGoThemed(
-        child: ListenableBuilder(
-          listenable: widget.auth,
-          builder: (context, _) {
-            final user = widget.auth.user;
-            // §23: contenido centrado a ancho de lectura (antes pegado a la izquierda).
-            return FgScreen(
-              titulo: 'Mi cuenta',
-              onBack: widget.onBack,
-              anchoMaximo: FgSize.lectura,
-              children: [
-                Builder(
-                  builder: (context) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (user != null) _Identity(user: user),
-                        const SizedBox(height: FgSpace.sp6),
-                        if (user != null) ...[
-                          const _SectionTitle('Tus datos'),
-                          AnimatedSize(
-                            duration: FgMotion.reducir(context, FgMotion.media),
-                            curve: FgMotion.ease,
-                            alignment: Alignment.topCenter,
-                            child: _editingProfile
-                                ? Container(
-                                    padding: const EdgeInsets.all(FgSpace.sp5),
-                                    decoration: FgDecor.tarjeta(),
-                                    child: ProfileForm(
-                                      auth: widget.auth,
-                                      onDone: _profileSaved,
-                                      onCancel: () => setState(() => _editingProfile = false),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: widget.auth,
+        builder: (context, _) {
+          final user = widget.auth.user;
+          // §23: contenido centrado a ancho de lectura (antes pegado a la izquierda).
+          return FgScreen(
+            titulo: 'Mi cuenta',
+            onBack: widget.onBack,
+            anchoMaximo: FgSize.lectura,
+            children: [
+              Builder(
+                builder: (context) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (user != null) _Identity(user: user),
+                    const SizedBox(height: FgSpace.sp6),
+                    if (user != null) ...[
+                      const _SectionTitle('Tus datos'),
+                      AnimatedSize(
+                        duration: FgMotion.reducir(context, FgMotion.media),
+                        curve: FgMotion.ease,
+                        alignment: Alignment.topCenter,
+                        child: _editingProfile
+                            ? Container(
+                                padding: const EdgeInsets.all(FgSpace.sp5),
+                                decoration: FgDecor.tarjeta(),
+                                child: ProfileForm(
+                                  auth: widget.auth,
+                                  onDone: _profileSaved,
+                                  onCancel: () => setState(() => _editingProfile = false),
+                                ),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _Details(user: user),
+                                  if (user.role != 'ADMIN') ...[
+                                    const SizedBox(height: FgSpace.sp4),
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: FgButton(
+                                        label: 'Editar datos',
+                                        icon: Icons.edit_outlined,
+                                        variant: FgButtonVariant.secondary,
+                                        onPressed: () => setState(() => _editingProfile = true),
+                                      ),
                                     ),
-                                  )
-                                : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      _Details(user: user),
-                                      if (user.role != 'ADMIN') ...[
-                                        const SizedBox(height: FgSpace.sp4),
-                                        Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: FgButton(
-                                            label: 'Editar datos',
-                                            icon: Icons.edit_outlined,
-                                            variant: FgButtonVariant.secondary,
-                                            onPressed: () => setState(() => _editingProfile = true),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                          ),
-                          const SizedBox(height: FgSpace.sp6),
-                          const _SectionTitle('Contraseña'),
-                          _PasswordSection(
-                            user: user,
-                            auth: widget.auth,
-                            open: _changingPassword,
-                            onOpen: () => setState(() => _changingPassword = true),
-                            onCancel: () => setState(() => _changingPassword = false),
-                            onDone: _passwordChanged,
-                          ),
-                          const SizedBox(height: FgSpace.sp6),
-                        ],
-                        const _SectionTitle('Sesión'),
-                        Text(
-                          'Cierra la sesión en este dispositivo. Tus datos se quedan guardados.',
-                          style: FgText.body.copyWith(color: FgColors.inkSoft),
-                        ),
-                        const SizedBox(height: FgSpace.sp4),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: FgButton(
-                            label: 'Cerrar sesión',
-                            icon: Icons.logout,
-                            variant: FgButtonVariant.danger,
-                            loading: _signingOut,
-                            loadingLabel: 'Cerrando sesión…',
-                            onPressed: _logout,
-                          ),
-                        ),
-                      ],
+                                  ],
+                                ],
+                              ),
+                      ),
+                      const SizedBox(height: FgSpace.sp6),
+                      const _SectionTitle('Contraseña'),
+                      _PasswordSection(
+                        user: user,
+                        auth: widget.auth,
+                        open: _changingPassword,
+                        onOpen: () => setState(() => _changingPassword = true),
+                        onCancel: () => setState(() => _changingPassword = false),
+                        onDone: _passwordChanged,
+                      ),
+                      const SizedBox(height: FgSpace.sp6),
+                    ],
+                    const _SectionTitle('Sesión'),
+                    Text(
+                      'Cierra la sesión en este dispositivo. Tus datos se quedan guardados.',
+                      style: FgText.body.copyWith(color: FgColors.inkSoft),
                     ),
+                    const SizedBox(height: FgSpace.sp4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: FgButton(
+                        label: 'Cerrar sesión',
+                        icon: Icons.logout,
+                        variant: FgButtonVariant.danger,
+                        loading: _signingOut,
+                        loadingLabel: 'Cerrando sesión…',
+                        onPressed: _logout,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        },
       );
 }
 
@@ -229,29 +227,47 @@ class _Details extends StatelessWidget {
     final created = user.createdAt;
     final lastLogin = user.lastLoginAt;
     final grupos = <(String, List<(String, Widget)>)>[
-      ('Datos personales', [
-        ('Nombre', _value(user.name.isEmpty ? 'Sin nombre' : user.name)),
-        if (p.hasDocument) ('Documento', _value('${p.documentType!.code} ${p.documentNumber}', numeric: true)),
-        if (birth != null) ('Fecha de nacimiento', _value(PendienteFormat.fecha(birth), numeric: true)),
-        if (p.eps != null) ('EPS', _value(p.eps!)),
-      ]),
-      ('Contacto', [
-        ('Correo', _EmailValue(user: user)),
-        if (p.phone != null) ('Celular', _value(p.phone!, numeric: true)),
-        if (p.address != null) ('Dirección de entrega', _value(p.address!)),
-      ]),
-      ('Trabajo', [
-        if (p.vehicleType != null)
-          ('Vehículo', _value(p.vehiclePlate == null ? p.vehicleType!.label : '${p.vehicleType!.label} · ${p.vehiclePlate}')),
-        if (p.organization != null) ('EPS donde trabajas', _value(p.organization!)),
-        if (p.position != null) ('Cargo', _value(p.position!)),
-      ]),
-      ('Actividad', [
-        if (created != null) ('Cuenta creada', _value(PendienteFormat.fecha(created), numeric: true)),
-        if (lastLogin != null) ('Último ingreso', _value(PendienteFormat.fechaHora(lastLogin), numeric: true)),
-      ]),
+      (
+        'Datos personales',
+        [
+          ('Nombre', _value(user.name.isEmpty ? 'Sin nombre' : user.name)),
+          if (p.hasDocument) ('Documento', _value('${p.documentType!.code} ${p.documentNumber}', numeric: true)),
+          if (birth != null) ('Fecha de nacimiento', _value(PendienteFormat.fecha(birth), numeric: true)),
+          if (p.eps != null) ('EPS', _value(p.eps!)),
+        ]
+      ),
+      (
+        'Contacto',
+        [
+          ('Correo', _EmailValue(user: user)),
+          if (p.phone != null) ('Celular', _value(p.phone!, numeric: true)),
+          if (p.address != null) ('Dirección de entrega', _value(p.address!)),
+        ]
+      ),
+      (
+        'Trabajo',
+        [
+          if (p.vehicleType != null)
+            (
+              'Vehículo',
+              _value(p.vehiclePlate == null ? p.vehicleType!.label : '${p.vehicleType!.label} · ${p.vehiclePlate}')
+            ),
+          if (p.organization != null) ('EPS donde trabajas', _value(p.organization!)),
+          if (p.position != null) ('Cargo', _value(p.position!)),
+        ]
+      ),
+      (
+        'Actividad',
+        [
+          if (created != null) ('Cuenta creada', _value(PendienteFormat.fecha(created), numeric: true)),
+          if (lastLogin != null) ('Último ingreso', _value(PendienteFormat.fechaHora(lastLogin), numeric: true)),
+        ]
+      ),
     ];
-    final visibles = [for (final g in grupos) if (g.$2.isNotEmpty) g];
+    final visibles = [
+      for (final g in grupos)
+        if (g.$2.isNotEmpty) g
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

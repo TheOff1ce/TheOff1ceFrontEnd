@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/app/theme/farmago_tokens.dart';
 import 'package:farma_go/components/farmago/buttons.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'support/home_fakes.dart';
 
 void main() {
   testWidgets('el botón se reduce a 0.98 mientras se presiona y vuelve a 1 al soltar', (tester) async {
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: Scaffold(body: Center(child: FgButton(label: 'Guardar', onPressed: () {}))),
     ));
     AnimatedScale escala() => tester.widget<AnimatedScale>(find.byType(AnimatedScale).first);
@@ -23,8 +24,8 @@ void main() {
   });
 
   testWidgets('un botón deshabilitado no se reduce al presionar', (tester) async {
-    await tester.pumpWidget(const MaterialApp(
-      home: Scaffold(body: Center(child: FgButton(label: 'Guardar', onPressed: null))),
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
+      home: const Scaffold(body: Center(child: FgButton(label: 'Guardar', onPressed: null))),
     ));
     final gesto = await tester.startGesture(tester.getCenter(find.byType(FgButton)));
     await tester.pump();

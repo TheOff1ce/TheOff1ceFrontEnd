@@ -7,8 +7,7 @@ import 'package:flutter/material.dart';
 /// colores, tamaños, radios, sombras ni duraciones literales; solo usa estos tokens.
 /// La única excepción permitida es `Colors.white` (texto sobre fondos de color).
 ///
-/// `app_theme.dart` construye el tema global de la app a partir de estos tokens; [FarmaGoTheme]
-/// es el tema de las pantallas que lo envuelven directamente.
+/// `app_theme.dart` construye el único tema de la app a partir de estos tokens.
 ///
 /// Modernización visual (manual §23): los tokens marcados «§23» aligeran bordes, sombras y fondo
 /// sin cambiar la paleta ni los tamaños de texto.
@@ -366,47 +365,47 @@ abstract final class FgText {
 
   static const _tabular = [FontFeature.tabularFigures()];
 
-  static const display = TextStyle(
-      fontFamily: family, fontSize: 48, fontWeight: FontWeight.w700, height: 1.1, color: FgColors.ink);
-  static const h1Movil = TextStyle(
-      fontFamily: family, fontSize: 30, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
-  static const h1Ancho = TextStyle(
-      fontFamily: family, fontSize: 38, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
-  static const h2 = TextStyle(
-      fontFamily: family, fontSize: 24, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
-  static const h3 = TextStyle(
-      fontFamily: family, fontSize: 20, fontWeight: FontWeight.w700, height: 1.3, color: FgColors.ink);
-  static const body = TextStyle(
-      fontFamily: family, fontSize: 18, fontWeight: FontWeight.w400, height: 1.6, color: FgColors.ink);
-  static const bodyLg = TextStyle(
-      fontFamily: family, fontSize: 20, fontWeight: FontWeight.w400, height: 1.6, color: FgColors.ink);
-  static const label = TextStyle(
-      fontFamily: family, fontSize: 18, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
-  static const cell = TextStyle(
-      fontFamily: family, fontSize: 17, fontWeight: FontWeight.w400, height: 1.4, color: FgColors.ink);
-  static const caption = TextStyle(
-      fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400, height: 1.5, color: FgColors.inkSoft);
+  static const display =
+      TextStyle(fontFamily: family, fontSize: 48, fontWeight: FontWeight.w700, height: 1.1, color: FgColors.ink);
+  static const h1Movil =
+      TextStyle(fontFamily: family, fontSize: 30, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
+  static const h1Ancho =
+      TextStyle(fontFamily: family, fontSize: 38, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
+  static const h2 =
+      TextStyle(fontFamily: family, fontSize: 24, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
+  static const h3 =
+      TextStyle(fontFamily: family, fontSize: 20, fontWeight: FontWeight.w700, height: 1.3, color: FgColors.ink);
+  static const body =
+      TextStyle(fontFamily: family, fontSize: 18, fontWeight: FontWeight.w400, height: 1.6, color: FgColors.ink);
+  static const bodyLg =
+      TextStyle(fontFamily: family, fontSize: 20, fontWeight: FontWeight.w400, height: 1.6, color: FgColors.ink);
+  static const label =
+      TextStyle(fontFamily: family, fontSize: 18, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
+  static const cell =
+      TextStyle(fontFamily: family, fontSize: 17, fontWeight: FontWeight.w400, height: 1.4, color: FgColors.ink);
+  static const caption =
+      TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400, height: 1.5, color: FgColors.inkSoft);
 
   /// Etiqueta secundaria (§23): mismo tamaño que [label] con peso medio. Para etiquetas de datos,
   /// ítems de menú inactivos y textos que no son la acción principal.
-  static const labelMedio = TextStyle(
-      fontFamily: family, fontSize: 18, fontWeight: FontWeight.w500, height: 1.3, color: FgColors.ink);
+  static const labelMedio =
+      TextStyle(fontFamily: family, fontSize: 18, fontWeight: FontWeight.w500, height: 1.3, color: FgColors.ink);
 
   /// Metadato destacado (§23): 16 / 600. Encabezados de grupo dentro de una tarjeta.
-  static const captionFuerte = TextStyle(
-      fontFamily: family, fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: FgColors.inkSoft);
+  static const captionFuerte =
+      TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: FgColors.inkSoft);
 
   /// Cifra del plazo junto al reloj (§8.10 y §8.13 tamaño `m`): 28 / 700.
-  static const cifra = TextStyle(
-      fontFamily: family, fontSize: 28, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
+  static const cifra =
+      TextStyle(fontFamily: family, fontSize: 28, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
 
   /// Minutos del reloj tamaño `l` (§8.13): 24 / 600.
-  static const minutos = TextStyle(
-      fontFamily: family, fontSize: 24, fontWeight: FontWeight.w600, height: 1.2, color: FgColors.ink);
+  static const minutos =
+      TextStyle(fontFamily: family, fontSize: 24, fontWeight: FontWeight.w600, height: 1.2, color: FgColors.ink);
 
   /// Etiqueta de la barra inferior en móvil: 14 / 600 (manual §8.12).
-  static const navMovil = TextStyle(
-      fontFamily: family, fontSize: 14, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
+  static const navMovil =
+      TextStyle(fontFamily: family, fontSize: 14, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
 
   /// Texto de botón: 20 (lg) · 18 (md) · 16 (sm), siempre 700.
   static TextStyle boton(double size) =>
@@ -416,91 +415,4 @@ abstract final class FgText {
 
   /// Cifras alineadas (`.num`): fechas, horas, contadores.
   static TextStyle num(TextStyle base) => base.copyWith(fontFeatures: _tabular);
-}
-
-/// Tema de Material para las pantallas que siguen el manual unificado.
-/// Los widgets propios (`Fg*`) leen los tokens directamente; esto cubre los widgets de Material
-/// que no se reescriben (ListView, Scaffold, Tooltip, etc.).
-abstract final class FarmaGoTheme {
-  static ThemeData get light {
-    const scheme = ColorScheme.light(
-      primary: FgColors.azul600,
-      onPrimary: FgColors.blanco,
-      secondary: FgColors.azul800,
-      onSecondary: FgColors.blanco,
-      error: FgColors.peligro,
-      onError: FgColors.blanco,
-      surface: FgColors.superficie,
-      onSurface: FgColors.ink,
-      onSurfaceVariant: FgColors.inkSoft,
-      outline: FgColors.lineaControl,
-      outlineVariant: FgColors.linea,
-      primaryContainer: FgColors.azul100,
-      onPrimaryContainer: FgColors.azul800,
-      errorContainer: FgColors.incumplidoBg,
-      onErrorContainer: FgColors.incumplidoFg,
-      surfaceContainerHighest: FgColors.fondoHundido,
-    );
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: FgText.family,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: FgColors.fondo,
-      dividerColor: FgColors.linea,
-      splashFactory: NoSplash.splashFactory,
-      highlightColor: Colors.transparent,
-      textTheme: const TextTheme(
-        displaySmall: FgText.display,
-        headlineMedium: FgText.h1Ancho,
-        headlineSmall: FgText.h2,
-        titleLarge: FgText.h3,
-        titleMedium: FgText.label,
-        bodyLarge: FgText.body,
-        bodyMedium: FgText.body,
-        bodySmall: FgText.caption,
-        labelLarge: FgText.label,
-      ),
-      tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(
-          color: FgColors.ink,
-          borderRadius: BorderRadius.circular(FgRadius.sm),
-          boxShadow: FgShadow.e3,
-        ),
-        textStyle: FgText.caption.copyWith(color: FgColors.blanco),
-        padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3, vertical: FgSpace.sp2),
-        waitDuration: const Duration(milliseconds: 300),
-      ),
-    );
-  }
-}
-
-/// Aplica el tema del manual al subárbol (pantallas de pendientes).
-class FarmaGoThemed extends StatelessWidget {
-  const FarmaGoThemed({super.key, required this.child});
-
-  final Widget child;
-
-  /// Hereda del tema de la app los estilos de campos, botones, chips, tarjetas y diálogos (§23):
-  /// así los widgets de Material dentro de estas pantallas se ven igual que en el resto de la app
-  /// (antes salían con el campo subrayado y el botón de contorno por defecto).
-  @override
-  Widget build(BuildContext context) {
-    final app = Theme.of(context);
-    return Theme(
-      data: FarmaGoTheme.light.copyWith(
-        inputDecorationTheme: app.inputDecorationTheme,
-        filledButtonTheme: app.filledButtonTheme,
-        outlinedButtonTheme: app.outlinedButtonTheme,
-        textButtonTheme: app.textButtonTheme,
-        iconButtonTheme: app.iconButtonTheme,
-        chipTheme: app.chipTheme,
-        cardTheme: app.cardTheme,
-        dialogTheme: app.dialogTheme,
-        snackBarTheme: app.snackBarTheme,
-        progressIndicatorTheme: app.progressIndicatorTheme,
-        dividerTheme: app.dividerTheme,
-      ),
-      child: DefaultTextStyle(style: FgText.body, child: child),
-    );
-  }
 }

@@ -12,12 +12,16 @@ class FgDestino {
     required this.etiqueta,
     required this.onTap,
     this.seleccionado = false,
+    this.ruta,
   });
 
   final IconData icono;
   final String etiqueta;
   final VoidCallback onTap;
   final bool seleccionado;
+
+  /// Ruta de la app a la que lleva (la ponen los destinos de `AppNavigation`).
+  final String? ruta;
 }
 
 /// Marca el subárbol que ya tiene la barra lateral fija de la app ([FgNavLateral]). Así
