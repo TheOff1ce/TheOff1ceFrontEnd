@@ -47,7 +47,12 @@ Delivery _entrega(DeliveryStatus estado, {bool sinEta = false}) => Delivery(
       distanceToDestinationMeters: 1200,
     );
 
-Future<void> _montar(WidgetTester tester, DeliveryStatus estado, {bool conectado = true}) async {
+Future<void> _montar(
+  WidgetTester tester,
+  DeliveryStatus estado, {
+  bool conectado = true,
+  bool accionesDelPaciente = true,
+}) async {
   // La lista es perezosa: el viewport alto deja visibles el trayecto y los datos de abajo.
   tester.view.physicalSize = const Size(400, 2400);
   tester.view.devicePixelRatio = 1;
@@ -56,6 +61,7 @@ Future<void> _montar(WidgetTester tester, DeliveryStatus estado, {bool conectado
     home: TrackingPage(
       createController: () => _ControladorFalso(_entrega(estado), conectado: conectado),
       onBack: () {},
+      showPatientActions: accionesDelPaciente,
     ),
   ));
   await tester.pump();
@@ -73,6 +79,18 @@ void main() {
     expect(find.text('Pendiente'), findsNWidgets(2));
     expect(find.text('Farmacia'), findsOneWidget);
     expect(find.text('Calle 10 # 20-30'), findsOneWidget);
+  });
+
+  testWidgets('el paciente confirma la entrega con el código cuando va en camino', (tester) async {
+    await _montar(tester, DeliveryStatus.inTransit);
+    expect(find.text('¿Ya recibiste tu pedido?'), findsOneWidget);
+  });
+
+  testWidgets('el administrador sigue el envío sin el formulario del código', (tester) async {
+    await _montar(tester, DeliveryStatus.inTransit, accionesDelPaciente: false);
+    expect(find.text('¿Ya recibiste tu pedido?'), findsNothing);
+    expect(find.text('Confirmar entrega'), findsNothing);
+    expect(find.text('Llegada estimada'), findsOneWidget);
   });
 
   testWidgets('sin conexión en vivo se dice con texto', (tester) async {

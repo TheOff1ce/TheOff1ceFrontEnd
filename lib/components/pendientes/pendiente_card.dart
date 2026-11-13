@@ -38,10 +38,7 @@ class _PendienteCardState extends State<PendienteCard> {
     final vista = PlazoVista.de(p, widget.desdeCarga);
     final entregados = PendienteFormat.medicamentosEntregados(p.medicamentosEntregados, p.medicamentosTotal);
     final enVigente = vista.estado == CumplimientoPlazo.vigente;
-    final forma = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(FgRadius.md),
-      side: const BorderSide(color: FgColors.linea, width: FgBorder.w1),
-    );
+    final forma = FgDecor.formaTarjeta();
     return Semantics(
       button: true,
       label: 'Orden ${p.ordenMedicamentoId}. $entregados. ${vista.semantica}',
@@ -49,73 +46,78 @@ class _PendienteCardState extends State<PendienteCard> {
       onTap: widget.onOpen,
       child: FgFocusRing(
         focusNode: _focus,
-        child: Material(
-          color: FgColors.superficie,
-          shape: forma,
-          child: InkWell(
-            focusNode: _focus,
-            customBorder: forma,
-            onTap: widget.onOpen,
-            hoverColor: FgColors.fondo,
-            highlightColor: FgColors.fondo,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: FgSize.tarjetaInteractivaMin),
-              child: Padding(
-                padding: const EdgeInsets.all(FgSpace.sp4h),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Orden ${p.ordenMedicamentoId}',
-                                style: FgText.num(FgText.h3),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(entregados, style: FgText.caption),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right_rounded, size: FgSize.iconoMd, color: FgColors.inkSoft),
-                      ],
-                    ),
-                    const SizedBox(height: FgSpace.sp4),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        DeadlineRing(vista: vista, size: DeadlineRingSize.s, decorativo: true),
-                        const SizedBox(width: FgSpace.sp4),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                vista.titular,
-                                style: FgText.num(FgText.cifra.copyWith(
-                                  color: enVigente ? FgColors.ink : vista.estado.texto,
-                                )),
-                              ),
-                              if (vista.palabraEstado != null)
+        child: DecoratedBox(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(FgRadius.md), boxShadow: FgShadow.tarjeta),
+          child: Material(
+            color: FgColors.superficie,
+            shape: forma,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            child: InkWell(
+              focusNode: _focus,
+              customBorder: forma,
+              onTap: widget.onOpen,
+              hoverColor: FgColors.azul50,
+              highlightColor: FgColors.azul50,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: FgSize.tarjetaInteractivaMin),
+                child: Padding(
+                  padding: const EdgeInsets.all(FgSpace.sp4h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  vista.palabraEstado!,
-                                  style: FgText.caption.copyWith(color: vista.estado.texto, fontWeight: FontWeight.w700),
+                                  'Orden ${p.ordenMedicamentoId}',
+                                  style: FgText.num(FgText.h3),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              if (vista.subtitulo != null) Text(vista.subtitulo!, style: FgText.caption),
-                            ],
+                                Text(entregados, style: FgText.caption),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    // Fecha a ancho completo: en la columna del anillo se partía en 2–3 líneas.
-                    const SizedBox(height: FgSpace.sp3),
-                    Text(vista.fecha, style: FgText.num(FgText.caption)),
-                  ],
+                          const Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
+                        ],
+                      ),
+                      const SizedBox(height: FgSpace.sp4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          DeadlineRing(vista: vista, size: DeadlineRingSize.s, decorativo: true),
+                          const SizedBox(width: FgSpace.sp4),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  vista.titular,
+                                  style: FgText.num(FgText.cifra.copyWith(
+                                    color: enVigente ? FgColors.ink : vista.estado.texto,
+                                  )),
+                                ),
+                                if (vista.palabraEstado != null)
+                                  Text(
+                                    vista.palabraEstado!,
+                                    style: FgText.caption.copyWith(color: vista.estado.texto, fontWeight: FontWeight.w700),
+                                  ),
+                                if (vista.subtitulo != null) Text(vista.subtitulo!, style: FgText.caption),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Fecha a ancho completo: en la columna del anillo se partía en 2–3 líneas.
+                      const SizedBox(height: FgSpace.sp3),
+                      Text(vista.fecha, style: FgText.num(FgText.caption)),
+                    ],
+                  ),
                 ),
               ),
             ),

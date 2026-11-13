@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../auth/auth_controller.dart';
+import '../components/farmago/shell.dart';
 import '../pages/account_page.dart';
 import '../pages/admin_orders_page.dart';
 import '../pages/admin_users_page.dart';
@@ -30,6 +31,7 @@ import '../pages/upload_page.dart';
 import '../pages/verify_email_page.dart';
 import '../utils/pendientes_rol.dart';
 import 'app_dependencies.dart';
+import 'app_navigation.dart';
 import 'app_routes.dart';
 
 /// Declarative routes and access rules (FE-010: extracted from the app widget).
@@ -71,7 +73,14 @@ class AppRouter {
   late final GoRouter router = GoRouter(
     refreshListenable: _auth,
     redirect: redirect,
-    routes: [..._legacyRoutes, ..._publicPages, ..._privatePages],
+    routes: [
+      ..._legacyRoutes,
+      ..._publicPages,
+      _completeProfileRoute,
+      // Barra lateral fija en tablet y escritorio para todas las pantallas privadas (§23). Las rutas y
+      // sus URLs no cambian: el ShellRoute solo agrega el marco de navegación alrededor.
+      ShellRoute(builder: _navShell, routes: _privatePages),
+    ],
     errorBuilder: (context, state) => UnknownRoutePage(
       onHome: () => context.go(_auth.isAuthenticated ? AppRoutes.home : AppRoutes.landing),
     ),
@@ -148,6 +157,20 @@ class AppRouter {
     if (path == AppRoutes.resetPassword && _deps.passwordReset.email == null) return AppRoutes.forgotPassword;
     return null;
   }
+
+  /// Marco con la barra lateral del rol. Sin sesión confirmada no hay barra: la página muestra su
+  /// propio estado de carga o error (vía [_gate]).
+  Widget _navShell(BuildContext context, GoRouterState state, Widget child) => ListenableBuilder(
+        listenable: _auth,
+        builder: (context, _) {
+          final user = _auth.user;
+          if (_auth.status != AuthStatus.authenticated || user == null) return child;
+          return FgNavLateral(
+            destinos: AppNavigation.lateral(role: user.role, path: state.uri.path, go: context.go),
+            child: child,
+          );
+        },
+      );
 
   /// Pages that need a known session state show loading or "unavailable" first.
   Widget _gate(Widget child) => ListenableBuilder(
@@ -324,10 +347,6 @@ class AppRouter {
           )),
         ),
         GoRoute(
-          path: AppRoutes.completeProfile,
-          builder: (context, state) => _gate(CompleteProfilePage(auth: _auth)),
-        ),
-        GoRoute(
           path: AppRoutes.account,
           builder: (context, state) => _gate(AccountPage(
             auth: _auth,
@@ -335,6 +354,12 @@ class AppRouter {
           )),
         ),
       ];
+
+  /// Completar el perfil va fuera del marco con navegación: hasta terminarlo no hay otro destino.
+  GoRoute get _completeProfileRoute => GoRoute(
+        path: AppRoutes.completeProfile,
+        builder: (context, state) => _gate(CompleteProfilePage(auth: _auth)),
+      );
 
   List<RouteBase> get _pendientesPages => [
         GoRoute(
@@ -461,6 +486,7 @@ class AppRouter {
             return _gate(TrackingPage(
               key: ValueKey('admin-$deliveryId'),
               createController: () => _deps.trackingFor(deliveryId),
+              showPatientActions: false,
               onBack: () => AppRoutes.backOrGo(context, AppRoutes.adminOrders),
             ));
           },

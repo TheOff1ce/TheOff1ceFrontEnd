@@ -36,7 +36,7 @@ class CompleteProfilePage extends StatelessWidget {
           Center(
             child: FgButton(
               label: 'Cerrar sesión',
-              icon: Icons.logout_rounded,
+              icon: Icons.logout,
               variant: FgButtonVariant.ghost,
               onPressed: auth.logout,
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/farmago_tokens.dart';
 import '../components/delivery_widgets.dart';
+import '../components/farmago/feedback.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/dialogs.dart';
 import '../components/feedback.dart';
@@ -78,10 +79,10 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
             title: 'Mis domicilios',
             onBack: widget.onBack,
             onRefresh: c.load,
-            barraAccion: PrimaryActionBar(label: 'Pedir domicilio', icon: Icons.add_rounded, onPressed: widget.onRequest),
+            barraAccion: PrimaryActionBar(label: 'Pedir domicilio', icon: Icons.add, onPressed: widget.onRequest),
             children: [
               ErrorBanner(error: c.error),
-              if (c.loading && c.orders.isEmpty) const Center(child: DelayedSpinner()),
+              if (c.loading && c.orders.isEmpty) const FgListaCargando(etiqueta: 'Cargando domicilios'),
               if (!c.loading && c.orders.isEmpty && c.error == null)
                 const EmptyState(
                   icon: Icons.delivery_dining_outlined,

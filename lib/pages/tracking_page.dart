@@ -16,10 +16,19 @@ import '../utils/delivery_format.dart';
 /// trayecto de estados. Un solo `h1` con el estado actual; el título de la pantalla va en el
 /// encabezado.
 class TrackingPage extends StatefulWidget {
-  const TrackingPage({super.key, required this.createController, required this.onBack});
+  const TrackingPage({
+    super.key,
+    required this.createController,
+    required this.onBack,
+    this.showPatientActions = true,
+  });
 
   final TrackingController Function() createController;
   final VoidCallback onBack;
+
+  /// Solo el paciente dueño confirma la entrega con el código. El administrador sigue el envío
+  /// sin ver el formulario ni las indicaciones dirigidas al paciente.
+  final bool showPatientActions;
 
   @override
   State<TrackingPage> createState() => _TrackingPageState();
@@ -112,11 +121,11 @@ class _TrackingPageState extends State<TrackingPage> {
           padding: EdgeInsets.only(bottom: FgSpace.sp4),
           child: Text('La ubicación del repartidor ya no se comparte.', style: FgText.body),
         ),
-      if (d.awaitsCode) ...[
+      if (widget.showPatientActions && d.awaitsCode) ...[
         const SizedBox(height: FgSpace.sp2),
         PatientConfirmDelivery(busy: _controller.confirming, onConfirm: _confirmar),
         const SizedBox(height: FgSpace.sp5),
-      ] else if (activo && d.driverAssigned)
+      ] else if (widget.showPatientActions && activo && d.driverAssigned)
         Padding(
           padding: const EdgeInsets.only(bottom: FgSpace.sp4),
           child: Text(

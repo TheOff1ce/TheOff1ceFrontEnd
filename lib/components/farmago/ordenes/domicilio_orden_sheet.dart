@@ -176,7 +176,7 @@ class _Encabezado extends StatelessWidget {
                 ],
               ),
             ),
-            if (onCerrar != null) FgIconButton(icon: Icons.close_rounded, tooltip: 'Cerrar', onPressed: onCerrar),
+            if (onCerrar != null) FgIconButton(icon: Icons.close, tooltip: 'Cerrar', onPressed: onCerrar),
           ],
         ),
       );
@@ -424,7 +424,7 @@ class _Exito extends StatelessWidget {
                   fraccion: v,
                   centro: Opacity(
                     opacity: v,
-                    child: const Icon(Icons.check_rounded, size: FgSize.simboloS, color: FgColors.cumplidoSolid),
+                    child: const Icon(Icons.check, size: FgSize.simboloS, color: FgColors.cumplidoSolid),
                   ),
                 ),
               ),

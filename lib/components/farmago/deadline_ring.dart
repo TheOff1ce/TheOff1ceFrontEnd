@@ -22,9 +22,9 @@ extension EstadoPlazoEstilo on CumplimientoPlazo {
 
   /// Reloj (vigente), check (cumplido) o "x" (incumplido).
   IconData get simbolo => switch (this) {
-        CumplimientoPlazo.vigente => Icons.schedule_rounded,
-        CumplimientoPlazo.cumplido => Icons.check_rounded,
-        CumplimientoPlazo.incumplido => Icons.close_rounded,
+        CumplimientoPlazo.vigente => Icons.schedule_outlined,
+        CumplimientoPlazo.cumplido => Icons.check,
+        CumplimientoPlazo.incumplido => Icons.close,
       };
 }
 

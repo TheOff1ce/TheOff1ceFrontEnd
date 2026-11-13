@@ -338,14 +338,14 @@ const _pasosPendiente = [
   _PasoEnvio(Icons.inbox_outlined, 'Recibido'),
   _PasoEnvio(Icons.assignment_ind_outlined, 'Asignado'),
   _PasoEnvio(Icons.local_shipping_outlined, 'En camino'),
-  _PasoEnvio(Icons.check_circle_outline_rounded, 'Entregado'),
+  _PasoEnvio(Icons.check_circle_outline, 'Entregado'),
 ];
 
 const _pasosDomicilio = [
   _PasoEnvio(Icons.inbox_outlined, 'Recibido'),
   _PasoEnvio(Icons.assignment_ind_outlined, 'Asignado'),
   _PasoEnvio(Icons.local_shipping_outlined, 'En camino'),
-  _PasoEnvio(Icons.check_circle_outline_rounded, 'Entregado'),
+  _PasoEnvio(Icons.check_circle_outline, 'Entregado'),
 ];
 
 const _caminoPendiente = _Camino(
@@ -680,7 +680,7 @@ class LandingRoles extends StatelessWidget {
 
   static const _roles = [
     (
-      Icons.person_outline_rounded,
+      Icons.person_outline,
       'Pacientes',
       'Ven qué les falta, cuándo vence el plazo y en qué estado va su medicamento.'
     ),

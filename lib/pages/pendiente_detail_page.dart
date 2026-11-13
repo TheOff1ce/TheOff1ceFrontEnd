@@ -56,7 +56,7 @@ class _PendienteDetailPageState extends State<PendienteDetailPage> {
               onRefresh: () => _controller.load(silencioso: true),
               acciones: [
                 FgIconButton(
-                  icon: Icons.refresh_rounded,
+                  icon: Icons.refresh,
                   tooltip: 'Actualizar',
                   onPressed: _controller.loading ? null : () => _controller.load(silencioso: _controller.detalle != null),
                 ),
@@ -75,7 +75,7 @@ class _PendienteDetailPageState extends State<PendienteDetailPage> {
                     alignment: Alignment.centerRight,
                     child: FgButton(
                       label: 'Registrar novedad',
-                      icon: Icons.add_rounded,
+                      icon: Icons.add,
                       onPressed: () => _registrar(context, conBarra: false),
                     ),
                   ),

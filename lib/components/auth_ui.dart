@@ -35,73 +35,10 @@ class AuthShell extends StatelessWidget {
   final VoidCallback? onBack;
   final bool showOfficialLogo;
 
+  /// §23: todas las pantallas de acceso (recuperar y restablecer contraseña, verificar correo,
+  /// completar perfil) usan el mismo marco que el inicio de sesión y el registro (consistencia).
   @override
-  Widget build(BuildContext context) => Scaffold(
-        body: FgFondo(child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: ListView(
-                shrinkWrap: true,
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl,
-                  AppSpacing.l,
-                  AppSpacing.xl,
-                  AppSpacing.xxl,
-                ),
-                children: [
-                  if (onBack != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: IconButton(
-                        tooltip: 'Volver',
-                        onPressed: onBack,
-                        icon: const Icon(Icons.arrow_back),
-                      ),
-                    ),
-
-                  // Logo oficial únicamente cuando se solicite.
-                  if (showOfficialLogo)
-                    Center(
-                      child: Image.asset(
-                        'assets/images/logo_farmago.png',
-                        width: MediaQuery.sizeOf(context).width <
-                                FgBreakpoint.tablet
-                            ? 200
-                            : 240,
-                        fit: BoxFit.contain,
-                        semanticLabel: 'FarmaGo, de la farmacia a tu puerta',
-                      ),
-                    )
-                  else
-                    const FarmaGoMark(),
-
-                  const SizedBox(height: AppSpacing.xxl),
-
-                  Semantics(
-                    header: true,
-                    child: Text(
-                      title,
-                      style: context.text.displaySmall,
-                    ),
-                  ),
-
-                  const SizedBox(height: AppSpacing.s),
-
-                  Text(
-                    subtitle,
-                    style: context.text.bodyLarge,
-                  ),
-
-                  const SizedBox(height: AppSpacing.xxl - 2),
-
-                  child,
-                ],
-              ),
-            ),
-          ),
-        )),
-      );
+  Widget build(BuildContext context) => LoginLayout(title: title, subtitle: subtitle, onBack: onBack, child: child);
 }
 
 /// Primary action with an in-progress state that prevents double submission.
@@ -271,7 +208,7 @@ class _Requirement extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.xs),
         child: Row(children: [
-          Icon(met ? Icons.check_circle_rounded : Icons.circle_outlined,
+          Icon(met ? Icons.check_circle : Icons.circle_outlined,
               size: 18, color: color),
           const SizedBox(width: AppSpacing.s),
           Expanded(

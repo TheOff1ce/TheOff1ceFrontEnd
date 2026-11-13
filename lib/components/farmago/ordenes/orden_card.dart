@@ -64,8 +64,8 @@ class OrdenCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: FgColors.superficie,
           borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(color: conSeleccion ? FgColors.azul600 : FgColors.linea, width: FgBorder.w1),
-          boxShadow: conSeleccion ? FgShadow.e2 : FgShadow.e0,
+          border: Border.all(color: conSeleccion ? FgColors.azul600 : FgColors.lineaSuave, width: FgBorder.w1),
+          boxShadow: conSeleccion ? FgShadow.tarjetaHover : FgShadow.tarjeta,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -121,7 +121,7 @@ class OrdenCard extends StatelessWidget {
       return const _NotaOrden(icono: Icons.visibility_outlined, texto: OrdenesTextos.notaVencida);
     }
     if (orden.vencimiento == null) {
-      return const _NotaOrden(icono: Icons.info_outline_rounded, texto: OrdenesTextos.notaSinVencimiento);
+      return const _NotaOrden(icono: Icons.info_outline, texto: OrdenesTextos.notaSinVencimiento);
     }
     return null;
   }
@@ -324,7 +324,7 @@ class _MedicamentoOrdenRowState extends State<MedicamentoOrdenRow> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const ExcludeSemantics(child: Icon(Icons.block_rounded, size: FgSize.iconoSm, color: FgColors.inkSoft)),
+                          const ExcludeSemantics(child: Icon(Icons.block, size: FgSize.iconoSm, color: FgColors.inkSoft)),
                           const SizedBox(width: FgSpace.sp2),
                           Expanded(child: Text(motivos, style: FgText.caption)),
                         ],
@@ -334,7 +334,7 @@ class _MedicamentoOrdenRowState extends State<MedicamentoOrdenRow> {
                       const SizedBox(height: FgSpace.sp2),
                       const Row(
                         children: [
-                          ExcludeSemantics(child: Icon(Icons.sync_rounded, size: FgSize.iconoSm, color: FgColors.riesgoFg)),
+                          ExcludeSemantics(child: Icon(Icons.sync, size: FgSize.iconoSm, color: FgColors.riesgoFg)),
                           SizedBox(width: FgSpace.sp2),
                           Flexible(
                             child: Text(
@@ -450,7 +450,7 @@ class _Casilla extends StatelessWidget {
               opacity: marcada ? 1 : 0,
               duration: FgMotion.reducir(context, FgMotion.media),
               curve: FgMotion.ease,
-              child: const Icon(Icons.check_rounded, size: FgSize.iconoSm, color: FgColors.blanco, weight: 700),
+              child: const Icon(Icons.check, size: FgSize.iconoSm, color: FgColors.blanco, weight: 700),
             ),
           ),
         ),

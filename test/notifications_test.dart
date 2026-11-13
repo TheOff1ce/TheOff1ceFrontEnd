@@ -62,7 +62,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(body: NotificationBellButton(unreadCount: 2, onPressed: () => opened = true)),
     ));
-    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.notifications_none), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
     expect(find.byTooltip('Notificaciones, 2 sin leer'), findsOneWidget);
     await tester.tap(find.byType(IconButton));

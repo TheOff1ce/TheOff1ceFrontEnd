@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme/farmago_tokens.dart';
 import 'buttons.dart';
 import 'estampado.dart';
+import 'shell.dart';
 
 /// Marco de pantalla del manual (§5, §8.12): encabezado de 56 px en móvil (con el título como
 /// `<h1>`) o de 64 px en tablet/desktop (con el `<h1>` en el contenido), contenido centrado de
@@ -50,6 +51,9 @@ class FgScreen extends StatelessWidget {
     final ancho = MediaQuery.sizeOf(context).width;
     final compacto = FgBreakpoint.esCompacto(ancho);
     final margen = FgBreakpoint.margenLateral(ancho);
+    // Junto a la barra lateral fija (§23) el título va en la barra superior, como en el inicio, y
+    // no se repite en el contenido.
+    final tituloEnBarra = compacto || (tituloEnContenido && FgShellScope.of(context));
     final lista = ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(
@@ -59,7 +63,7 @@ class FgScreen extends StatelessWidget {
         (compacto ? FgSpace.sp6 : FgSpace.sp7) + (barraAccion == null ? 0 : FgSize.barraAccion),
       ),
       children: [
-        if (!compacto && tituloEnContenido) ...[
+        if (!tituloEnBarra && tituloEnContenido) ...[
           Semantics(header: true, child: Text(titulo, style: FgText.h1(ancho))),
           const SizedBox(height: FgSpace.sp5),
         ],
@@ -77,12 +81,12 @@ class FgScreen extends StatelessWidget {
       backgroundColor: FgColors.fondo,
       body: Column(
         children: [
-          _Encabezado(titulo: compacto ? titulo : null, onBack: onBack, acciones: acciones, compacto: compacto),
+          _Encabezado(titulo: tituloEnBarra ? titulo : null, onBack: onBack, acciones: acciones, compacto: compacto),
           Expanded(child: FgFondo(child: contenido)),
           if (barraAccion != null)
             barraAccionConEntrada
-                ? _EntradaDesdeAbajo(child: _BarraAccion(child: barraAccion!))
-                : _BarraAccion(child: barraAccion!),
+                ? _EntradaDesdeAbajo(child: _BarraAccion(anchoMaximo: anchoMaximo, child: barraAccion!))
+                : _BarraAccion(anchoMaximo: anchoMaximo, child: barraAccion!),
         ],
       ),
     );
@@ -104,7 +108,7 @@ class _Encabezado extends StatelessWidget {
       color: FgColors.superficie,
       child: Container(
         decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
+          border: Border(bottom: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
         ),
         child: SafeArea(
           bottom: false,
@@ -114,7 +118,7 @@ class _Encabezado extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: compacto ? FgSpace.sp2 : FgSpace.sp4),
               child: Row(
                 children: [
-                  FgIconButton(icon: Icons.arrow_back_rounded, tooltip: 'Volver', onPressed: onBack),
+                  FgIconButton(icon: Icons.arrow_back, tooltip: 'Volver', onPressed: onBack),
                   const SizedBox(width: FgSpace.sp2),
                   Expanded(
                     child: titulo == null
@@ -141,17 +145,32 @@ class _Encabezado extends StatelessWidget {
 }
 
 /// Barra de acción fija (§7.5): 88 px = 16 + botón 56 + 16, más el área segura inferior.
+/// En pantallas anchas el botón se alinea con la columna de contenido (Gestalt continuidad).
 class _BarraAccion extends StatelessWidget {
-  const _BarraAccion({required this.child});
+  const _BarraAccion({required this.child, required this.anchoMaximo});
 
   final Widget child;
+  final double anchoMaximo;
 
   @override
   Widget build(BuildContext context) => Container(
         decoration: const BoxDecoration(color: FgColors.superficie, boxShadow: FgShadow.eArriba),
         child: SafeArea(
           top: false,
-          child: Padding(padding: const EdgeInsets.all(FgSpace.sp4), child: child),
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: anchoMaximo),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: FgBreakpoint.margenLateral(MediaQuery.sizeOf(context).width),
+                  vertical: FgSpace.sp4,
+                ),
+                child: child,
+              ),
+            ),
+          ),
         ),
       );
 }

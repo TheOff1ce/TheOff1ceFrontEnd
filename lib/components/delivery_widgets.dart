@@ -65,9 +65,9 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (background, foreground, symbol) = switch (tone) {
-      StatusTone.success => (FgColors.cumplidoBg, FgColors.cumplidoFg, Icons.check_rounded),
-      StatusTone.warning => (FgColors.riesgoBg, FgColors.riesgoFg, Icons.schedule_rounded),
-      StatusTone.error => (FgColors.incumplidoBg, FgColors.incumplidoFg, Icons.close_rounded),
+      StatusTone.success => (FgColors.cumplidoBg, FgColors.cumplidoFg, Icons.check),
+      StatusTone.warning => (FgColors.riesgoBg, FgColors.riesgoFg, Icons.schedule_outlined),
+      StatusTone.error => (FgColors.incumplidoBg, FgColors.incumplidoFg, Icons.close),
       StatusTone.neutral => (FgColors.vigenteBg, FgColors.vigenteFg, Icons.circle),
     };
     return Semantics(
@@ -116,8 +116,8 @@ class OrderItemsList extends StatelessWidget {
 }
 
 /// Marco de las pantallas de domicilios y administración: [FgScreen] del manual (encabezado de
-/// 56/64 px con "Volver", título `h1` en pantallas anchas), contenido a ancho de lectura y barra de
-/// acción fija opcional para la acción principal.
+/// 56/64 px con "Volver"), contenido centrado a ancho de lectura (§23: antes quedaba pegado a la
+/// izquierda) y barra de acción fija opcional alineada con el contenido.
 class DeliveryScaffold extends StatelessWidget {
   const DeliveryScaffold({
     super.key,
@@ -143,14 +143,9 @@ class DeliveryScaffold extends StatelessWidget {
           onBack: onBack,
           onRefresh: onRefresh,
           barraAccion: barraAccion,
+          anchoMaximo: FgSize.lectura,
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: FgSize.lectura),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
-              ),
-            ),
+            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
           ],
         ),
       );
@@ -222,14 +217,7 @@ class FgCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         padding: const EdgeInsets.all(FgSpace.sp5),
-        decoration: BoxDecoration(
-          color: FgColors.superficie,
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          border: Border.all(
-            color: destacada ? FgColors.azul600 : FgColors.linea,
-            width: destacada ? FgBorder.w2 : FgBorder.w1,
-          ),
-        ),
+        decoration: FgDecor.tarjeta(destacada: destacada),
         child: child,
       );
 }

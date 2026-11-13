@@ -100,7 +100,7 @@ class ConfidenceIndicator extends StatelessWidget {
       decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppRadii.s)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Icon(requiresReview ? Icons.warning_amber_rounded : Icons.check_circle_outline, color: foreground, size: 20),
+          Icon(requiresReview ? Icons.warning_amber : Icons.check_circle_outline, color: foreground, size: 20),
           const SizedBox(width: AppSpacing.s),
           Expanded(
             child: Text(
