@@ -299,7 +299,7 @@ class _VentanaNovedadState extends State<_VentanaNovedad> {
                 children: [
                   Expanded(child: Semantics(header: true, child: const Text('Registrar novedad', style: FgText.h2))),
                   FgIconButton(
-                    icon: Icons.close_rounded,
+                    icon: Icons.close,
                     tooltip: 'Cerrar',
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),

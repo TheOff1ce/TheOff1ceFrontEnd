@@ -45,7 +45,7 @@ class NotificationBellButton extends StatelessWidget {
     final countLabel = unreadCount > 9 ? '9+' : '$unreadCount';
     final label = unreadCount == 0 ? 'Notificaciones' : 'Notificaciones, $unreadCount sin leer';
     return Stack(clipBehavior: Clip.none, alignment: Alignment.center, children: [
-      IconButton(tooltip: label, onPressed: onPressed, icon: const Icon(Icons.notifications_none_rounded)),
+      IconButton(tooltip: label, onPressed: onPressed, icon: const Icon(Icons.notifications_none)),
       if (unreadCount > 0)
         Positioned(
           top: 4,
@@ -119,7 +119,7 @@ class _NotificationContent extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: notifications.clearRead,
-              icon: const Icon(Icons.clear_all_rounded, size: 18),
+              icon: const Icon(Icons.clear_all, size: 18),
               label: const Text('Limpiar leídas'),
             ),
           ),
@@ -177,7 +177,7 @@ class _EmptyNotifications extends StatelessWidget {
                   width: 76,
                   height: 76,
                   decoration: BoxDecoration(color: context.status.brandSurface, shape: BoxShape.circle),
-                  child: Icon(Icons.notifications_none_rounded, size: 36, color: context.colors.primary),
+                  child: Icon(Icons.notifications_none, size: 36, color: context.colors.primary),
                 ),
               ),
               const SizedBox(height: AppSpacing.l + 4),
@@ -237,7 +237,7 @@ class _NotificationCard extends StatelessWidget {
             IconButton(
               tooltip: 'Eliminar notificación',
               onPressed: onDelete,
-              icon: const Icon(Icons.close_rounded, size: 20),
+              icon: const Icon(Icons.close, size: 20),
             ),
           ]),
         ),

@@ -7,8 +7,11 @@ import 'package:flutter/material.dart';
 /// colores, tamaños, radios, sombras ni duraciones literales; solo usa estos tokens.
 /// La única excepción permitida es `Colors.white` (texto sobre fondos de color).
 ///
-/// Convive con `app_theme.dart` (tema anterior de la app, Manrope): este archivo se
-/// aplica solo a las pantallas que lo envuelven con [FarmaGoTheme] (pendientes).
+/// `app_theme.dart` construye el tema global de la app a partir de estos tokens; [FarmaGoTheme]
+/// es el tema de las pantallas que lo envuelven directamente.
+///
+/// Modernización visual (manual §23): los tokens marcados «§23» aligeran bordes, sombras y fondo
+/// sin cambiar la paleta ni los tamaños de texto.
 abstract final class FgColors {
   // Marca
   static const azul100 = Color(0xFFE3F1F9);
@@ -46,6 +49,20 @@ abstract final class FgColors {
   static const cumplidoFg = Color(0xFF18552A);
   static const cumplidoBg = Color(0xFFE4F3E6);
   static const cumplidoSolid = Color(0xFF23703A);
+  // Derivados de la paleta (§23): fondos y bordes sutiles. Solo superficies y decoración, nunca texto.
+  /// Tinte casi blanco del azul de marca: hover de filas y tarjetas, fondo de zonas activas.
+  static const azul50 = Color(0xFFF1F8FC);
+
+  /// Borde decorativo más suave que [linea] para tarjetas con sombra. No delimita controles.
+  static const lineaSuave = Color(0xFFDFEAEF);
+
+  /// Iconos y etiquetas de navegación inactivos (7,97:1 sobre `fondo`). Reemplaza al verde de
+  /// marca en la navegación: el verde se lee como «éxito».
+  static const navInactivo = inkSoft;
+
+  /// Color de sombra para widgets de Material con `elevation` (§23): `ink` al 18 %.
+  static const sombraMaterial = Color(0x2E12303F);
+
   static const neutroFg = Color(0xFF35505E);
   static const neutroBg = Color(0xFFEEF2F4);
   static const peligro = Color(0xFFB3261E);
@@ -184,6 +201,12 @@ abstract final class FgRadius {
 abstract final class FgBorder {
   static const w1 = 1.0;
   static const w2 = 2.0;
+
+  /// Borde de controles en reposo (§23): 1 px de `lineaControl` (3,80:1, cumple WCAG 1.4.11).
+  static const control = w1;
+
+  /// Borde de controles con foco o error (§23): sube a 2 px para que el cambio se note sin color.
+  static const controlActivo = w2;
   static const foco = 3.0;
   static const w4 = 4.0;
 }
@@ -198,6 +221,42 @@ abstract final class FgShadow {
   static const e3 = <BoxShadow>[BoxShadow(color: Color(0x2912303F), offset: Offset(0, 8), blurRadius: 24)];
   static const e4 = <BoxShadow>[BoxShadow(color: Color(0x3D12303F), offset: Offset(0, 16), blurRadius: 48)];
   static const eArriba = <BoxShadow>[BoxShadow(color: Color(0x1F12303F), offset: Offset(0, -4), blurRadius: 16)];
+
+  /// Tarjeta en reposo (§23): sombra difusa y baja, tintada con `ink`. Va con borde `lineaSuave`.
+  static const tarjeta = <BoxShadow>[
+    BoxShadow(color: Color(0x0D12303F), offset: Offset(0, 1), blurRadius: 3),
+    BoxShadow(color: Color(0x0A12303F), offset: Offset(0, 6), blurRadius: 16),
+  ];
+
+  /// Tarjeta interactiva con hover o foco (§23): sube un nivel.
+  static const tarjetaHover = <BoxShadow>[
+    BoxShadow(color: Color(0x1212303F), offset: Offset(0, 2), blurRadius: 6),
+    BoxShadow(color: Color(0x1412303F), offset: Offset(0, 10), blurRadius: 24),
+  ];
+
+  /// Barra superior o de acción cuando el contenido pasa por debajo (§23).
+  static const barra = <BoxShadow>[BoxShadow(color: Color(0x0F12303F), offset: Offset(0, 1), blurRadius: 8)];
+}
+
+/// Decoraciones compartidas (§23). Una sola definición de tarjeta para toda la app.
+abstract final class FgDecor {
+  /// Tarjeta en reposo: superficie, borde `lineaSuave`, radio 14 y sombra baja.
+  /// [destacada]: borde azul de 2 px para lo que pide atención ahora (una sola por pantalla).
+  static BoxDecoration tarjeta({bool destacada = false, Color color = FgColors.superficie}) => BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(FgRadius.md),
+        border: Border.all(
+          color: destacada ? FgColors.azul600 : FgColors.lineaSuave,
+          width: destacada ? FgBorder.w2 : FgBorder.w1,
+        ),
+        boxShadow: FgShadow.tarjeta,
+      );
+
+  /// Forma de tarjeta interactiva (Material + InkWell): mismo borde que [tarjeta].
+  static RoundedRectangleBorder formaTarjeta() => RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(FgRadius.md),
+        side: const BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1),
+      );
 }
 
 /// Tamaños de controles y estructura.
@@ -267,6 +326,12 @@ abstract final class FgBreakpoint {
 
 abstract final class FgMotion {
   static const rapida = Duration(milliseconds: 120);
+
+  /// Microinteracción al presionar (§23): escala y sombra, 150 ms.
+  static const micro = Duration(milliseconds: 150);
+
+  /// Escala del elemento presionado (§23). Feedback físico sutil, sin rebote.
+  static const escalaPresion = .98;
   static const media = Duration(milliseconds: 220);
   static const lenta = Duration(milliseconds: 320);
   static const reloj = Duration(milliseconds: 600);
@@ -284,6 +349,15 @@ abstract final class FgMotion {
   /// `prefers-reduced-motion`: sin animación.
   static Duration reducir(BuildContext context, Duration normal) =>
       MediaQuery.disableAnimationsOf(context) ? Duration.zero : normal;
+}
+
+/// Pesos tipográficos (§23). El 700 queda para títulos, cifras y botones; el resto baja a 500/600
+/// para que la jerarquía se note (efecto Von Restorff).
+abstract final class FgWeight {
+  static const regular = FontWeight.w400;
+  static const medio = FontWeight.w500;
+  static const semibold = FontWeight.w600;
+  static const bold = FontWeight.w700;
 }
 
 /// Estilos de texto del manual (§4). Tamaños lógicos: respetan el factor de texto del sistema.
@@ -312,6 +386,15 @@ abstract final class FgText {
       fontFamily: family, fontSize: 17, fontWeight: FontWeight.w400, height: 1.4, color: FgColors.ink);
   static const caption = TextStyle(
       fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400, height: 1.5, color: FgColors.inkSoft);
+
+  /// Etiqueta secundaria (§23): mismo tamaño que [label] con peso medio. Para etiquetas de datos,
+  /// ítems de menú inactivos y textos que no son la acción principal.
+  static const labelMedio = TextStyle(
+      fontFamily: family, fontSize: 18, fontWeight: FontWeight.w500, height: 1.3, color: FgColors.ink);
+
+  /// Metadato destacado (§23): 16 / 600. Encabezados de grupo dentro de una tarjeta.
+  static const captionFuerte = TextStyle(
+      fontFamily: family, fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: FgColors.inkSoft);
 
   /// Cifra del plazo junto al reloj (§8.10 y §8.13 tamaño `m`): 28 / 700.
   static const cifra = TextStyle(
@@ -397,9 +480,27 @@ class FarmaGoThemed extends StatelessWidget {
 
   final Widget child;
 
+  /// Hereda del tema de la app los estilos de campos, botones, chips, tarjetas y diálogos (§23):
+  /// así los widgets de Material dentro de estas pantallas se ven igual que en el resto de la app
+  /// (antes salían con el campo subrayado y el botón de contorno por defecto).
   @override
-  Widget build(BuildContext context) => Theme(
-        data: FarmaGoTheme.light,
-        child: DefaultTextStyle(style: FgText.body, child: child),
-      );
+  Widget build(BuildContext context) {
+    final app = Theme.of(context);
+    return Theme(
+      data: FarmaGoTheme.light.copyWith(
+        inputDecorationTheme: app.inputDecorationTheme,
+        filledButtonTheme: app.filledButtonTheme,
+        outlinedButtonTheme: app.outlinedButtonTheme,
+        textButtonTheme: app.textButtonTheme,
+        iconButtonTheme: app.iconButtonTheme,
+        chipTheme: app.chipTheme,
+        cardTheme: app.cardTheme,
+        dialogTheme: app.dialogTheme,
+        snackBarTheme: app.snackBarTheme,
+        progressIndicatorTheme: app.progressIndicatorTheme,
+        dividerTheme: app.dividerTheme,
+      ),
+      child: DefaultTextStyle(style: FgText.body, child: child),
+    );
+  }
 }

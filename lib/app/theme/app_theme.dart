@@ -22,7 +22,7 @@ abstract final class _Palette {
   static const successContainer = FgColors.cumplidoBg;
 }
 
-/// Spacing scale (multiples of 4).
+/// Spacing scale (multiples of 4). Legacy aliases of [FgSpace]; new code uses [FgSpace] directly.
 abstract final class AppSpacing {
   static const xs = 4.0;
   static const s = 8.0;
@@ -32,7 +32,8 @@ abstract final class AppSpacing {
   static const xxl = 32.0;
 }
 
-/// Radii of the manual: 8 controls, 14 buttons and cards, 24 windows.
+/// Radii of the manual: 8 controls, 14 buttons and cards, 24 windows. Legacy aliases of
+/// [FgRadius]; new code uses [FgRadius] directly.
 abstract final class AppRadii {
   static const s = FgRadius.sm;
   static const m = FgRadius.md;
@@ -134,9 +135,10 @@ abstract final class AppTheme {
       onErrorContainer: _Palette.errorText,
     );
     final text = _textTheme();
-    OutlineInputBorder border(Color color) => OutlineInputBorder(
+    // §23: 1 px en reposo, 2 px con foco o error.
+    OutlineInputBorder border(Color color, {bool activo = false}) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(FgRadius.sm),
-          borderSide: BorderSide(color: color, width: FgBorder.w2),
+          borderSide: BorderSide(color: color, width: activo ? FgBorder.controlActivo : FgBorder.control),
         );
     final buttonShape = WidgetStatePropertyAll(
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md)),
@@ -183,9 +185,9 @@ abstract final class AppTheme {
         errorStyle: FgText.caption.copyWith(color: _Palette.errorText),
         border: border(_Palette.outline),
         enabledBorder: border(_Palette.outline),
-        focusedBorder: border(_Palette.blue),
-        errorBorder: border(_Palette.error),
-        focusedErrorBorder: border(_Palette.error),
+        focusedBorder: border(_Palette.blue, activo: true),
+        errorBorder: border(_Palette.error, activo: true),
+        focusedErrorBorder: border(_Palette.error, activo: true),
         disabledBorder: border(FgColors.deshabilitadoBg),
         helperMaxLines: 3,
         errorMaxLines: 3,
@@ -201,17 +203,15 @@ abstract final class AppTheme {
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
-      // Secondary button: opaque surface, 2 px azul 600 border, azul 800 text.
+      // Secondary button, tonal (§23): azul 100 background, no border, azul 800 text (7.7:1).
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: buttonBase.copyWith(
           backgroundColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.disabled)
               ? FgColors.deshabilitadoBg
-              : pick(s, rest: FgColors.superficie, hover: FgColors.azul100, pressed: FgColors.azul200)),
+              : pick(s, rest: FgColors.azul100, hover: FgColors.azul200, pressed: FgColors.azul200)),
           foregroundColor: WidgetStateProperty.resolveWith(
               (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azul800),
-          side: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.disabled)
-              ? BorderSide.none
-              : const BorderSide(color: FgColors.azul600, width: FgBorder.w2)),
+          side: const WidgetStatePropertyAll(BorderSide.none),
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
@@ -250,19 +250,18 @@ abstract final class AppTheme {
         labelStyle: FgText.caption.copyWith(color: _Palette.text, fontWeight: FontWeight.w600),
         secondaryLabelStyle: FgText.caption.copyWith(color: FgColors.azul800, fontWeight: FontWeight.w700),
         checkmarkColor: FgColors.azul800,
-        side: const BorderSide(color: _Palette.outline, width: FgBorder.w1),
+        side: const BorderSide(color: _Palette.outline, width: FgBorder.control),
         shape: const StadiumBorder(),
         padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3, vertical: FgSpace.sp2),
       ),
+      // §23: same edge as FgDecor.tarjeta; Material draws the soft shadow from elevation 1.
       cardTheme: CardThemeData(
         color: FgColors.superficie,
         surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        elevation: 1,
+        shadowColor: FgColors.sombraMaterial,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(FgRadius.md),
-          side: const BorderSide(color: _Palette.line, width: FgBorder.w1),
-        ),
+        shape: FgDecor.formaTarjeta(),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: FgColors.superficie,

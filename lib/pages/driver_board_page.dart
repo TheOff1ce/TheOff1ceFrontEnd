@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/farmago_tokens.dart';
 import '../components/delivery_widgets.dart';
+import '../components/farmago/feedback.dart';
 import '../components/farmago/buttons.dart';
 import '../components/feedback.dart';
 import '../hooks/driver_board_controller.dart';
@@ -64,7 +65,7 @@ class _DriverBoardPageState extends State<DriverBoardPage> {
                 const SizedBox(height: FgSpace.sp4),
               ],
               const SectionHeading('Pedidos disponibles'),
-              if (c.loading && c.available.isEmpty) const Center(child: DelayedSpinner()),
+              if (c.loading && c.available.isEmpty) const FgListaCargando(etiqueta: 'Cargando domicilios'),
               if (!c.loading && c.available.isEmpty) ...[
                 const EmptyState(
                   icon: Icons.inbox_outlined,
@@ -74,7 +75,7 @@ class _DriverBoardPageState extends State<DriverBoardPage> {
                 Center(
                   child: FgButton(
                     label: 'Actualizar',
-                    icon: Icons.refresh_rounded,
+                    icon: Icons.refresh,
                     variant: FgButtonVariant.secondary,
                     onPressed: c.load,
                   ),
@@ -121,7 +122,7 @@ class _ActiveCard extends StatelessWidget {
         const SizedBox(height: FgSpace.sp3),
         InfoLine(icon: Icons.place_outlined, text: 'Entregar en ${order.deliveryAddress}'),
         const SizedBox(height: FgSpace.sp3),
-        FgButton(label: 'Continuar entrega', icon: Icons.arrow_forward_rounded, onPressed: onOpen),
+        FgButton(label: 'Continuar entrega', icon: Icons.arrow_forward, onPressed: onOpen),
       ]),
     );
   }
@@ -149,7 +150,7 @@ class _AvailableCard extends StatelessWidget {
           const SizedBox(height: FgSpace.sp3),
           FgButton(
             label: 'Tomar pedido',
-            icon: Icons.check_rounded,
+            icon: Icons.check,
             loading: busy,
             loadingLabel: 'Tomando…',
             onPressed: enabled || busy ? onTake : null,

@@ -194,7 +194,7 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
                 alignment: Alignment.centerLeft,
                 child: FgButton(
                   label: 'Agregar otro producto',
-                  icon: Icons.add_rounded,
+                  icon: Icons.add,
                   variant: FgButtonVariant.ghost,
                   onPressed: () => setState(() => _items.add(_ItemFields())),
                 ),
@@ -241,7 +241,7 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
             if (_items.length > 1)
               FgButton(
                 label: 'Quitar',
-                icon: Icons.delete_outline_rounded,
+                icon: Icons.delete_outline,
                 variant: FgButtonVariant.ghost,
                 size: FgButtonSize.sm,
                 onPressed: () => _removeItem(index),
@@ -272,7 +272,7 @@ class QuantityStepper extends StatelessWidget {
           IconButton.outlined(
             tooltip: 'Quitar uno',
             onPressed: value > min ? () => onChanged(value - 1) : null,
-            icon: const Icon(Icons.remove_rounded),
+            icon: const Icon(Icons.remove),
           ),
           SizedBox(
             width: 44,
@@ -283,7 +283,7 @@ class QuantityStepper extends StatelessWidget {
           IconButton.outlined(
             tooltip: 'Agregar uno',
             onPressed: value < max ? () => onChanged(value + 1) : null,
-            icon: const Icon(Icons.add_rounded),
+            icon: const Icon(Icons.add),
           ),
         ]),
       );

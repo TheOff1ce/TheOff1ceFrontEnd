@@ -545,7 +545,7 @@ class _FieldError extends StatelessWidget {
           children: [
             const Padding(
               padding: EdgeInsets.only(top: 2),
-              child: Icon(Icons.error_outline_rounded, size: 16, color: FgColors.peligro),
+              child: Icon(Icons.error_outline, size: 16, color: FgColors.peligro),
             ),
             const SizedBox(width: FgSpace.sp2),
             Expanded(child: Text(message, style: FgText.caption.copyWith(color: FgColors.peligro))),

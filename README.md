@@ -44,7 +44,7 @@
 
 | 👤 Role | What they can do |
 |---|---|
-| 🧑 **Patient** | Sign up / log in (email + code, or Google on web), analyze prescriptions with AI, see results, request home delivery, track the courier live, confirm delivery with a code, check their pending medications and medical orders. |
+| 🧑 **Patient** | Sign up / log in (email + code, or Google on web and on Android/iOS), analyze prescriptions with AI, see results, request home delivery, track the courier live, confirm delivery with a code, check their pending medications and medical orders. |
 | 🛵 **Courier** (`DELIVERY_DRIVER`) | See available orders, take one, advance its status, share location while delivering. |
 | 🏥 **EPS** | See assigned pending medications and register updates (novedades). |
 | 👑 **Admin** | Manage users and roles, see and cancel any home-delivery order, follow any delivery. |
@@ -125,7 +125,7 @@ All services trust the same access token issued by **TheOff1ceAuth** (HS256 JWT,
 | Layer | Technology |
 |---|---|
 | Framework | **Flutter** (stable, CI uses 3.47.8) + **Dart ≥ 3.3** |
-| UI | **Material 3** with FarmaGo design tokens; fonts **Manrope** and **Atkinson Hyperlegible Next** (SIL OFL) |
+| UI | **Material 3** with FarmaGo design tokens; font **Atkinson Hyperlegible Next** (SIL OFL) |
 | Routing | **go_router** |
 | HTTP | `http`, `http_parser` |
 | Real time | `socket_io_client` |
@@ -174,7 +174,7 @@ lib/
 ├── types/          # Models: auth, medication, analysis, order, delivery, ordenes, pendiente, admin…
 └── utils/          # Constants (service URLs), validators, formatters, polyline decoding
 assets/
-├── fonts/          # Manrope and Atkinson Hyperlegible Next (OFL)
+├── fonts/          # Atkinson Hyperlegible Next (OFL)
 └── images/         # FarmaGo logo, symbol, Google "G"
 docs/               # Business context, identity manual, design notes
 test/               # Unit, widget and golden tests
@@ -272,7 +272,7 @@ Every service URL defaults to the **API Gateway** (`https://farmago-gateway-jl.a
 | `/` | Landing page | Public |
 | `/login` · `/register` · `/verify-email` | Log in, sign up, email code | Public |
 | `/forgot-password` · `/reset-password` | Password recovery | Public |
-| `/auth/google/callback` · `/auth/callback` | Google sign-in return | Public |
+| `/auth/google/callback` · `/auth/callback` | Google sign-in return (web) | Public |
 | `/completar-perfil` | Complete profile (required after sign-up) | All |
 | `/home` | Home (adapts to the role) | All |
 | `/analyze-prescription` → `/processing` → `/result` | Upload / photograph, analyze and review a prescription | Patient |
@@ -286,6 +286,16 @@ Every service URL defaults to the **API Gateway** (`https://farmago-gateway-jl.a
 Old Spanish URLs (`/acceso`, `/registro`, `/inicio`, `/analizar-formula`…) redirect to the current ones.
 
 ---
+
+## 🔑 Google Sign-In on Android and iOS
+
+On the web, *Continuar con Google* redirects the page to TheOff1ceAuth as before. In the app:
+
+1. It opens `GET /auth/google?platform=app` in an in-app browser tab (`flutter_web_auth_2`).
+2. After Google, Auth returns to the app deep link `farmago://auth/callback#code=<one-time code>`.
+3. The app trades the code with `POST /auth/google/exchange` and keeps the refresh token in secure storage.
+
+Requires TheOff1ceAuth with `platform=app` support (deep link set by `GOOGLE_APP_REDIRECT_URL`, default `farmago://auth/callback`). The `CallbackActivity` for the `farmago` scheme is declared in `android/app/src/main/AndroidManifest.xml`; iOS needs no extra setup. Closing the tab simply returns to the login screen.
 
 ## ⏱️ Pendientes (48-hour deadline)
 
@@ -307,7 +317,7 @@ flutter run -d web-server --web-hostname localhost --web-port 5173 `
 
 `pendientes-service` must allow the frontend origin (`FRONTEND_URL=http://localhost:5173`; in deployment, the `FRONTEND_URL` variable of the repository's `production` environment) and share `JWT_SECRET` with Auth.
 
-🎨 These screens follow the **unified FarmaGo identity manual** (tokens in `lib/app/theme/farmago_tokens.dart`, `Fg*` components in `lib/components/farmago/`, Atkinson Hyperlegible Next font); the rest of the app keeps the previous theme (Manrope) for now.
+🎨 These screens follow the **unified FarmaGo identity manual** (tokens in `lib/app/theme/farmago_tokens.dart`, `Fg*` components in `lib/components/farmago/`, Atkinson Hyperlegible Next font). The whole app shares this design system.
 
 ---
 

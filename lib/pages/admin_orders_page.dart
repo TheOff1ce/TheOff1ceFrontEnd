@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
 import '../components/delivery_widgets.dart';
+import '../components/farmago/feedback.dart';
 import '../components/feedback.dart';
 import '../hooks/admin_orders_controller.dart';
 import '../types/admin.dart';
@@ -72,7 +73,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
               ),
               const SizedBox(height: AppSpacing.s),
               ErrorBanner(error: c.error),
-              if (c.loading && c.orders.isEmpty) const Center(child: DelayedSpinner()),
+              if (c.loading && c.orders.isEmpty) const FgListaCargando(etiqueta: 'Cargando domicilios'),
               if (!c.loading && c.orders.isEmpty && c.error == null)
                 const EmptyState(
                   icon: Icons.inbox_outlined,
@@ -142,22 +143,28 @@ class _AdminOrderCard extends StatelessWidget {
             style: context.text.titleMedium,
             status: StatusChip(label: _status.$1, tone: _status.$2),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text('Recoger: ${o.pharmacy.address}', style: context.text.bodySmall),
-          Text('Entregar: ${o.deliveryAddress}', style: context.text.bodySmall),
-          Text(
-            '${DeliveryFormat.distance(o.routeSummary.distanceMeters)} · '
-            'aprox. ${DeliveryFormat.duration(o.routeSummary.durationSeconds)}'
-            '${created == null ? '' : ' · pedido ${_when(created)}'}',
-            style: context.text.bodySmall,
+          const SizedBox(height: AppSpacing.s),
+          // §23: mismas líneas con icono que las tarjetas del paciente y del repartidor (consistencia).
+          InfoLine(icon: Icons.storefront_outlined, text: 'Recoger en ${o.pharmacy.address}'),
+          InfoLine(icon: Icons.place_outlined, text: 'Entregar en ${o.deliveryAddress}'),
+          InfoLine(
+            icon: Icons.route_outlined,
+            text: '${DeliveryFormat.distance(o.routeSummary.distanceMeters)}, '
+                'aprox. ${DeliveryFormat.duration(o.routeSummary.durationSeconds)}',
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Paciente ${_short(order.patientId)} · '
-            '${order.driverId == null ? 'sin repartidor' : 'repartidor ${_short(order.driverId!)}'}',
+          if (created != null) InfoLine(icon: Icons.schedule_outlined, text: 'Pedido el ${_when(created)}'),
+          InfoLine(
+            icon: Icons.delivery_dining_outlined,
+            text: order.driverId == null ? 'Sin repartidor asignado' : 'Con repartidor asignado',
+          ),
+          if (o.notes != null && o.notes!.isNotEmpty) InfoLine(icon: Icons.notes_outlined, text: 'Notas: ${o.notes}'),
+          // Los códigos internos sirven para soporte, no para leer la tarjeta: van al final y pequeños
+          // (correspondencia con el mundo real).
+          SelectableText(
+            'Códigos de soporte: paciente ${_short(order.patientId)}'
+            '${order.driverId == null ? '' : ', repartidor ${_short(order.driverId!)}'}',
             style: context.text.bodySmall?.copyWith(color: context.status.mutedText),
           ),
-          if (o.notes != null && o.notes!.isNotEmpty) Text('Notas: ${o.notes}', style: context.text.bodySmall),
           const SizedBox(height: AppSpacing.s),
           OrderItemsList(items: o.items),
           const SizedBox(height: AppSpacing.s),

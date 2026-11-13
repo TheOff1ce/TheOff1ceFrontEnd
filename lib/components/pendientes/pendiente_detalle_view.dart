@@ -272,11 +272,7 @@ class _MedicamentoTarjeta extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width) ? FgSpace.sp4h : FgSpace.sp5),
-      decoration: BoxDecoration(
-        color: FgColors.superficie,
-        borderRadius: BorderRadius.circular(FgRadius.md),
-        border: Border.all(color: FgColors.linea, width: FgBorder.w1),
-      ),
+      decoration: FgDecor.tarjeta(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -317,7 +313,7 @@ class _Paso extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              hecho ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              hecho ? Icons.check_circle : Icons.radio_button_unchecked,
               size: FgSize.iconoMd,
               color: hecho ? FgColors.azul600 : FgColors.lineaControl,
             ),

@@ -82,7 +82,7 @@ class _PendienteDetallePanelState extends State<PendienteDetallePanel> {
                 : (detalle == null ? 'Detalle del pendiente' : 'Orden ${detalle.resumen.ordenMedicamentoId}');
             return FgPanelScaffold(
               titulo: titulo,
-              iconoCerrar: _formulario ? Icons.arrow_back_rounded : Icons.close_rounded,
+              iconoCerrar: _formulario ? Icons.arrow_back : Icons.close,
               tooltipCerrar: _formulario ? 'Volver al detalle' : 'Cerrar',
               onCerrar: _formulario ? _volverDesdeFormulario : () => Navigator.of(context).pop(),
               cuerpo: _formulario
@@ -114,7 +114,7 @@ class _PendienteDetallePanelState extends State<PendienteDetallePanel> {
                       children: [
                         FgButton(
                           label: 'Registrar novedad',
-                          icon: Icons.add_rounded,
+                          icon: Icons.add,
                           onPressed: () => setState(() => _formulario = true),
                         ),
                       ],

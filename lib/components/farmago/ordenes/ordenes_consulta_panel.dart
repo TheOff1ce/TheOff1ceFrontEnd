@@ -206,7 +206,7 @@ class _FilaConsulta extends StatelessWidget {
     );
     final boton = FgButton(
       label: OrdenesTextos.recargar,
-      icon: Icons.refresh_rounded,
+      icon: Icons.refresh,
       variant: FgButtonVariant.secondary,
       onPressed: onRecargar,
       expand: compacto,
@@ -217,7 +217,7 @@ class _FilaConsulta extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (!compacto)
-          const ExcludeSemantics(child: Icon(Icons.schedule_rounded, size: FgSize.iconoMd, color: FgColors.azul800)),
+          const ExcludeSemantics(child: Icon(Icons.schedule_outlined, size: FgSize.iconoMd, color: FgColors.azul800)),
         compacto ? SizedBox(width: double.infinity, child: texto) : texto,
         compacto ? SizedBox(width: double.infinity, child: boton) : boton,
       ],

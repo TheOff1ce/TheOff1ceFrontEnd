@@ -212,12 +212,15 @@ class _EstampadoPainter extends CustomPainter {
   bool shouldRepaint(covariant _EstampadoPainter oldDelegate) => oldDelegate.opacidad != opacidad;
 }
 
-/// Fondo de pantalla de FarmaGo: color `fondo` con el estampado de figuras de marca. Lo usan todas
-/// las pantallas para que compartan la misma identidad. En móvil el estampado es más discreto.
+/// Fondo de pantalla de FarmaGo: color `fondo` liso (§23). El estampado de figuras de marca queda
+/// solo en la landing ([estampado] = true): detrás de datos y formularios era ruido visual.
 class FgFondo extends StatelessWidget {
-  const FgFondo({super.key, required this.child});
+  const FgFondo({super.key, required this.child, this.estampado = false});
 
   final Widget child;
+
+  /// Solo la landing: figuras de marca apenas visibles (más discretas en móvil).
+  final bool estampado;
 
   @override
   Widget build(BuildContext context) {
@@ -225,10 +228,9 @@ class FgFondo extends StatelessWidget {
     return ColoredBox(
       color: FgColors.fondo,
       child: SizedBox.expand(
-        child: FgEstampado(
-          opacidad: compacto ? FgOpacity.estampadoMovil : null,
-          child: child,
-        ),
+        child: estampado
+            ? FgEstampado(opacidad: compacto ? FgOpacity.estampadoMovil : null, child: child)
+            : child,
       ),
     );
   }
