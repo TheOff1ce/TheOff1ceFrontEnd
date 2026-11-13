@@ -102,6 +102,16 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
       ),
       const SizedBox(height: FgSpace.sp3),
       ErrorBanner(error: _controller.locationError),
+      if (_controller.sinSenal) ...[
+        FgBanner(
+          kind: FgBannerKind.aviso,
+          title: 'Sin señal',
+          message: _controller.pendientesSinEnviar > 0
+              ? 'Guardamos tu ubicación y la enviamos apenas vuelva la conexión. Sigue con la entrega.'
+              : 'Reintentando enviar tu ubicación…',
+        ),
+        const SizedBox(height: FgSpace.sp3),
+      ],
       // Qué hacer ahora, antes que el mapa: es lo que el repartidor necesita con el pedido en la mano.
       if (d.status == DeliveryStatus.delivered)
         const FgBanner(kind: FgBannerKind.exito, message: 'El paciente confirmó la entrega con tu código.')

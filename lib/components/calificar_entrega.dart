@@ -161,3 +161,27 @@ class _Estrellas extends StatelessWidget {
     ]);
   }
 }
+
+/// Estrellas de solo lectura para un promedio (admite medias estrellas). El número va aparte.
+class EstrellasPromedio extends StatelessWidget {
+  const EstrellasPromedio({super.key, required this.valor, this.tamano = 20});
+
+  final double valor;
+  final double tamano;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          for (var i = 1; i <= 5; i++)
+            Icon(
+              valor >= i - 0.25
+                  ? Icons.star_rounded
+                  : valor >= i - 0.75
+                      ? Icons.star_half_rounded
+                      : Icons.star_outline_rounded,
+              size: tamano,
+              color: valor >= i - 0.75 ? FgColors.riesgoSolid : FgColors.lineaControl,
+            ),
+        ]),
+      );
+}

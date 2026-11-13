@@ -2,6 +2,7 @@ import '../auth/auth_controller.dart';
 import '../auth/auth_repository.dart';
 import '../auth/password_reset_controller.dart';
 import '../hooks/admin_orders_controller.dart';
+import '../hooks/admin_ratings_controller.dart';
 import '../hooks/eps_resumen_controller.dart';
 import '../hooks/admin_users_controller.dart';
 import '../hooks/driver_board_controller.dart';
@@ -45,6 +46,7 @@ class AppDependencies {
     required this.location,
     required this.pendientesService,
     this.ordenesService,
+    this.adminRatings,
     required this.pendientes,
     required this.patientHome,
     this.deliveryClients = const [],
@@ -98,6 +100,7 @@ class AppDependencies {
       pendientes: PendientesListController(pendientesService),
       adminUsers: AdminUsersController(admin),
       adminOrders: AdminOrdersController(admin, deliveries),
+      adminRatings: AdminRatingsController(deliveries: deliveries, admin: admin),
       deliveryClients: [ordersClient, trackingClient, pendientesClient, ordenesClient, authClient],
     );
   }
@@ -114,6 +117,9 @@ class AppDependencies {
   final TrackingChannelFactory trackingChannels;
   final AdminUsersController adminUsers;
   final AdminOrdersController adminOrders;
+
+  /// `null` solo en pruebas; `create()` siempre lo construye.
+  final AdminRatingsController? adminRatings;
   final LocationSource location;
   final PendientesService pendientesService;
 
@@ -157,6 +163,7 @@ class AppDependencies {
     _epsResumen?.dispose();
     adminUsers.dispose();
     adminOrders.dispose();
+    adminRatings?.dispose();
     for (final client in deliveryClients) {
       client.dispose();
     }
