@@ -12,19 +12,30 @@ import '../types/delivery.dart';
 ///
 /// The location is sent every [interval] only while the delivery is PICKED_UP, IN_TRANSIT or
 /// ARRIVING, and sharing stops as soon as it is delivered (or fails).
+///
+/// Sin señal: cada ubicación que no se pudo enviar se guarda (hasta [maxPendientes]) y, al volver
+/// la conexión, se envían en orden antes de la actual. Geolocation descarta las de más de 2 min
+/// (STALE), así que las más viejas que [vigenciaPendiente] se dejan de intentar.
 class DriverDeliveryController extends ChangeNotifier {
   DriverDeliveryController({
     required this.deliveryId,
     required DeliveryService deliveries,
     required LocationSource location,
     this.interval = const Duration(seconds: 10),
+    DateTime Function()? now,
   })  : _deliveries = deliveries,
-        _location = location;
+        _location = location,
+        _now = now ?? DateTime.now;
+
+  static const maxPendientes = 30;
+  static const vigenciaPendiente = Duration(seconds: 110);
 
   final String deliveryId;
   final Duration interval;
   final DeliveryService _deliveries;
   final LocationSource _location;
+  final DateTime Function() _now;
+  final List<GpsFix> _pendientes = [];
   Timer? _timer;
   bool _sending = false;
   bool _disposed = false;
@@ -37,6 +48,12 @@ class DriverDeliveryController extends ChangeNotifier {
   bool loading = true;
   bool updating = false;
   DateTime? lastSentAt;
+
+  /// La última ubicación no salió por falta de conexión; se reintenta sola.
+  bool sinSenal = false;
+
+  /// Ubicaciones guardadas que aún no llegan al servidor.
+  int get pendientesSinEnviar => _pendientes.length;
 
   bool get sharing => _timer != null;
 
@@ -103,18 +120,18 @@ class DriverDeliveryController extends ChangeNotifier {
     _notify();
   }
 
-  /// Sends one GPS fix (also used by the periodic timer).
+  /// Sends one GPS fix (also used by the periodic timer), after the ones saved without signal.
   Future<void> sendNow() async {
     if (_sending || _disposed) return;
     _sending = true;
     try {
-      final report = await _deliveries.reportLocation(deliveryId, await _location.currentFix());
-      lastSentAt = DateTime.now();
-      locationError = null;
-      if (report.status != delivery?.status) delivery = await _deliveries.get(deliveryId);
+      _guardar(await _location.currentFix());
+      await _enviarPendientes();
     } catch (e) {
       locationError = ErrorMapper.fromException(e);
       if (locationError?.code == 'TRACKING_NOT_ACTIVE') {
+        _pendientes.clear();
+        sinSenal = false;
         // Usually the patient just confirmed with the code: show the final status, not an error.
         _stop();
         locationError = null;
@@ -125,6 +142,43 @@ class DriverDeliveryController extends ChangeNotifier {
       _notify();
     }
   }
+
+  void _guardar(GpsFix fix) {
+    _pendientes.add(fix);
+    if (_pendientes.length > maxPendientes) _pendientes.removeRange(0, _pendientes.length - maxPendientes);
+  }
+
+  /// Envía en orden lo guardado. Sin señal se detiene y conserva el resto para la próxima vez.
+  Future<void> _enviarPendientes() async {
+    final ahora = _now();
+    _pendientes.removeWhere((f) => ahora.difference(f.recordedAt) > vigenciaPendiente);
+    var cambioEstado = false;
+    while (_pendientes.isNotEmpty) {
+      final LocationReport report;
+      try {
+        report = await _deliveries.reportLocation(deliveryId, _pendientes.first);
+      } catch (e) {
+        final error = ErrorMapper.fromException(e);
+        if (!_esFaltaDeSenal(error)) {
+          // El servidor la rechazó por otra razón: reintentarla no sirve.
+          _pendientes.removeAt(0);
+          rethrow;
+        }
+        sinSenal = true;
+        locationError = null;
+        return;
+      }
+      _pendientes.removeAt(0);
+      sinSenal = false;
+      lastSentAt = _now();
+      locationError = null;
+      if (report.status != delivery?.status) cambioEstado = true;
+    }
+    if (cambioEstado) delivery = await _deliveries.get(deliveryId);
+  }
+
+  static bool _esFaltaDeSenal(AppError error) =>
+      error.kind == AppErrorKind.network || error.kind == AppErrorKind.timeout || error.kind == AppErrorKind.server;
 
   Future<void> _reload() async {
     try {
@@ -137,6 +191,8 @@ class DriverDeliveryController extends ChangeNotifier {
   void _stop() {
     _timer?.cancel();
     _timer = null;
+    _pendientes.clear();
+    sinSenal = false;
   }
 
   void _notify() {

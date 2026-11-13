@@ -1,4 +1,5 @@
 import '../errors/error_mapper.dart';
+import '../types/calificaciones.dart';
 import '../types/delivery.dart';
 import 'authorized_json_client.dart';
 
@@ -60,6 +61,16 @@ class DeliveryService {
       'stars': stars,
       if (text.isNotEmpty) 'comment': text,
     }));
+  }
+
+  /// Administradores: promedio por repartidor y calificaciones malas de los últimos [days] días.
+  Future<ReporteCalificaciones> ratingsReport({int days = 30}) async {
+    final json = await _client.get('/deliveries/ratings?days=$days');
+    try {
+      return ReporteCalificaciones.fromJson(json);
+    } on TypeError catch (error) {
+      throw ErrorMapper.fromException(FormatException('Unexpected ratings payload: $error'));
+    }
   }
 
   Future<LocationReport> reportLocation(String deliveryId, GpsFix fix) async {

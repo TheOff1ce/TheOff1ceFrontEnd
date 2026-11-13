@@ -36,6 +36,7 @@ abstract final class AppNavigation {
           inicio,
           destino(Icons.pending_actions_outlined, 'Domicilios pendientes', AppRoutes.adminOrders),
           destino(Icons.manage_accounts_outlined, 'Usuarios y roles', AppRoutes.adminUsers),
+          destino(Icons.star_outline_rounded, 'Calificaciones', AppRoutes.adminRatings),
           destino(Icons.document_scanner_outlined, 'Analizar fórmula', AppRoutes.uploadPrescription),
           cuenta,
         ];

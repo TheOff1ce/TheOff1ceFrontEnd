@@ -53,6 +53,7 @@ abstract final class AppRoutes {
   // Administrator back-office
   static const adminUsers = '/admin/users';
   static const adminOrders = '/admin/orders';
+  static const adminRatings = '/admin/ratings';
   static const adminTrackingPattern = '/admin/orders/tracking/:deliveryId';
   static String adminTracking(String deliveryId) => '/admin/orders/tracking/${Uri.encodeComponent(deliveryId)}';
 

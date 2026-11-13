@@ -43,6 +43,7 @@ class HomePage extends StatefulWidget {
     required this.onNotifications,
     required this.onAccount,
     required this.onTracking,
+    this.onCalificar,
     required this.onPendienteDetalle,
     this.onRequestDelivery,
     this.onMyOrders,
@@ -50,6 +51,7 @@ class HomePage extends StatefulWidget {
     this.onDriverBoard,
     this.onPendientes,
     this.onAdminUsers,
+    this.onAdminRatings,
     this.onAdminOrders,
   });
 
@@ -74,10 +76,14 @@ class HomePage extends StatefulWidget {
   final VoidCallback? onDriverBoard;
   final VoidCallback? onPendientes;
   final VoidCallback? onAdminUsers;
+  final VoidCallback? onAdminRatings;
   final VoidCallback? onAdminOrders;
 
   /// Abre el seguimiento de un domicilio (por `deliveryId`).
   final void Function(String deliveryId) onTracking;
+
+  /// Abre la entrega para calificarla (por defecto, el mismo seguimiento).
+  final void Function(String deliveryId)? onCalificar;
 
   /// Abre el detalle de un pendiente (por `id`).
   final void Function(String pendienteId) onPendienteDetalle;
@@ -146,6 +152,7 @@ class _HomePageState extends State<HomePage> {
         AppRoutes.driverBoard => widget.onDriverBoard,
         AppRoutes.adminOrders => widget.onAdminOrders,
         AppRoutes.adminUsers => widget.onAdminUsers,
+        AppRoutes.adminRatings => widget.onAdminRatings,
         _ => null,
       };
 

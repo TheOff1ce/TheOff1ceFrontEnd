@@ -138,6 +138,7 @@ class Delivery {
     required this.distanceToDestinationMeters,
     this.deliveryCode,
     this.rating,
+    this.deliveredAt,
   });
 
   final String id, orderId;
@@ -155,6 +156,9 @@ class Delivery {
 
   /// `null` mientras el paciente no haya calificado.
   final DeliveryRating? rating;
+
+  /// Cuándo se confirmó la entrega (`statusTimestamps.DELIVERED`).
+  final DateTime? deliveredAt;
 
   /// Ya entregado y sin calificar: el paciente puede dejar sus estrellas.
   bool get canBeRated => status == DeliveryStatus.delivered && rating == null;
@@ -175,6 +179,9 @@ class Delivery {
         distanceToDestinationMeters: (json['distanceToDestinationMeters'] as num?)?.round(),
         deliveryCode: switch (json['deliveryCode']) { final String code when code.isNotEmpty => code, _ => null },
         rating: DeliveryRating.fromJson(json['rating']),
+        deliveredAt: json['statusTimestamps'] is Map
+            ? DateTime.tryParse((json['statusTimestamps'] as Map)['DELIVERED']?.toString() ?? '')
+            : null,
       );
 
   /// Applies a `delivery.location` event.
@@ -205,6 +212,7 @@ class Delivery {
         distanceToDestinationMeters: distance,
         deliveryCode: deliveryCode,
         rating: rating,
+        deliveredAt: deliveredAt,
       );
 }
 

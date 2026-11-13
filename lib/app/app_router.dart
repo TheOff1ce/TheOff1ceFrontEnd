@@ -6,6 +6,7 @@ import '../auth/auth_controller.dart';
 import '../components/farmago/shell.dart';
 import '../pages/account_page.dart';
 import '../pages/admin_orders_page.dart';
+import '../pages/admin_ratings_page.dart';
 import '../pages/admin_users_page.dart';
 import '../pages/analysis_page.dart';
 import '../pages/driver_board_page.dart';
@@ -279,6 +280,11 @@ class AppRouter {
             inicio: _deps.patientHome,
             resumenEps: _auth.user?.role == 'EPS' ? _deps.epsResumen : null,
             onTracking: (deliveryId) => context.push(AppRoutes.tracking(deliveryId)),
+            // Al volver de calificar se recarga la home para quitar el recordatorio.
+            onCalificar: (deliveryId) async {
+              await context.push(AppRoutes.tracking(deliveryId));
+              _deps.patientHome.load();
+            },
             onPendienteDetalle: (pendienteId) => context.push(AppRoutes.pendiente(pendienteId)),
             onAnalyze: () => context.push(AppRoutes.uploadPrescription),
             onNotifications: () => context.push(AppRoutes.notifications),
@@ -290,6 +296,7 @@ class AppRouter {
             onPendientes: () => context.push(AppRoutes.pendientes),
             onAdminUsers: () => context.push(AppRoutes.adminUsers),
             onAdminOrders: () => context.push(AppRoutes.adminOrders),
+            onAdminRatings: _deps.adminRatings == null ? null : () => context.push(AppRoutes.adminRatings),
           )),
         ),
         ..._pendientesPages,
@@ -483,6 +490,14 @@ class AppRouter {
           builder: (context, state) => _gate(AdminOrdersPage(
             controller: _deps.adminOrders,
             onTrack: (order) => context.push(AppRoutes.adminTracking(order.order.deliveryId)),
+            onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+          )),
+        ),
+        GoRoute(
+          path: AppRoutes.adminRatings,
+          builder: (context, state) => _gate(AdminRatingsPage(
+            controller: _deps.adminRatings!,
+            onVerEntrega: (deliveryId) => context.push(AppRoutes.adminTracking(deliveryId)),
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
           )),
         ),

@@ -44,6 +44,20 @@ class _Contenido extends StatelessWidget {
                 onAction: _w.auth.refreshNow,
               ),
             ),
+          if (pantalla.isPatient && _w.inicio.porCalificar != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: FgSpace.sp5),
+              child: FgBanner(
+                kind: FgBannerKind.info,
+                title: '¿Cómo estuvo tu entrega?',
+                message: _w.inicio.porCalificar!.farmacia == null
+                    ? 'Recibiste tu pedido. Califícalo en un momento: nos ayuda a mejorar.'
+                    : 'Recibiste tu pedido de ${_w.inicio.porCalificar!.farmacia}. '
+                        'Califícalo en un momento: nos ayuda a mejorar.',
+                actionLabel: 'Calificar',
+                onAction: () => (_w.onCalificar ?? _w.onTracking)(_w.inicio.porCalificar!.deliveryId),
+              ),
+            ),
           LayoutBuilder(builder: (context, constraints) {
             // El estado del paciente va en un panel elevado: jerarquía funcional, no decoración.
             // El rol con una sola acción no lo necesita y la acción conserva todo el ancho.
@@ -273,6 +287,13 @@ class _Contenido extends StatelessWidget {
               titulo: 'Usuarios y roles',
               descripcion: 'Busca personas, corrige documentos y cambia roles.',
               onTap: _w.onAdminUsers,
+            ),
+          if (admin && _w.onAdminRatings != null)
+            FgAccionTarjeta(
+              icono: Icons.star_outline_rounded,
+              titulo: 'Calificaciones',
+              descripcion: 'Promedio por repartidor y entregas mal calificadas.',
+              onTap: _w.onAdminRatings,
             ),
           if (pantalla._pendientesVisible)
             FgAccionTarjeta(
