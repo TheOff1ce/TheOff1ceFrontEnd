@@ -43,6 +43,24 @@ class TrackingController extends ChangeNotifier {
     }
   }
 
+  bool rating = false;
+
+  /// Calificación del paciente tras recibir. `null` = guardada.
+  Future<AppError?> rate(int stars, {String? comment}) async {
+    if (rating) return null;
+    rating = true;
+    _notify();
+    try {
+      delivery = await _deliveries.rate(deliveryId, stars, comment: comment);
+      return null;
+    } catch (e) {
+      return ErrorMapper.fromException(e);
+    } finally {
+      rating = false;
+      _notify();
+    }
+  }
+
   Future<void> start() async {
     loading = true;
     error = null;

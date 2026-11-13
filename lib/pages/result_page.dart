@@ -7,17 +7,30 @@ import '../components/medication_card.dart';
 import '../types/analysis_response.dart';
 import '../components/farmago/card.dart';
 import '../components/farmago/buttons.dart';
+import '../types/order.dart';
+import '../utils/pedido_desde_formula.dart';
 
 class ResultPage extends StatelessWidget {
-  const ResultPage({super.key, required this.result, required this.onHome, required this.onAnalyzeAnother});
+  const ResultPage({
+    super.key,
+    required this.result,
+    required this.onHome,
+    required this.onAnalyzeAnother,
+    this.onRequestDelivery,
+  });
 
   final AnalysisResponse result;
   final VoidCallback onHome;
   final VoidCallback onAnalyzeAnother;
 
+  /// Lleva a «Pedir a casa» con los medicamentos leídos. Solo para pacientes (null = no se muestra).
+  final ValueChanged<List<OrderItem>>? onRequestDelivery;
+
   @override
   Widget build(BuildContext context) {
     final count = result.medications.length;
+    final pedido = onRequestDelivery == null ? const <OrderItem>[] : pedidoDesdeFormula(result);
+    final puedePedir = pedido.isNotEmpty;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Resultado del análisis'),
@@ -79,10 +92,22 @@ class ResultPage extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(height: AppSpacing.m),
+                // Siguiente paso natural para el paciente: pedirlos a casa (acción principal).
+                if (puedePedir) ...[
+                  FgButton(
+                    label: pedido.length == 1 ? 'Pedir este medicamento a casa' : 'Pedir estos medicamentos a casa',
+                    icon: Icons.delivery_dining,
+                    size: FgButtonSize.lg,
+                    expand: true,
+                    onPressed: () => onRequestDelivery!(pedido),
+                  ),
+                  const SizedBox(height: AppSpacing.s + 2),
+                ],
                 FgButton(
                   label: 'Analizar otra fórmula',
                   icon: Icons.add_a_photo_outlined,
-                  size: FgButtonSize.lg,
+                  size: puedePedir ? FgButtonSize.md : FgButtonSize.lg,
+                  variant: puedePedir ? FgButtonVariant.secondary : FgButtonVariant.primary,
                   expand: true,
                   onPressed: onAnalyzeAnother,
                 ),
@@ -90,7 +115,7 @@ class ResultPage extends StatelessWidget {
                 FgButton(
                   label: 'Volver al inicio',
                   icon: Icons.home_outlined,
-                  variant: FgButtonVariant.secondary,
+                  variant: puedePedir ? FgButtonVariant.ghost : FgButtonVariant.secondary,
                   expand: true,
                   onPressed: onHome,
                 ),

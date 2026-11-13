@@ -109,6 +109,21 @@ class DriverLocation {
       );
 }
 
+/// Calificación que el paciente dejó al recibir (el comentario no vuelve del servidor).
+class DeliveryRating {
+  const DeliveryRating({required this.stars, this.ratedAt});
+
+  final int stars;
+  final DateTime? ratedAt;
+
+  static DeliveryRating? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final stars = (json['stars'] as num?)?.toInt();
+    if (stars == null || stars < 1 || stars > 5) return null;
+    return DeliveryRating(stars: stars, ratedAt: DateTime.tryParse(json['ratedAt']?.toString() ?? ''));
+  }
+}
+
 class Delivery {
   const Delivery({
     required this.id,
@@ -122,6 +137,7 @@ class Delivery {
     required this.driverLocation,
     required this.distanceToDestinationMeters,
     this.deliveryCode,
+    this.rating,
   });
 
   final String id, orderId;
@@ -136,6 +152,12 @@ class Delivery {
   /// Código de 6 dígitos que el repartidor le dice al paciente al entregar. Solo llega en las
   /// respuestas del repartidor asignado, mientras el envío está abierto; el paciente nunca lo ve.
   final String? deliveryCode;
+
+  /// `null` mientras el paciente no haya calificado.
+  final DeliveryRating? rating;
+
+  /// Ya entregado y sin calificar: el paciente puede dejar sus estrellas.
+  bool get canBeRated => status == DeliveryStatus.delivered && rating == null;
 
   /// El paciente cierra la entrega escribiendo el código (solo en camino o llegando).
   bool get awaitsCode => status == DeliveryStatus.inTransit || status == DeliveryStatus.arriving;
@@ -152,6 +174,7 @@ class Delivery {
         driverLocation: json['driverLocation'] is Map ? DriverLocation.fromJson(_map(json['driverLocation'])) : null,
         distanceToDestinationMeters: (json['distanceToDestinationMeters'] as num?)?.round(),
         deliveryCode: switch (json['deliveryCode']) { final String code when code.isNotEmpty => code, _ => null },
+        rating: DeliveryRating.fromJson(json['rating']),
       );
 
   /// Applies a `delivery.location` event.
@@ -181,6 +204,7 @@ class Delivery {
         driverLocation: driverLocation,
         distanceToDestinationMeters: distance,
         deliveryCode: deliveryCode,
+        rating: rating,
       );
 }
 

@@ -97,6 +97,8 @@ abstract final class ErrorMessages {
       'El código no coincide. Pídele al repartidor que te lo repita. Tras 5 intentos se bloquea 15 minutos.';
   static const deliveryCodeLocked =
       'Hiciste demasiados intentos con un código incorrecto. Espera 15 minutos e inténtalo de nuevo.';
+  static const ratingNotAllowed = 'Podrás calificar la entrega cuando confirmes que la recibiste.';
+  static const alreadyRated = 'Ya calificaste esta entrega. ¡Gracias!';
   static const codeConfirmationRequired =
       'La entrega la confirma el paciente con tu código. Díselo cuando le entregues el pedido.';
   static const locationDisabled =

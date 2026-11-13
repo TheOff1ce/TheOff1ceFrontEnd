@@ -53,6 +53,15 @@ class DeliveryService {
   Future<Delivery> confirm(String deliveryId, String code) async =>
       _parse(await _client.post('/deliveries/${_id(deliveryId)}/confirm', {'code': code}));
 
+  /// El paciente califica la entrega una sola vez (1 a 5 estrellas y un comentario opcional).
+  Future<Delivery> rate(String deliveryId, int stars, {String? comment}) async {
+    final text = comment?.trim() ?? '';
+    return _parse(await _client.post('/deliveries/${_id(deliveryId)}/rating', {
+      'stars': stars,
+      if (text.isNotEmpty) 'comment': text,
+    }));
+  }
+
   Future<LocationReport> reportLocation(String deliveryId, GpsFix fix) async {
     final json = await _client.post('/deliveries/${_id(deliveryId)}/locations', fix.toJson());
     return LocationReport(
