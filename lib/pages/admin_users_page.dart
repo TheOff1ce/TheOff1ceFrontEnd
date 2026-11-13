@@ -8,7 +8,6 @@ import '../app/theme/farmago_tokens.dart';
 import '../components/farmago/buttons.dart';
 import '../components/delivery_widgets.dart';
 import '../components/farmago/feedback.dart';
-import '../components/feedback.dart';
 import '../hooks/admin_users_controller.dart';
 import '../types/admin.dart';
 
@@ -52,7 +51,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
     if (!confirmed) return;
     final error = await widget.controller.changeRole(user, role);
-    if (mounted) showAppSnackBar(context, error?.userMessage ?? 'Rol actualizado: ${role.label}.', error: error != null);
+    if (mounted) {
+      showAppSnackBar(context, error?.userMessage ?? 'Rol actualizado: ${role.label}.', error: error != null);
+    }
   }
 
   Future<void> _correctDocument(AdminUser user) async {
@@ -129,7 +130,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 Center(
                   child: c.loadingMore
                       ? const DelayedSpinner(size: 28)
-                      : OutlinedButton(onPressed: c.loadMore, child: const Text('Cargar más')),
+                      : FgButton(label: 'Cargar más', variant: FgButtonVariant.secondary, onPressed: c.loadMore),
                 ),
             ],
           );
@@ -194,10 +195,10 @@ class _UserCard extends StatelessWidget {
                 style: context.text.bodySmall,
               ),
               if (!user.profileComplete) const StatusChip(label: 'Perfil incompleto', tone: StatusTone.warning),
-              TextButton(
-                onPressed: saving ? null : onDocument,
-                child: Text(user.document == null ? 'Registrar documento' : 'Corregir documento'),
-              ),
+              FgButton(
+                  label: user.document == null ? 'Registrar documento' : 'Corregir documento',
+                  variant: FgButtonVariant.ghost,
+                  onPressed: saving ? null : onDocument),
             ],
           ),
           const SizedBox(height: AppSpacing.m),
@@ -246,7 +247,6 @@ class _UserCard extends StatelessWidget {
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
   }
 }
-
 
 /// Dato secundario de la tarjeta de usuario: icono de 20 px y texto 16 px en tinta suave.
 class _Meta extends StatelessWidget {
@@ -321,8 +321,8 @@ class _DocumentDialogState extends State<_DocumentDialog> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-          FilledButton(onPressed: _save, child: const Text('Guardar')),
+          FgButton(label: 'Cancelar', variant: FgButtonVariant.ghost, onPressed: () => Navigator.pop(context)),
+          FgButton(label: 'Guardar', onPressed: _save),
         ],
       );
 }

@@ -7,7 +7,7 @@ import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
 import '../components/camera_capture_page.dart';
 import '../components/farmago/buttons.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../components/ui.dart';
 import '../errors/app_error.dart';
 import '../services/image_service.dart';
@@ -59,9 +59,11 @@ class _UploadPageState extends State<UploadPage> {
     showAppSnackBar(
       context,
       'Quitamos la imagen.',
-      action: SnackBarAction(label: 'Deshacer', onPressed: () {
-        if (mounted) setState(() => _image = removed);
-      }),
+      action: SnackBarAction(
+          label: 'Deshacer',
+          onPressed: () {
+            if (mounted) setState(() => _image = removed);
+          }),
     );
   }
 
@@ -73,7 +75,8 @@ class _UploadPageState extends State<UploadPage> {
         title: const Text('Analizar fórmula'),
         leading: IconButton(tooltip: 'Volver al inicio', onPressed: widget.onBack, icon: const Icon(Icons.arrow_back)),
       ),
-      body: FgFondo(child: SafeArea(
+      body: FgFondo(
+          child: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
@@ -159,34 +162,33 @@ class _UploadPageState extends State<UploadPage> {
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
               Text('Cambiar imagen', style: sheetContext.text.headlineSmall),
               const SizedBox(height: AppSpacing.l),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(sheetContext);
-                  _pick(camera: true);
-                },
-                icon: const Icon(Icons.camera_alt_outlined),
-                label: const Text('Tomar otra foto'),
-              ),
+              FgButton(
+                  label: 'Tomar otra foto',
+                  icon: Icons.camera_alt_outlined,
+                  variant: FgButtonVariant.secondary,
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _pick(camera: true);
+                  }),
               const SizedBox(height: AppSpacing.s),
-              OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(sheetContext);
-                  _pick(camera: false);
-                },
-                icon: const Icon(Icons.photo_library_outlined),
-                label: const Text('Elegir otra de la galería'),
-              ),
+              FgButton(
+                  label: 'Elegir otra de la galería',
+                  icon: Icons.photo_library_outlined,
+                  variant: FgButtonVariant.secondary,
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _pick(camera: false);
+                  }),
               const SizedBox(height: AppSpacing.s),
-              TextButton.icon(
-                style: TextButton.styleFrom(foregroundColor: sheetContext.colors.error),
-                onPressed: () {
-                  Navigator.pop(sheetContext);
-                  _remove();
-                },
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Quitar imagen'),
-              ),
-              TextButton(onPressed: () => Navigator.pop(sheetContext), child: const Text('Cancelar')),
+              FgButton(
+                  label: 'Quitar imagen',
+                  icon: Icons.delete_outline,
+                  variant: FgButtonVariant.danger,
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    _remove();
+                  }),
+              FgButton(label: 'Cancelar', variant: FgButtonVariant.ghost, onPressed: () => Navigator.pop(sheetContext)),
             ]),
           ),
         ),

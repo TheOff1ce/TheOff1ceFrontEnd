@@ -134,7 +134,7 @@ abstract final class AppTheme {
       errorContainer: _Palette.errorContainer,
       onErrorContainer: _Palette.errorText,
     );
-    final text = _textTheme();
+    final text = _sinEspaciado(_textTheme());
     // §23: 1 px en reposo, 2 px con foco o error.
     OutlineInputBorder border(Color color, {bool activo = false}) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(FgRadius.sm),
@@ -162,6 +162,7 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: _Palette.background,
       dividerColor: _Palette.line,
       splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
       extensions: const [AppStatusColors.light],
       dividerTheme: const DividerThemeData(color: _Palette.line, thickness: FgBorder.w1, space: FgBorder.w1),
       appBarTheme: const AppBarTheme(
@@ -288,12 +289,35 @@ abstract final class AppTheme {
         circularTrackColor: Colors.transparent,
       ),
       tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(color: _Palette.text, borderRadius: BorderRadius.circular(FgRadius.sm)),
+        decoration: BoxDecoration(
+          color: _Palette.text,
+          borderRadius: BorderRadius.circular(FgRadius.sm),
+          boxShadow: FgShadow.e3,
+        ),
         textStyle: FgText.caption.copyWith(color: FgColors.blanco),
+        padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3, vertical: FgSpace.sp2),
+        waitDuration: const Duration(milliseconds: 300),
       ),
       listTileTheme: const ListTileThemeData(minVerticalPadding: FgSpace.sp3, iconColor: _Palette.secondaryText),
     );
   }
+
+  /// Material 3 adds letter spacing (0.25–0.5) to its type scale; the manual uses none. Without
+  /// this, texts that only set a size would inherit that spacing and wrap differently.
+  static TextTheme _sinEspaciado(TextTheme t) => TextTheme(
+        displaySmall: t.displaySmall?.copyWith(letterSpacing: 0),
+        headlineMedium: t.headlineMedium?.copyWith(letterSpacing: 0),
+        headlineSmall: t.headlineSmall?.copyWith(letterSpacing: 0),
+        titleLarge: t.titleLarge?.copyWith(letterSpacing: 0),
+        titleMedium: t.titleMedium?.copyWith(letterSpacing: 0),
+        titleSmall: t.titleSmall?.copyWith(letterSpacing: 0),
+        bodyLarge: t.bodyLarge?.copyWith(letterSpacing: 0),
+        bodyMedium: t.bodyMedium?.copyWith(letterSpacing: 0),
+        bodySmall: t.bodySmall?.copyWith(letterSpacing: 0),
+        labelLarge: t.labelLarge?.copyWith(letterSpacing: 0),
+        labelMedium: t.labelMedium?.copyWith(letterSpacing: 0),
+        labelSmall: t.labelSmall?.copyWith(letterSpacing: 0),
+      );
 
   /// Manual type scale (§4): body 18, metadata never below 16.
   static TextTheme _textTheme() => TextTheme(

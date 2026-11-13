@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../components/auth_ui.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../errors/app_error.dart';
 import '../utils/validators.dart';
+import '../components/farmago/buttons.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key, required this.auth, required this.onLogin, required this.onBack});
@@ -72,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   @override
-  Widget build(BuildContext context) => LoginLayout (
+  Widget build(BuildContext context) => LoginLayout(
         onBack: widget.onBack,
         title: 'Crea tu espacio de salud.',
         subtitle: 'Te enviaremos un código al correo para proteger tu cuenta. Todos los campos son obligatorios.',
@@ -126,7 +127,10 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: AppSpacing.xl - 2),
               BusyButton(label: 'Crear cuenta', busyLabel: 'Creando tu cuenta', busy: _submitting, onPressed: _submit),
               const SizedBox(height: AppSpacing.l),
-              TextButton(onPressed: _submitting ? null : widget.onLogin, child: const Text('Ya tengo una cuenta')),
+              FgButton(
+                  label: 'Ya tengo una cuenta',
+                  variant: FgButtonVariant.ghost,
+                  onPressed: _submitting ? null : widget.onLogin),
             ]),
           ),
         ),

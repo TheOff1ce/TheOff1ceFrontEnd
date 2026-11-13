@@ -32,9 +32,7 @@ Future<SalidaDomicilio?> mostrarDomicilioOrden(BuildContext context, DomicilioOr
         curve: FgMotion.ease,
         reverseCurve: FgMotion.easeSalida,
       ),
-      builder: (contexto) => FarmaGoThemed(
-        child: _Contenido(controlador: controlador, compacto: true),
-      ),
+      builder: (contexto) => _Contenido(controlador: controlador, compacto: true),
     );
   }
   return showGeneralDialog<SalidaDomicilio>(
@@ -43,15 +41,13 @@ Future<SalidaDomicilio?> mostrarDomicilioOrden(BuildContext context, DomicilioOr
     barrierLabel: 'Cerrar',
     barrierColor: FgColors.scrim,
     transitionDuration: FgMotion.reducir(context, FgMotion.media),
-    pageBuilder: (contexto, _, __) => FarmaGoThemed(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: FgSize.dialogMd,
-            maxHeight: MediaQuery.sizeOf(contexto).height - FgSpace.sp8 - FgSpace.sp5 * 2,
-          ),
-          child: _Contenido(controlador: controlador, compacto: false),
+    pageBuilder: (contexto, _, __) => Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: FgSize.dialogMd,
+          maxHeight: MediaQuery.sizeOf(contexto).height - FgSpace.sp8 - FgSpace.sp5 * 2,
         ),
+        child: _Contenido(controlador: controlador, compacto: false),
       ),
     ),
     transitionBuilder: (contexto, animacion, _, hijo) {
@@ -147,7 +143,8 @@ class _Asa extends StatelessWidget {
             child: Container(
               width: FgSize.simboloM,
               height: FgBorder.w4,
-              decoration: BoxDecoration(color: FgColors.lineaControl, borderRadius: BorderRadius.circular(FgRadius.pill)),
+              decoration:
+                  BoxDecoration(color: FgColors.lineaControl, borderRadius: BorderRadius.circular(FgRadius.pill)),
             ),
           ),
         ),
@@ -203,7 +200,9 @@ class _Cuerpo extends StatelessWidget {
         return _Lista(
           introduccion: 'Revisando con tu EPS que sigan disponibles…',
           nota: 'Antes de enviar, volvemos a consultar a tu EPS. Si algo cambió, te avisamos y no enviamos nada.',
-          filas: [for (final id in c.medicamentoIds) _Fila(nombre: _med(id)?.nombre ?? id, estado: _EstadoFila.consultando)],
+          filas: [
+            for (final id in c.medicamentoIds) _Fila(nombre: _med(id)?.nombre ?? id, estado: _EstadoFila.consultando)
+          ],
         );
       case FaseDomicilio.listo:
         return Column(
@@ -213,7 +212,9 @@ class _Cuerpo extends StatelessWidget {
               introduccion: 'Tu EPS confirma ${n == 1 ? 'tu medicamento' : 'tus $n medicamentos'}.',
               filas: [
                 for (final (i, id) in c.medicamentoIds.indexed)
-                  _Fila(nombre: _med(id)?.nombre ?? id, estado: i < c.revelados ? _EstadoFila.confirmado : _EstadoFila.consultando),
+                  _Fila(
+                      nombre: _med(id)?.nombre ?? id,
+                      estado: i < c.revelados ? _EstadoFila.confirmado : _EstadoFila.consultando),
               ],
             ),
             const SizedBox(height: FgSpace.sp4),
@@ -223,7 +224,9 @@ class _Cuerpo extends StatelessWidget {
       case FaseDomicilio.enviando:
         return _Lista(
           introduccion: 'Confirmando con tu EPS y enviando…',
-          filas: [for (final id in c.medicamentoIds) _Fila(nombre: _med(id)?.nombre ?? id, estado: _EstadoFila.enviando)],
+          filas: [
+            for (final id in c.medicamentoIds) _Fila(nombre: _med(id)?.nombre ?? id, estado: _EstadoFila.enviando)
+          ],
         );
       case FaseDomicilio.listoConCambios:
       case FaseDomicilio.cambio:
@@ -270,7 +273,9 @@ class _Cuerpo extends StatelessWidget {
             FgBanner(
               kind: FgBannerKind.error,
               title: 'No pudimos enviar tu pedido',
-              message: rechazado ? c.error!.userMessage : 'Domicilios no respondió. Tu selección sigue lista: vuelve a intentarlo.',
+              message: rechazado
+                  ? c.error!.userMessage
+                  : 'Domicilios no respondió. Tu selección sigue lista: vuelve a intentarlo.',
             ),
             const SizedBox(height: FgSpace.sp4),
             _CampoDireccion(controlador: c),
@@ -313,7 +318,8 @@ class _CampoDireccionState extends State<_CampoDireccion> {
       label: 'Dirección de entrega',
       controller: _texto,
       ayuda: 'Calle, número y ciudad. Ahí te llevamos el pedido.',
-      error: vacia || c.direccionValida ? null : 'Escribe la dirección completa, por ejemplo «Calle 100 # 15-20, Bogotá».',
+      error:
+          vacia || c.direccionValida ? null : 'Escribe la dirección completa, por ejemplo «Calle 100 # 15-20, Bogotá».',
       keyboardType: TextInputType.streetAddress,
       autofillHints: const [AutofillHints.fullStreetAddress],
       onChanged: c.cambiarDireccion,
@@ -388,7 +394,8 @@ class _Fila extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(nombre, style: FgText.label.copyWith(fontWeight: FontWeight.w700)),
-                Text(leyenda, style: FgText.caption.copyWith(color: confirmado ? FgColors.cumplidoFg : FgColors.inkSoft)),
+                Text(leyenda,
+                    style: FgText.caption.copyWith(color: confirmado ? FgColors.cumplidoFg : FgColors.inkSoft)),
               ],
             ),
           ),
@@ -483,16 +490,27 @@ class _Pie extends StatelessWidget {
           onPressed: accion,
         );
     final List<Widget> botones = switch (c.fase) {
-      FaseDomicilio.verificando => [secundario('Cancelar'), primario(OrdenesTextos.confirmarPedido, null, cargando: true, cargandoEtiqueta: 'Verificando…')],
-      FaseDomicilio.listo => [secundario('Cancelar'), primario(OrdenesTextos.confirmarPedido, c.direccionValida ? c.confirmar : null)],
+      FaseDomicilio.verificando => [
+          secundario('Cancelar'),
+          primario(OrdenesTextos.confirmarPedido, null, cargando: true, cargandoEtiqueta: 'Verificando…')
+        ],
+      FaseDomicilio.listo => [
+          secundario('Cancelar'),
+          primario(OrdenesTextos.confirmarPedido, c.direccionValida ? c.confirmar : null)
+        ],
       FaseDomicilio.listoConCambios || FaseDomicilio.cambio => [primario('Volver a elegir', () => onSalir())],
-      FaseDomicilio.enviando => [primario(OrdenesTextos.confirmarPedido, null, cargando: true, cargandoEtiqueta: 'Enviando…')],
+      FaseDomicilio.enviando => [
+          primario(OrdenesTextos.confirmarPedido, null, cargando: true, cargandoEtiqueta: 'Enviando…')
+        ],
       FaseDomicilio.exito => [
           secundario('Volver a mis órdenes'),
           primario('Seguir en Domicilios', () => onSalir(SalidaDomicilio.seguirEnDomicilios)),
         ],
       FaseDomicilio.vencida => [primario('Entendido', () => onSalir())],
-      FaseDomicilio.errorEnvio => [secundario('Cancelar'), primario('Reintentar', c.direccionValida ? c.confirmar : null)],
+      FaseDomicilio.errorEnvio => [
+          secundario('Cancelar'),
+          primario('Reintentar', c.direccionValida ? c.confirmar : null)
+        ],
       FaseDomicilio.errorVerificar => [secundario('Cancelar'), primario('Reintentar', c.verificar)],
     };
     return Container(
@@ -509,7 +527,9 @@ class _Pie extends StatelessWidget {
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [for (final (i, b) in botones.indexed) ...[if (i > 0) const SizedBox(width: FgSpace.sp4), b]],
+              children: [
+                for (final (i, b) in botones.indexed) ...[if (i > 0) const SizedBox(width: FgSpace.sp4), b]
+              ],
             ),
     );
   }

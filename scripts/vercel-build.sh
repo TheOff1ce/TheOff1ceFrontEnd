@@ -26,4 +26,6 @@ for name in API_BASE_URL AUTH_BASE_URL PENDIENTES_BASE_URL ORDENES_BASE_URL ORDE
 done
 
 flutter pub get
-flutter build web --release "${defines[@]}"
+# --wasm: los navegadores con WasmGC (Chrome/Edge/Firefox recientes) cargan el renderizador
+# skwasm y main.dart.wasm, más livianos que CanvasKit + JS; los demás usan el JS de respaldo.
+flutter build web --release --wasm "${defines[@]}"

@@ -19,6 +19,7 @@ abstract final class AppNavigation {
           icono: icono,
           etiqueta: etiqueta,
           seleccionado: (activo ?? (p) => p == ruta || p.startsWith('$ruta/'))(path),
+          ruta: ruta,
           onTap: () => go(ruta),
         );
 
@@ -65,5 +66,47 @@ abstract final class AppNavigation {
         // EPS y cualquier otro rol con acceso a pendientes.
         return [inicio, if (pendientes != null) pendientes, cuenta];
     }
+  }
+
+  /// Hasta cuatro destinos para la barra inferior del móvil (manual §8.12), con etiquetas cortas.
+  static List<FgDestino> movil({
+    required String? role,
+    required String path,
+    required void Function(String location) go,
+  }) {
+    FgDestino destino(IconData icono, String etiqueta, String ruta) => FgDestino(
+          icono: icono,
+          etiqueta: etiqueta,
+          seleccionado: path == ruta || path.startsWith('$ruta/'),
+          ruta: ruta,
+          onTap: () => go(ruta),
+        );
+
+    final inicio = destino(Icons.home_outlined, 'Inicio', AppRoutes.home);
+    final cuenta = destino(Icons.account_circle_outlined, 'Cuenta', AppRoutes.account);
+    final pendientes = PendientesRol.fromCode(role) == null
+        ? null
+        : destino(Icons.medication_outlined, 'Pendientes', AppRoutes.pendientes);
+    return switch (role) {
+      'ADMIN' => [
+          inicio,
+          destino(Icons.pending_actions_outlined, 'Domicilios', AppRoutes.adminOrders),
+          destino(Icons.manage_accounts_outlined, 'Usuarios', AppRoutes.adminUsers),
+          cuenta,
+        ],
+      'DELIVERY_DRIVER' => [
+          inicio,
+          destino(Icons.delivery_dining_outlined, 'Disponibles', AppRoutes.driverBoard),
+          if (pendientes != null) pendientes,
+          cuenta,
+        ],
+      'PATIENT' => [
+          inicio,
+          destino(Icons.receipt_long_outlined, 'Domicilios', AppRoutes.myOrders),
+          if (pendientes != null) pendientes,
+          cuenta,
+        ],
+      _ => [inicio, if (pendientes != null) pendientes, cuenta],
+    };
   }
 }

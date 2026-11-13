@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import '../app/theme/app_theme.dart';
 import '../components/delivery_widgets.dart';
 import '../components/farmago/feedback.dart';
-import '../components/feedback.dart';
 import '../hooks/admin_orders_controller.dart';
 import '../types/admin.dart';
 import '../types/delivery.dart';
 import '../types/order.dart';
 import '../utils/delivery_format.dart';
+import '../components/farmago/buttons.dart';
 
 /// Administrators: every home-delivery order (pending by default), with tracking and cancel.
 class AdminOrdersPage extends StatefulWidget {
@@ -170,8 +170,8 @@ class _AdminOrderCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.s),
           Wrap(spacing: AppSpacing.s, runSpacing: AppSpacing.s, children: [
             if (o.deliveryId.isNotEmpty)
-              FilledButton.icon(onPressed: onTrack, icon: const Icon(Icons.map_outlined), label: const Text('Ver en el mapa')),
-            if (canCancel) OutlinedButton(onPressed: onCancel, child: const Text('Cancelar')),
+              FgButton(label: 'Ver en el mapa', icon: Icons.map_outlined, onPressed: onTrack),
+            if (canCancel) FgButton(label: 'Cancelar', variant: FgButtonVariant.secondary, onPressed: onCancel),
           ]),
         ]),
       ),

@@ -6,11 +6,12 @@ import '../app/theme/app_theme.dart';
 import '../auth/auth_controller.dart';
 import '../auth/google_mobile_sign_in.dart';
 import '../components/auth_ui.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../errors/app_error.dart';
 import '../errors/error_mapper.dart';
 import '../utils/constants.dart';
 import '../utils/validators.dart';
+import '../components/farmago/buttons.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
@@ -127,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  Widget build(BuildContext context) =>  LoginLayout(
+  Widget build(BuildContext context) => LoginLayout(
         onBack: widget.onBack,
         title: 'Qué bueno verte.',
         subtitle: 'Ingresa para continuar con tus fórmulas y medicamentos.',
@@ -157,10 +158,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _submitting ? null : widget.onForgotPassword,
-                  child: const Text('¿Olvidaste tu contraseña?'),
-                ),
+                child: FgButton(
+                    label: '¿Olvidaste tu contraseña?',
+                    variant: FgButtonVariant.ghost,
+                    onPressed: _submitting ? null : widget.onForgotPassword),
               ),
               const SizedBox(height: AppSpacing.l),
               BusyButton(label: 'Iniciar sesión', busyLabel: 'Iniciando sesión', busy: _submitting, onPressed: _submit),
@@ -183,10 +184,10 @@ class _LoginPageState extends State<LoginPage> {
                   textAlign: TextAlign.center,
                 ),
               const SizedBox(height: AppSpacing.l),
-              TextButton(
-                onPressed: _submitting ? null : widget.onRegister,
-                child: const Text('¿No tienes una cuenta? Crear cuenta'),
-              ),
+              FgButton(
+                  label: '¿No tienes una cuenta? Crear cuenta',
+                  variant: FgButtonVariant.ghost,
+                  onPressed: _submitting ? null : widget.onRegister),
             ]),
           ),
         ),

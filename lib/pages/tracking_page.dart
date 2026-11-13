@@ -6,7 +6,6 @@ import '../components/delivery_map.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/layout.dart';
 import '../components/farmago/trail.dart';
-import '../components/feedback.dart';
 import '../errors/app_error.dart';
 import '../hooks/tracking_controller.dart';
 import '../types/delivery.dart';
@@ -50,32 +49,30 @@ class _TrackingPageState extends State<TrackingPage> {
   }
 
   @override
-  Widget build(BuildContext context) => FarmaGoThemed(
-        child: ListenableBuilder(
-          listenable: _controller,
-          builder: (context, _) {
-            final delivery = _controller.delivery;
-            final error = _controller.error;
-            return FgScreen(
-              titulo: 'Seguimiento',
-              onBack: widget.onBack,
-              onRefresh: _controller.start,
-              children: [
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: FgSpace.sp5),
-                    child: FgBanner(
-                      kind: FgBannerKind.error,
-                      message: error.userMessage,
-                      referencia: error.showsReference ? error.referenceId : null,
-                    ),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          final delivery = _controller.delivery;
+          final error = _controller.error;
+          return FgScreen(
+            titulo: 'Seguimiento',
+            onBack: widget.onBack,
+            onRefresh: _controller.start,
+            children: [
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: FgSpace.sp5),
+                  child: FgBanner(
+                    kind: FgBannerKind.error,
+                    message: error.userMessage,
+                    referencia: error.showsReference ? error.referenceId : null,
                   ),
-                if (_controller.loading && delivery == null) const Center(child: DelayedSpinner()),
-                if (delivery != null) ..._contenido(delivery),
-              ],
-            );
-          },
-        ),
+                ),
+              if (_controller.loading && delivery == null) const Center(child: DelayedSpinner()),
+              if (delivery != null) ..._contenido(delivery),
+            ],
+          );
+        },
       );
 
   Future<AppError?> _confirmar(String code) async {
@@ -142,7 +139,9 @@ class _TrackingPageState extends State<TrackingPage> {
       else
         FgTrail(
           etiquetas: [for (final paso in DeliveryStatus.steps) paso.label],
-          actual: d.status == DeliveryStatus.delivered ? DeliveryStatus.steps.length : DeliveryStatus.steps.indexOf(d.status),
+          actual: d.status == DeliveryStatus.delivered
+              ? DeliveryStatus.steps.length
+              : DeliveryStatus.steps.indexOf(d.status),
         ),
       const SizedBox(height: FgSpace.sp7),
       _Dato(etiqueta: 'Farmacia', valor: d.origin.address),

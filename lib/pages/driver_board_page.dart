@@ -4,11 +4,11 @@ import '../app/theme/farmago_tokens.dart';
 import '../components/delivery_widgets.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/buttons.dart';
-import '../components/feedback.dart';
 import '../hooks/driver_board_controller.dart';
 import '../types/delivery.dart';
 import '../types/order.dart';
-import '../utils/delivery_format.dart';
+import '../utils/delivery_format.dart';
+import '../components/farmago/card.dart';
 
 /// Driver board: published orders to take, and the deliveries already taken.
 class DriverBoardPage extends StatefulWidget {

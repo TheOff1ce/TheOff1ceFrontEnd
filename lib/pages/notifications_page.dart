@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
 import '../components/farmago/estampado.dart';
-import '../components/feedback.dart';
+import '../components/farmago/feedback.dart';
 import '../notifications/notification_controller.dart';
 import '../notifications/notification_item.dart';
+import '../components/farmago/buttons.dart';
 
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key, required this.notifications, required this.onBack});
@@ -18,7 +19,8 @@ class NotificationsPage extends StatelessWidget {
           title: const Text('Notificaciones'),
           leading: IconButton(tooltip: 'Volver al inicio', onPressed: onBack, icon: const Icon(Icons.arrow_back)),
         ),
-        body: FgFondo(child: SafeArea(
+        body: FgFondo(
+            child: SafeArea(
           child: ListenableBuilder(
             listenable: notifications,
             builder: (context, _) => Center(
@@ -107,7 +109,10 @@ class _NotificationContent extends StatelessWidget {
             ),
           ),
           if (notifications.unreadCount > 0)
-            TextButton(onPressed: notifications.markAllAsRead, child: const Text('Marcar todas como leídas')),
+            FgButton(
+                label: 'Marcar todas como leídas',
+                variant: FgButtonVariant.ghost,
+                onPressed: notifications.markAllAsRead),
         ]),
         const SizedBox(height: AppSpacing.xs),
         Text(
@@ -117,11 +122,11 @@ class _NotificationContent extends StatelessWidget {
         if (notifications.hasReadItems)
           Align(
             alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: notifications.clearRead,
-              icon: const Icon(Icons.clear_all, size: 18),
-              label: const Text('Limpiar leídas'),
-            ),
+            child: FgButton(
+                label: 'Limpiar leídas',
+                icon: Icons.clear_all,
+                variant: FgButtonVariant.ghost,
+                onPressed: notifications.clearRead),
           ),
         const SizedBox(height: AppSpacing.s),
         for (final item in notifications.items)

@@ -1,3 +1,4 @@
+import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/notifications/notification_controller.dart';
 import 'package:farma_go/notifications/notification_item.dart';
 import 'package:farma_go/notifications/notification_repository.dart';
@@ -59,7 +60,7 @@ void main() {
 
   testWidgets('notification bell exposes its unread count and action', (tester) async {
     var opened = false;
-    await tester.pumpWidget(MaterialApp(
+    await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
       home: Scaffold(body: NotificationBellButton(unreadCount: 2, onPressed: () => opened = true)),
     ));
     expect(find.byIcon(Icons.notifications_none), findsOneWidget);

@@ -86,47 +86,45 @@ class _OrdenesPageState extends State<OrdenesPage> {
   }
 
   @override
-  Widget build(BuildContext context) => FarmaGoThemed(
-        child: ListenableBuilder(
-          listenable: _c,
-          builder: (context, _) {
-            final ancho = MediaQuery.sizeOf(context).width;
-            final compacto = FgBreakpoint.esCompacto(ancho);
-            final seleccion = _c.seleccion;
-            final orden = _c.ordenSeleccionada;
-            return FgScreen(
-              titulo: OrdenesTextos.tituloPantalla,
-              onBack: widget.onBack,
-              onRefresh: _c.recargar,
-              tituloEnContenido: false,
-              anchoMaximo: FgSize.contenidoPaciente,
-              barraAccionConEntrada: true,
-              barraAccion: seleccion == null || orden == null
-                  ? null
-                  : DomicilioSeleccionBar(
-                      cantidad: seleccion.ids.length,
-                      nombres: [
-                        for (final m in orden.medicamentos)
-                          if (seleccion.ids.contains(m.id)) m.nombre,
-                      ],
-                      avisoUnaOrden: _c.seleccionCambioDeOrden,
-                      onQuitar: _c.quitarSeleccion,
-                      onPedir: _pedir,
-                    ),
-              children: [
-                _Cuerpo(
-                  c: _c,
-                  compacto: compacto,
-                  claveLista: _claveLista,
-                  onVerCuales: _verCuales,
-                  onRevisarDatos: widget.onRevisarDatos,
-                ),
-                // La barra de pedido puede ser más alta que los 88 px que reserva el marco.
-                if (seleccion != null) const SizedBox(height: FgSpace.sp8),
-              ],
-            );
-          },
-        ),
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: _c,
+        builder: (context, _) {
+          final ancho = MediaQuery.sizeOf(context).width;
+          final compacto = FgBreakpoint.esCompacto(ancho);
+          final seleccion = _c.seleccion;
+          final orden = _c.ordenSeleccionada;
+          return FgScreen(
+            titulo: OrdenesTextos.tituloPantalla,
+            onBack: widget.onBack,
+            onRefresh: _c.recargar,
+            tituloEnContenido: false,
+            anchoMaximo: FgSize.contenidoPaciente,
+            barraAccionConEntrada: true,
+            barraAccion: seleccion == null || orden == null
+                ? null
+                : DomicilioSeleccionBar(
+                    cantidad: seleccion.ids.length,
+                    nombres: [
+                      for (final m in orden.medicamentos)
+                        if (seleccion.ids.contains(m.id)) m.nombre,
+                    ],
+                    avisoUnaOrden: _c.seleccionCambioDeOrden,
+                    onQuitar: _c.quitarSeleccion,
+                    onPedir: _pedir,
+                  ),
+            children: [
+              _Cuerpo(
+                c: _c,
+                compacto: compacto,
+                claveLista: _claveLista,
+                onVerCuales: _verCuales,
+                onRevisarDatos: widget.onRevisarDatos,
+              ),
+              // La barra de pedido puede ser más alta que los 88 px que reserva el marco.
+              if (seleccion != null) const SizedBox(height: FgSpace.sp8),
+            ],
+          );
+        },
       );
 }
 
@@ -233,9 +231,30 @@ class _Ordenes extends StatelessWidget {
     final respuesta = c.respuesta!;
     final visibles = c.visibles;
     final grupos = <(String, String?, List<Orden>)>[
-      (OrdenesTextos.vigentes, null, [for (final o in visibles) if (o.vigencia != Vigencia.vencida && o.vencimiento != null) o]),
-      (OrdenesTextos.sinVencimiento, null, [for (final o in visibles) if (o.vigencia != Vigencia.vencida && o.vencimiento == null) o]),
-      (OrdenesTextos.vencidasGrupo, OrdenesTextos.soloConsulta, [for (final o in visibles) if (o.vigencia == Vigencia.vencida) o]),
+      (
+        OrdenesTextos.vigentes,
+        null,
+        [
+          for (final o in visibles)
+            if (o.vigencia != Vigencia.vencida && o.vencimiento != null) o
+        ]
+      ),
+      (
+        OrdenesTextos.sinVencimiento,
+        null,
+        [
+          for (final o in visibles)
+            if (o.vigencia != Vigencia.vencida && o.vencimiento == null) o
+        ]
+      ),
+      (
+        OrdenesTextos.vencidasGrupo,
+        OrdenesTextos.soloConsulta,
+        [
+          for (final o in visibles)
+            if (o.vigencia == Vigencia.vencida) o
+        ]
+      ),
     ];
     var k = 0;
     final hueco = compacto ? FgSpace.sp4 : FgSpace.sp5;
@@ -347,9 +366,16 @@ class _Filtros extends StatelessWidget {
     ];
     final fila = Row(
       mainAxisSize: MainAxisSize.min,
-      children: [for (final (i, chip) in chips.indexed) ...[if (i > 0) const SizedBox(width: FgSpace.sp2), chip]],
+      children: [
+        for (final (i, chip) in chips.indexed) ...[if (i > 0) const SizedBox(width: FgSpace.sp2), chip]
+      ],
     );
-    if (!compacto) return Align(alignment: Alignment.centerLeft, child: Wrap(spacing: FgSpace.sp2, runSpacing: FgSpace.sp2, children: chips));
+    if (!compacto) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Wrap(spacing: FgSpace.sp2, runSpacing: FgSpace.sp2, children: chips),
+      );
+    }
     // Única excepción del manual: los chips se desplazan en horizontal en móvil.
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -441,7 +467,8 @@ class _ErrorVista extends StatelessWidget {
               FgBanner(
                 kind: FgBannerKind.error,
                 title: 'No pudimos consultar tu EPS en este momento',
-                message: 'Para no mostrarte datos viejos, no vemos consultas anteriores. Vuelve a intentarlo en unos minutos.',
+                message:
+                    'Para no mostrarte datos viejos, no vemos consultas anteriores. Vuelve a intentarlo en unos minutos.',
                 referencia: vista.error.showsReference ? vista.error.referenceId : null,
               ),
               const SizedBox(height: FgSpace.sp4),

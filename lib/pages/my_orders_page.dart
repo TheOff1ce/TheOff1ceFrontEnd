@@ -5,11 +5,11 @@ import '../components/delivery_widgets.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/dialogs.dart';
-import '../components/feedback.dart';
 import '../hooks/patient_orders_controller.dart';
 import '../types/delivery.dart';
 import '../types/order.dart';
-import '../utils/delivery_format.dart';
+import '../utils/delivery_format.dart';
+import '../components/farmago/card.dart';
 
 /// Patient's home-delivery requests, with access to live tracking.
 class MyOrdersPage extends StatefulWidget {
