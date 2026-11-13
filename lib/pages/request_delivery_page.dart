@@ -18,7 +18,11 @@ class RequestDeliveryPage extends StatefulWidget {
     required this.onCreated,
     required this.onBack,
     this.defaultAddress,
+    this.initialItems = const [],
   });
+
+  /// Productos que ya vienen escritos (p. ej. desde el análisis de la fórmula).
+  final List<OrderItem> initialItems;
 
   /// Dirección guardada en el perfil: se escribe sola para que la persona no la repita.
   final String? defaultAddress;
@@ -32,8 +36,12 @@ class RequestDeliveryPage extends StatefulWidget {
 }
 
 class _ItemFields {
-  final name = TextEditingController();
-  int quantity = 1;
+  _ItemFields([OrderItem? item])
+      : name = TextEditingController(text: item?.name ?? ''),
+        quantity = (item?.quantity ?? 1).clamp(QuantityStepper.min, QuantityStepper.max);
+
+  final TextEditingController name;
+  int quantity;
 
   void dispose() => name.dispose();
 }
@@ -45,7 +53,12 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
   final _pharmacyAddress = TextEditingController();
   late final _address = TextEditingController(text: widget.defaultAddress ?? '');
   final _notes = TextEditingController();
-  final _items = [_ItemFields()];
+  late final _items = widget.initialItems.isEmpty
+      ? [_ItemFields()]
+      : [for (final item in widget.initialItems.take(maxItems)) _ItemFields(item)];
+  late final _itemsIniciales = _firma();
+
+  String _firma() => [for (final i in _items) '${i.name.text}×${i.quantity}'].join('|');
 
   @override
   void dispose() {
@@ -71,7 +84,7 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
       _pharmacyAddress.text.isNotEmpty ||
       _notes.text.isNotEmpty ||
       _address.text != (widget.defaultAddress ?? '') ||
-      _items.any((i) => i.name.text.isNotEmpty);
+      (widget.initialItems.isEmpty ? _items.any((i) => i.name.text.isNotEmpty) : _firma() != _itemsIniciales);
 
   /// Salir con datos escritos pide confirmación: nadie pierde el formulario por un toque.
   Future<void> _back() async {
@@ -127,6 +140,14 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
                 style: FgText.bodyLg,
               ),
               const SizedBox(height: FgSpace.sp5),
+              if (widget.initialItems.isNotEmpty) ...[
+                const FgBanner(
+                  kind: FgBannerKind.info,
+                  title: 'Agregamos los medicamentos de tu fórmula',
+                  message: 'Revisa los nombres y ajusta las cantidades antes de pedir.',
+                ),
+                const SizedBox(height: FgSpace.sp4),
+              ],
               ErrorBanner(error: widget.controller.error),
               // Mismas cajas de texto que el resto de la app (no la línea inferior por defecto).
               Builder(

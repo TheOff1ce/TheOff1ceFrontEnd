@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/farmago_tokens.dart';
+import '../components/abrir_navegacion.dart';
 import '../components/delivery_code.dart';
 import '../components/delivery_map.dart';
 import '../components/farmago/buttons.dart';
@@ -131,6 +132,10 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
         ),
       const SizedBox(height: FgSpace.sp5),
       DeliveryMap(delivery: d, height: 240),
+      if (NavegacionExterna.destinoActual(d) != null) ...[
+        const SizedBox(height: FgSpace.sp3),
+        AbrirNavegacion(delivery: d),
+      ],
       if (_controller.lastSentAt != null) ...[
         const SizedBox(height: FgSpace.sp2),
         Text('Última ubicación enviada: ${DeliveryFormat.clock(_controller.lastSentAt!)}', style: FgText.caption),

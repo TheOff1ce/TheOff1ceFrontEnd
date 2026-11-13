@@ -1,4 +1,5 @@
 import 'package:farma_go/components/farmago/buttons.dart';
+import 'package:farma_go/hooks/eps_resumen_controller.dart';
 import 'package:farma_go/hooks/patient_home_controller.dart';
 import 'package:farma_go/types/delivery.dart';
 import 'package:farma_go/types/order.dart';
@@ -6,6 +7,7 @@ import 'package:farma_go/types/pendiente.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'pendientes_test.dart' show ok, paginaJson, resumenJson, serviceWith;
 import 'support/home_fakes.dart';
 
 PendienteResumen _pendiente(String id, String cumplimiento, String fechaLimite) => PendienteResumen.fromJson({
@@ -189,6 +191,47 @@ void main() {
       expect(find.text('Mis domicilios'), findsNothing);
       await tester.tap(find.text('Domicilios'));
       expect(abiertos, 1);
+    });
+  });
+
+  group('inicio de la EPS', () {
+    testWidgets('muestra las cifras del plazo y abre el más urgente', (tester) async {
+      final service = serviceWith((request) async {
+        final entregado = request.url.queryParameters['estadoEntrega'] == 'ENTREGADO';
+        return ok(paginaJson(
+          entregado
+              ? [
+                  resumenJson(id: 'e1', estadoEntrega: 'ENTREGADO', cumplimiento: 'CUMPLIDO', fechaEntrega: '2026-10-25T10:00:00.000Z'),
+                  resumenJson(id: 'e2', estadoEntrega: 'ENTREGADO', cumplimiento: 'INCUMPLIDO', fechaEntrega: '2026-10-27T10:00:00.000Z'),
+                ]
+              : [
+                  resumenJson(id: 'p1', orden: 'PED-2026-000777', evaluadoEn: '2026-10-26T10:15:00.000Z'),
+                  resumenJson(id: 'p2', cumplimiento: 'INCUMPLIDO', evaluadoEn: '2026-10-27T00:00:00.000Z'),
+                ],
+          limite: 100,
+        ));
+      });
+      Finder cifra(String label) => find.byWidgetPredicate((w) => w is Semantics && w.properties.label == label);
+      final abiertos = <String>[];
+      final resumen = EpsResumenController(service);
+      await montarInicio(
+        tester,
+        role: 'EPS',
+        name: 'Marta',
+        ancho: 1280,
+        resumenEps: resumen,
+        onPendienteDetalle: abiertos.add,
+      );
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pumpAndSettle();
+      expect(find.text('Plazo de 48 h'), findsOneWidget);
+      expect(cifra('Vencen en menos de 12 h: 1'), findsOneWidget);
+      expect(cifra('Vencidos sin entregar: 1'), findsOneWidget);
+      expect(cifra('Entregados a tiempo (1 de 2): 50 %'), findsOneWidget);
+      // Ya no muestra el texto del repartidor.
+      expect(find.text('Domicilios disponibles'), findsNothing);
+      await tester.tap(find.text('PED-2026-000777'));
+      expect(abiertos, ['p1']);
     });
   });
 }

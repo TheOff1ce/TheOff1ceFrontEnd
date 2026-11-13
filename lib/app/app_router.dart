@@ -29,6 +29,7 @@ import '../pages/tracking_page.dart';
 import '../pages/complete_profile_page.dart';
 import '../pages/upload_page.dart';
 import '../pages/verify_email_page.dart';
+import '../types/order.dart';
 import '../utils/pendientes_rol.dart';
 import 'app_dependencies.dart';
 import 'app_navigation.dart';
@@ -276,6 +277,7 @@ class AppRouter {
             auth: _auth,
             notifications: _deps.notifications,
             inicio: _deps.patientHome,
+            resumenEps: _auth.user?.role == 'EPS' ? _deps.epsResumen : null,
             onTracking: (deliveryId) => context.push(AppRoutes.tracking(deliveryId)),
             onPendienteDetalle: (pendienteId) => context.push(AppRoutes.pendiente(pendienteId)),
             onAnalyze: () => context.push(AppRoutes.uploadPrescription),
@@ -336,6 +338,10 @@ class AppRouter {
                 _deps.prescriptions.reset();
                 context.go(AppRoutes.uploadPrescription);
               },
+              // Solo el paciente pide domicilios (las demás rutas de pedido lo exigen también).
+              onRequestDelivery: _auth.user?.role == 'PATIENT'
+                  ? (items) => context.push(AppRoutes.requestDelivery, extra: items)
+                  : null,
             ));
           },
         ),
@@ -422,6 +428,7 @@ class AppRouter {
           builder: (context, state) => _gate(RequestDeliveryPage(
             controller: _deps.patientOrders,
             defaultAddress: _auth.user?.profile.address,
+            initialItems: state.extra is List<OrderItem> ? state.extra! as List<OrderItem> : const [],
             onCreated: (order) => context.pushReplacement(AppRoutes.tracking(order.deliveryId)),
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.myOrders),
           )),

@@ -106,6 +106,13 @@ void main() {
     expect(find.text('En curso'), findsNothing);
     expect(find.text('Llegada estimada'), findsNothing);
     expect(find.text('La ubicación del repartidor ya no se comparte.'), findsOneWidget);
+    // Recién entregado y sin calificar: el paciente puede dejar sus estrellas.
+    expect(find.text('¿Cómo estuvo la entrega?'), findsOneWidget);
+  });
+
+  testWidgets('el administrador no ve el formulario de calificación', (tester) async {
+    await _montar(tester, DeliveryStatus.delivered, accionesDelPaciente: false);
+    expect(find.text('¿Cómo estuvo la entrega?'), findsNothing);
   });
 
   testWidgets('cancelado: aparece como estado terminal, no como un paso del trayecto', (tester) async {

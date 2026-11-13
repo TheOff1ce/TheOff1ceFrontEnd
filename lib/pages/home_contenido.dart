@@ -47,7 +47,11 @@ class _Contenido extends StatelessWidget {
           LayoutBuilder(builder: (context, constraints) {
             // El estado del paciente va en un panel elevado: jerarquía funcional, no decoración.
             // El rol con una sola acción no lo necesita y la acción conserva todo el ancho.
-            final foco = pantalla.isPatient ? _Panel(child: _focoPaciente()) : _focoRol();
+            final foco = pantalla.isPatient
+                ? _Panel(child: _focoPaciente())
+                : pantalla.isEps && _w.resumenEps != null
+                    ? _FocoEps(pantalla: pantalla, movil: movil)
+                    : _focoRol();
             final saludo = _saludo();
             final dosColumnas =
                 !movil && constraints.maxWidth >= 880 && pantalla.isPatient && _w.inicio.foco is! FocoVacio;
@@ -87,7 +91,9 @@ class _Contenido extends StatelessWidget {
         ? 'Administra los usuarios y los domicilios de FarmaGo.'
         : pantalla.isDriver
             ? 'Aquí ves los domicilios que puedes tomar y los que ya llevas.'
-            : 'Aquí puedes ver lo que más importa de tu tratamiento.';
+            : pantalla.isEps
+                ? 'Así va el plazo de 48 h de los pendientes de tus pacientes.'
+                : 'Aquí puedes ver lo que más importa de tu tratamiento.';
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Semantics(
         header: true,
