@@ -18,7 +18,11 @@ void main() {
     expect(etiquetas('ADMIN'), containsAll(['Domicilios pendientes', 'Usuarios y roles', 'Calificaciones']));
     expect(etiquetas('DELIVERY_DRIVER'), contains('Domicilios disponibles'));
     expect(etiquetas('DELIVERY_DRIVER'), isNot(contains('Mis domicilios')));
-    expect(etiquetas('EPS'), ['Inicio', 'Pendientes', 'Mi cuenta']);
+    expect(etiquetas('EPS'), ['Inicio', 'Pendientes']);
+    // «Mi cuenta» ya no es un destino: va en el pie de la barra, junto a «Cerrar sesión».
+    for (final rol in ['PATIENT', 'ADMIN', 'DELIVERY_DRIVER', 'EPS']) {
+      expect(etiquetas(rol), isNot(contains('Mi cuenta')));
+    }
   });
 
   test('el destino activo sigue a la ruta, también en pantallas internas', () {
@@ -35,7 +39,7 @@ void main() {
   test('tocar un destino navega a su ruta', () {
     final visitadas = <String>[];
     final destinos = AppNavigation.lateral(role: 'PATIENT', path: AppRoutes.home, go: visitadas.add);
-    destinos.firstWhere((d) => d.etiqueta == 'Mi cuenta').onTap();
-    expect(visitadas, [AppRoutes.account]);
+    destinos.firstWhere((d) => d.etiqueta == 'Mis domicilios').onTap();
+    expect(visitadas, [AppRoutes.myOrders]);
   });
 }

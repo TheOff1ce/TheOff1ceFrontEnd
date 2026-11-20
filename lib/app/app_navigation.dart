@@ -24,7 +24,6 @@ abstract final class AppNavigation {
         );
 
     final inicio = destino(Icons.home_outlined, 'Inicio', AppRoutes.home);
-    final cuenta = destino(Icons.account_circle_outlined, 'Mi cuenta', AppRoutes.account);
     final rolPendientes = PendientesRol.fromCode(role);
     final pendientes = rolPendientes == null
         ? null
@@ -38,14 +37,12 @@ abstract final class AppNavigation {
           destino(Icons.manage_accounts_outlined, 'Usuarios y roles', AppRoutes.adminUsers),
           destino(Icons.star_outline_rounded, 'Calificaciones', AppRoutes.adminRatings),
           destino(Icons.document_scanner_outlined, 'Analizar fórmula', AppRoutes.uploadPrescription),
-          cuenta,
         ];
       case 'DELIVERY_DRIVER':
         return [
           inicio,
           destino(Icons.delivery_dining_outlined, 'Domicilios disponibles', AppRoutes.driverBoard),
           if (pendientes != null) pendientes,
-          cuenta,
         ];
       case 'PATIENT':
         return [
@@ -61,11 +58,10 @@ abstract final class AppNavigation {
             activo: (p) => p == AppRoutes.myOrders || p.startsWith('${AppRoutes.myOrders}/tracking/'),
           ),
           if (pendientes != null) pendientes,
-          cuenta,
         ];
       default:
         // EPS y cualquier otro rol con acceso a pendientes.
-        return [inicio, if (pendientes != null) pendientes, cuenta];
+        return [inicio, if (pendientes != null) pendientes];
     }
   }
 
