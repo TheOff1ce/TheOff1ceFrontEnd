@@ -122,6 +122,12 @@ class _HomePageState extends State<HomePage> {
             titulo: 'Inicio',
             destinos: _destinos(),
             destinosMovil: _destinosMovil(),
+            pie: FgPieLateral(
+              nombre: widget.auth.user?.name ?? '',
+              rol: widget.auth.user?.roleLabel ?? '',
+              onCuenta: widget.onAccount,
+              onCerrarSesion: widget.auth.logout,
+            ),
             accionesSuperiores: [
               ListenableBuilder(
                 listenable: widget.notifications,
