@@ -122,12 +122,7 @@ class _HomePageState extends State<HomePage> {
             titulo: 'Inicio',
             destinos: _destinos(),
             destinosMovil: _destinosMovil(),
-            pie: FgPieLateral(
-              nombre: widget.auth.user?.name ?? '',
-              rol: widget.auth.user?.roleLabel ?? '',
-              onCuenta: widget.onAccount,
-              onCerrarSesion: widget.auth.logout,
-            ),
+            pie: FgPieLateral(onCerrarSesion: widget.auth.logout),
             accionesSuperiores: [
               ListenableBuilder(
                 listenable: widget.notifications,
@@ -136,7 +131,12 @@ class _HomePageState extends State<HomePage> {
                   onPressed: widget.onNotifications,
                 ),
               ),
-              FgIconButton(icon: Icons.account_circle_outlined, tooltip: 'Mi cuenta', onPressed: widget.onAccount),
+              // Quién tiene la sesión abierta, junto a las notificaciones; abre «Mi cuenta».
+              FgCuentaChip(
+                nombre: widget.auth.user?.name ?? '',
+                rol: widget.auth.user?.roleLabel ?? '',
+                onTap: widget.onAccount,
+              ),
             ],
             cuerpo: _Contenido(pantalla: this, movil: false, ancho: ancho),
             cuerpoMovil: _Contenido(pantalla: this, movil: true, ancho: ancho),

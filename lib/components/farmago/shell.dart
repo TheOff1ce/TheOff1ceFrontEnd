@@ -24,26 +24,12 @@ class FgDestino {
   final String? ruta;
 }
 
-/// Pie de la barra lateral: quién tiene la sesión abierta (lleva a «Mi cuenta») y «Cerrar sesión»,
-/// siempre a la vista abajo, lejos de la navegación para no tocarlo por error.
+/// Pie de la barra lateral: «Cerrar sesión», siempre a la vista abajo y lejos de la navegación para
+/// no tocarlo por error. Quién tiene la sesión abierta se muestra arriba ([FgCuentaChip]).
 class FgPieLateral {
-  const FgPieLateral({
-    required this.nombre,
-    required this.rol,
-    required this.onCuenta,
-    required this.onCerrarSesion,
-    this.cuentaActiva = false,
-  });
+  const FgPieLateral({required this.onCerrarSesion});
 
-  final String nombre;
-
-  /// Rol legible («Paciente», «Repartidor»…).
-  final String rol;
-  final VoidCallback onCuenta;
   final Future<void> Function() onCerrarSesion;
-
-  /// La pantalla actual es «Mi cuenta».
-  final bool cuentaActiva;
 }
 
 /// Marca el subárbol que ya tiene la barra lateral fija de la app ([FgNavLateral]). Así
@@ -324,15 +310,12 @@ class _PieLateralState extends State<_PieLateral> {
 
   @override
   Widget build(BuildContext context) {
-    final pie = widget.pie;
     return Container(
       padding: const EdgeInsets.only(top: FgSpace.sp3),
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        _Persona(pie: pie, colapsada: widget.colapsada),
-        const SizedBox(height: FgSpace.sp1),
         _ItemLateral(
           colapsada: widget.colapsada,
           destino: FgDestino(
@@ -346,18 +329,22 @@ class _PieLateralState extends State<_PieLateral> {
   }
 }
 
-/// Quién tiene la sesión abierta: inicial, nombre y rol. Tocarlo abre «Mi cuenta».
-class _Persona extends StatefulWidget {
-  const _Persona({required this.pie, required this.colapsada});
+/// Quién tiene la sesión abierta, en la barra superior junto a las notificaciones: inicial, nombre
+/// y rol. Tocarlo abre «Mi cuenta». En pantallas angostas queda solo la inicial.
+class FgCuentaChip extends StatefulWidget {
+  const FgCuentaChip({super.key, required this.nombre, required this.rol, required this.onTap});
 
-  final FgPieLateral pie;
-  final bool colapsada;
+  final String nombre;
+
+  /// Rol legible («Paciente», «Repartidor»…).
+  final String rol;
+  final VoidCallback onTap;
 
   @override
-  State<_Persona> createState() => _PersonaState();
+  State<FgCuentaChip> createState() => _FgCuentaChipState();
 }
 
-class _PersonaState extends State<_Persona> {
+class _FgCuentaChipState extends State<FgCuentaChip> {
   final _focus = FocusNode();
 
   @override
@@ -368,69 +355,58 @@ class _PersonaState extends State<_Persona> {
 
   @override
   Widget build(BuildContext context) {
-    final pie = widget.pie;
-    final nombre = pie.nombre.trim();
+    final nombre = widget.nombre.trim();
     final inicial = nombre.isEmpty ? '?' : nombre.characters.first.toUpperCase();
-    final activo = pie.cuentaActiva;
+    final compacto = MediaQuery.sizeOf(context).width < FgBreakpoint.desktop;
     final avatar = Container(
       width: FgSize.ctrlSm,
       height: FgSize.ctrlSm,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: activo ? FgColors.azul600 : FgColors.azul100,
-        shape: BoxShape.circle,
-      ),
-      child: Text(
-        inicial,
-        style: FgText.label.copyWith(color: activo ? FgColors.blanco : FgColors.azul800, fontWeight: FgWeight.bold),
-      ),
+      decoration: const BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
+      child: Text(inicial, style: FgText.label.copyWith(color: FgColors.azul800, fontWeight: FgWeight.bold)),
     );
-    final contenido = Container(
-      constraints: const BoxConstraints(minHeight: FgSize.ctrlMd),
-      padding: EdgeInsets.symmetric(horizontal: widget.colapsada ? 0 : FgSpace.sp2, vertical: FgSpace.sp1),
-      alignment: widget.colapsada ? Alignment.center : Alignment.centerLeft,
-      decoration: BoxDecoration(
-        color: activo ? FgColors.azul100 : Colors.transparent,
-        borderRadius: BorderRadius.circular(FgRadius.md),
-      ),
-      child: widget.colapsada
-          ? avatar
-          : Row(children: [
-              avatar,
-              const SizedBox(width: FgSpace.sp3),
-              Expanded(
-                child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(nombre.isEmpty ? 'Mi cuenta' : nombre,
-                      style: FgText.label, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  Text(pie.rol, style: FgText.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
-                ]),
-              ),
+    final contenido = Padding(
+      padding: EdgeInsets.fromLTRB(FgSpace.sp1, FgSpace.sp1, compacto ? FgSpace.sp1 : FgSpace.sp3, FgSpace.sp1),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        avatar,
+        if (!compacto) ...[
+          const SizedBox(width: FgSpace.sp3),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 200),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(nombre.isEmpty ? 'Mi cuenta' : nombre,
+                  style: FgText.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(widget.rol, style: FgText.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
             ]),
+          ),
+        ],
+      ]),
     );
-    final item = _Presionable(
-      child: Semantics(
-        button: true,
-        selected: activo,
-        label: 'Mi cuenta. ${nombre.isEmpty ? '' : '$nombre, '}${pie.rol}',
-        excludeSemantics: true,
-        child: FgFocusRing(
-          focusNode: _focus,
-          radius: FgRadius.md,
-          child: Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(FgRadius.md),
-            child: InkWell(
-              focusNode: _focus,
-              borderRadius: BorderRadius.circular(FgRadius.md),
-              onTap: pie.onCuenta,
-              hoverColor: activo ? FgColors.azul200 : FgColors.azul50,
-              child: contenido,
+    return Tooltip(
+      message: 'Mi cuenta',
+      child: _Presionable(
+        child: Semantics(
+          button: true,
+          label: 'Mi cuenta. ${nombre.isEmpty ? '' : '$nombre, '}${widget.rol}',
+          excludeSemantics: true,
+          child: FgFocusRing(
+            focusNode: _focus,
+            radius: FgRadius.pill,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(FgRadius.pill),
+              child: InkWell(
+                focusNode: _focus,
+                borderRadius: BorderRadius.circular(FgRadius.pill),
+                onTap: widget.onTap,
+                hoverColor: FgColors.azul50,
+                child: ConstrainedBox(constraints: const BoxConstraints(minHeight: FgSize.ctrlMd), child: contenido),
+              ),
             ),
           ),
         ),
       ),
     );
-    return Tooltip(message: widget.colapsada ? 'Mi cuenta: $nombre' : 'Ver mi cuenta', child: item);
   }
 }
 

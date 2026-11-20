@@ -169,15 +169,8 @@ class AppRouter {
           if (_auth.status != AuthStatus.authenticated || user == null) return child;
           return FgNavLateral(
             destinos: AppNavigation.lateral(role: user.role, path: state.uri.path, go: context.go),
-            // «Mi cuenta» va en el pie (nombre y rol) junto a «Cerrar sesión»; al cerrar la sesión el
-            // redirect lleva al inicio de sesión.
-            pie: FgPieLateral(
-              nombre: user.name,
-              rol: user.roleLabel,
-              cuentaActiva: state.uri.path == AppRoutes.account,
-              onCuenta: () => context.go(AppRoutes.account),
-              onCerrarSesion: _auth.logout,
-            ),
+            // «Cerrar sesión» al pie de la barra; al cerrar la sesión el redirect lleva al inicio de sesión.
+            pie: FgPieLateral(onCerrarSesion: _auth.logout),
             child: child,
           );
         },
