@@ -24,6 +24,28 @@ class FgDestino {
   final String? ruta;
 }
 
+/// Pie de la barra lateral: quién tiene la sesión abierta (lleva a «Mi cuenta») y «Cerrar sesión»,
+/// siempre a la vista abajo, lejos de la navegación para no tocarlo por error.
+class FgPieLateral {
+  const FgPieLateral({
+    required this.nombre,
+    required this.rol,
+    required this.onCuenta,
+    required this.onCerrarSesion,
+    this.cuentaActiva = false,
+  });
+
+  final String nombre;
+
+  /// Rol legible («Paciente», «Repartidor»…).
+  final String rol;
+  final VoidCallback onCuenta;
+  final Future<void> Function() onCerrarSesion;
+
+  /// La pantalla actual es «Mi cuenta».
+  final bool cuentaActiva;
+}
+
 /// Marca el subárbol que ya tiene la barra lateral fija de la app ([FgNavLateral]). Así
 /// [FgAppShell] y [FgScreen] no dibujan una segunda barra y adaptan su encabezado.
 class FgShellScope extends InheritedWidget {
@@ -39,10 +61,11 @@ class FgShellScope extends InheritedWidget {
 /// consistencia): la navegación no desaparece al entrar a una pantalla interna. En móvil devuelve el
 /// contenido tal cual: cada pantalla interna conserva su encabezado con «Volver».
 class FgNavLateral extends StatelessWidget {
-  const FgNavLateral({super.key, required this.destinos, required this.child});
+  const FgNavLateral({super.key, required this.destinos, required this.child, this.pie});
 
   final List<FgDestino> destinos;
   final Widget child;
+  final FgPieLateral? pie;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +74,7 @@ class FgNavLateral extends StatelessWidget {
     return Material(
       color: FgColors.fondo,
       child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        _BarraLateral(destinos: destinos, colapsada: !FgBreakpoint.esDesktop(ancho)),
+        _BarraLateral(destinos: destinos, pie: pie, colapsada: !FgBreakpoint.esDesktop(ancho)),
         Expanded(child: FgShellScope(child: child)),
       ]),
     );
@@ -73,6 +96,7 @@ class FgAppShell extends StatelessWidget {
     required this.cuerpo,
     this.cuerpoMovil,
     this.accionesSuperiores = const [],
+    this.pie,
   }) : assert(destinosMovil.length <= 4, 'La barra inferior admite como máximo cuatro destinos');
 
   /// Nombre de la sección, en la barra superior de escritorio.
@@ -93,6 +117,9 @@ class FgAppShell extends StatelessWidget {
   /// Acciones de la barra superior de escritorio (notificaciones, cuenta).
   final List<Widget> accionesSuperiores;
 
+  /// Sesión y «Cerrar sesión» al pie de la barra lateral (tablet y escritorio).
+  final FgPieLateral? pie;
+
   @override
   Widget build(BuildContext context) {
     final ancho = MediaQuery.sizeOf(context).width;
@@ -110,7 +137,7 @@ class FgAppShell extends StatelessWidget {
       return Scaffold(
         backgroundColor: FgColors.fondo,
         body: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          _BarraLateral(destinos: destinos),
+          _BarraLateral(destinos: destinos, pie: pie),
           Expanded(
             child: Column(children: [
               _BarraSuperior(titulo: titulo, acciones: accionesSuperiores),
@@ -124,7 +151,7 @@ class FgAppShell extends StatelessWidget {
       return Scaffold(
         backgroundColor: FgColors.fondo,
         body: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          _BarraLateral(destinos: destinos, colapsada: true),
+          _BarraLateral(destinos: destinos, pie: pie, colapsada: true),
           Expanded(
             child: Column(children: [
               _BarraSuperior(titulo: titulo, acciones: accionesSuperiores),
@@ -143,9 +170,10 @@ class FgAppShell extends StatelessWidget {
 }
 
 class _BarraLateral extends StatelessWidget {
-  const _BarraLateral({required this.destinos, this.colapsada = false});
+  const _BarraLateral({required this.destinos, this.pie, this.colapsada = false});
 
   final List<FgDestino> destinos;
+  final FgPieLateral? pie;
   final bool colapsada;
 
   @override
@@ -175,11 +203,17 @@ class _BarraLateral extends StatelessWidget {
                           semanticLabel: 'FarmaGo',
                         ),
                 ),
-                for (final destino in destinos)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: FgSpace.sp1),
-                    child: _ItemLateral(destino: destino, colapsada: colapsada),
-                  ),
+                // Los destinos se desplazan si no caben; el pie queda siempre visible abajo.
+                Expanded(
+                  child: ListView(padding: EdgeInsets.zero, children: [
+                    for (final destino in destinos)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: FgSpace.sp1),
+                        child: _ItemLateral(destino: destino, colapsada: colapsada),
+                      ),
+                  ]),
+                ),
+                if (pie != null) _PieLateral(pie: pie!, colapsada: colapsada),
               ]),
             ),
           ),
@@ -262,6 +296,141 @@ class _ItemLateralState extends State<_ItemLateral> {
     ));
     if (!widget.colapsada) return item;
     return Tooltip(message: d.etiqueta, child: item);
+  }
+}
+
+class _PieLateral extends StatefulWidget {
+  const _PieLateral({required this.pie, required this.colapsada});
+
+  final FgPieLateral pie;
+  final bool colapsada;
+
+  @override
+  State<_PieLateral> createState() => _PieLateralState();
+}
+
+class _PieLateralState extends State<_PieLateral> {
+  bool _saliendo = false;
+
+  Future<void> _cerrarSesion() async {
+    if (_saliendo) return;
+    setState(() => _saliendo = true);
+    try {
+      await widget.pie.onCerrarSesion();
+    } finally {
+      if (mounted) setState(() => _saliendo = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pie = widget.pie;
+    return Container(
+      padding: const EdgeInsets.only(top: FgSpace.sp3),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        _Persona(pie: pie, colapsada: widget.colapsada),
+        const SizedBox(height: FgSpace.sp1),
+        _ItemLateral(
+          colapsada: widget.colapsada,
+          destino: FgDestino(
+            icono: Icons.logout,
+            etiqueta: _saliendo ? 'Cerrando sesión…' : 'Cerrar sesión',
+            onTap: _cerrarSesion,
+          ),
+        ),
+      ]),
+    );
+  }
+}
+
+/// Quién tiene la sesión abierta: inicial, nombre y rol. Tocarlo abre «Mi cuenta».
+class _Persona extends StatefulWidget {
+  const _Persona({required this.pie, required this.colapsada});
+
+  final FgPieLateral pie;
+  final bool colapsada;
+
+  @override
+  State<_Persona> createState() => _PersonaState();
+}
+
+class _PersonaState extends State<_Persona> {
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pie = widget.pie;
+    final nombre = pie.nombre.trim();
+    final inicial = nombre.isEmpty ? '?' : nombre.characters.first.toUpperCase();
+    final activo = pie.cuentaActiva;
+    final avatar = Container(
+      width: FgSize.ctrlSm,
+      height: FgSize.ctrlSm,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: activo ? FgColors.azul600 : FgColors.azul100,
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        inicial,
+        style: FgText.label.copyWith(color: activo ? FgColors.blanco : FgColors.azul800, fontWeight: FgWeight.bold),
+      ),
+    );
+    final contenido = Container(
+      constraints: const BoxConstraints(minHeight: FgSize.ctrlMd),
+      padding: EdgeInsets.symmetric(horizontal: widget.colapsada ? 0 : FgSpace.sp2, vertical: FgSpace.sp1),
+      alignment: widget.colapsada ? Alignment.center : Alignment.centerLeft,
+      decoration: BoxDecoration(
+        color: activo ? FgColors.azul100 : Colors.transparent,
+        borderRadius: BorderRadius.circular(FgRadius.md),
+      ),
+      child: widget.colapsada
+          ? avatar
+          : Row(children: [
+              avatar,
+              const SizedBox(width: FgSpace.sp3),
+              Expanded(
+                child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(nombre.isEmpty ? 'Mi cuenta' : nombre,
+                      style: FgText.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(pie.rol, style: FgText.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ]),
+              ),
+            ]),
+    );
+    final item = _Presionable(
+      child: Semantics(
+        button: true,
+        selected: activo,
+        label: 'Mi cuenta. ${nombre.isEmpty ? '' : '$nombre, '}${pie.rol}',
+        excludeSemantics: true,
+        child: FgFocusRing(
+          focusNode: _focus,
+          radius: FgRadius.md,
+          child: Material(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(FgRadius.md),
+            child: InkWell(
+              focusNode: _focus,
+              borderRadius: BorderRadius.circular(FgRadius.md),
+              onTap: pie.onCuenta,
+              hoverColor: activo ? FgColors.azul200 : FgColors.azul50,
+              child: contenido,
+            ),
+          ),
+        ),
+      ),
+    );
+    return Tooltip(message: widget.colapsada ? 'Mi cuenta: $nombre' : 'Ver mi cuenta', child: item);
   }
 }
 
