@@ -37,7 +37,14 @@ void main() {
 
   for (final ancho in [360.0, 1280.0]) {
     testWidgets('captura: administrador a ${ancho.toInt()} px', (tester) async {
-      await montarInicio(tester, role: 'ADMIN', name: 'Carlos Ruiz', ancho: ancho);
+      await montarInicio(
+        tester,
+        role: 'ADMIN',
+        name: 'Carlos Ruiz',
+        ancho: ancho,
+        altura: 1500,
+        inicioAdmin: InicioAdminFalso(),
+      );
       expect(tester.takeException(), isNull);
       await expectLater(find.byType(MaterialApp), matchesGoldenFile('goldens/home_administrador_${ancho.toInt()}.png'));
     });

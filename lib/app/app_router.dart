@@ -281,6 +281,8 @@ class AppRouter {
             notifications: _deps.notifications,
             inicio: _deps.patientHome,
             resumenEps: _auth.user?.role == 'EPS' ? _deps.epsResumen : null,
+            inicioAdmin: _auth.user?.role == 'ADMIN' ? _deps.adminInicio : null,
+            onAdminTracking: (deliveryId) => context.push(AppRoutes.adminTracking(deliveryId)),
             onTracking: (deliveryId) => context.push(AppRoutes.tracking(deliveryId)),
             // Al volver de calificar se recarga la home para quitar el recordatorio.
             onCalificar: (deliveryId) async {

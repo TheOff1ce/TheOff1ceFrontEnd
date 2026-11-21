@@ -1,12 +1,17 @@
 import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/auth_repository.dart';
+import 'package:farma_go/hooks/admin_inicio_controller.dart';
 import 'package:farma_go/hooks/eps_resumen_controller.dart';
 import 'package:farma_go/hooks/patient_home_controller.dart';
 import 'package:farma_go/hooks/patient_orders_controller.dart';
 import 'package:farma_go/notifications/notification_controller.dart';
 import 'package:farma_go/notifications/notification_repository.dart';
 import 'package:farma_go/pages/home_page.dart';
+import 'package:farma_go/services/admin_service.dart';
+import 'package:farma_go/services/authorized_json_client.dart';
+import 'package:farma_go/services/access_token_source.dart';
+import 'package:farma_go/types/calificaciones.dart';
 import 'package:farma_go/services/delivery_service.dart';
 import 'package:farma_go/services/order_service.dart';
 import 'package:farma_go/services/pendientes_service.dart';
@@ -125,6 +130,8 @@ Future<void> montarInicio(
   EpsResumenController? resumenEps,
   PorCalificar? porCalificar,
   void Function(String)? onCalificar,
+  AdminInicioController? inicioAdmin,
+  void Function(String)? onAdminTracking,
 }) async {
   await tester.runAsync(cargarFuentesReales);
   tester.view.physicalSize = Size(ancho, altura);
@@ -140,13 +147,16 @@ Future<void> montarInicio(
   void noop() {}
   // El logo es una imagen: se espera su decodificación para que la captura no la omita.
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
-  await tester.pumpWidget(MaterialApp(theme: AppTheme.light, 
+  await tester.pumpWidget(MaterialApp(
+    theme: AppTheme.light,
     debugShowCheckedModeBanner: false,
     home: HomePage(
       auth: auth,
       notifications: NotificationController(NotificationRepository()),
       inicio: InicioFalso(foco, recordatorio: porCalificar),
       onCalificar: onCalificar,
+      inicioAdmin: inicioAdmin,
+      onAdminTracking: onAdminTracking,
       resumenEps: resumenEps,
       onAnalyze: onAnalyze ?? noop,
       onNotifications: noop,
@@ -163,4 +173,70 @@ Future<void> montarInicio(
   ));
   await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
   await tester.pumpAndSettle();
+}
+
+/// Tablero del administrador con datos fijos (sin red), para capturas y pruebas de la vista.
+class InicioAdminFalso extends AdminInicioController {
+  InicioAdminFalso({DateTime? ahora})
+      : _ahora = ahora ?? DateTime(2026, 11, 21, 16),
+        super(deliveries: _EntregasFalsas(), admin: AdminService(auth: _cliente(), orders: _cliente()));
+
+  final DateTime _ahora;
+
+  @override
+  DateTime get ahora => _ahora;
+
+  static AuthorizedJsonClient _cliente() => AuthorizedJsonClient(
+        'http://localhost',
+        tokens: _SinToken(),
+        client: MockClient((_) async => http.Response('{}', 500)),
+        timeout: const Duration(seconds: 5),
+      );
+
+  static Delivery _entrega(String id, DeliveryStatus estado, DateTime desde, {String origen = 'Farmacia Calle 72'}) =>
+      Delivery(
+        id: id,
+        orderId: 'o-$id',
+        status: estado,
+        origin: DeliveryPlace(address: origen, point: const GeoPoint(4.66, -74.06)),
+        destination: const DeliveryPlace(address: 'Calle 92 # 15-30, Bogotá', point: GeoPoint(4.68, -74.05)),
+        route: const DeliveryRoute(encodedPolyline: '', distanceMeters: 2300, durationSeconds: 615),
+        eta: null,
+        driverAssigned: estado != DeliveryStatus.created,
+        driverLocation: null,
+        distanceToDestinationMeters: null,
+        deliveredAt: estado == DeliveryStatus.delivered ? desde : null,
+        statusTimes: {estado: desde},
+      );
+
+  @override
+  Future<void> load() async {
+    final entregas = <Delivery>[
+      _entrega('e1', DeliveryStatus.created, _ahora.subtract(const Duration(minutes: 42))),
+      _entrega('e2', DeliveryStatus.created, _ahora.subtract(const Duration(minutes: 9)), origen: 'Droguería Central'),
+      for (var i = 0; i < 4; i++) _entrega('c$i', DeliveryStatus.inTransit, _ahora),
+      for (var dia = 0; dia < 7; dia++) ...[
+        for (var i = 0; i < 5 + dia % 3 * 2; i++)
+          _entrega('d$dia-$i', DeliveryStatus.delivered, _ahora.subtract(Duration(days: dia, minutes: i))),
+        if (dia.isEven) _entrega('f$dia', DeliveryStatus.failed, _ahora.subtract(Duration(days: dia, hours: 1))),
+      ],
+    ];
+    operacion = OperacionHoy.de(entregas, _ahora);
+    calificaciones = ReporteCalificaciones.fromJson({
+      'days': 7,
+      'count': 25,
+      'average': 4.2,
+      'distribution': {'1': 2, '2': 1, '3': 2, '4': 6, '5': 14},
+      'drivers': [],
+      'lowRatings': [],
+      'truncated': false,
+    });
+    usuarios = const UsuariosResumen(total: 128, repartidores: 14);
+    notifyListeners();
+  }
+}
+
+class _SinToken implements AccessTokenSource {
+  @override
+  Future<String?> currentAccessToken({bool forceRefresh = false}) async => null;
 }
