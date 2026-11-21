@@ -65,7 +65,9 @@ class _Contenido extends StatelessWidget {
                 ? _Panel(child: _focoPaciente())
                 : pantalla.isEps && _w.resumenEps != null
                     ? _FocoEps(pantalla: pantalla, movil: movil)
-                    : _focoRol();
+                    : pantalla.isAdmin && _w.inicioAdmin != null
+                        ? _InicioAdmin(pantalla: pantalla, movil: movil)
+                        : _focoRol();
             final saludo = _saludo();
             final dosColumnas =
                 !movil && constraints.maxWidth >= 880 && pantalla.isPatient && _w.inicio.foco is! FocoVacio;
@@ -98,11 +100,20 @@ class _Contenido extends StatelessWidget {
     );
   }
 
+  /// «viernes 21 de noviembre» (hora local), para situar las cifras del administrador.
+  static String _fechaHoy() {
+    const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre',
+      'octubre', 'noviembre', 'diciembre'];
+    final hoy = DateTime.now();
+    return '${dias[hoy.weekday - 1]} ${hoy.day} de ${meses[hoy.month - 1]}';
+  }
+
   Widget _saludo() {
     final name = _w.auth.user?.name.trim();
     final firstName = name?.isNotEmpty == true ? name!.split(RegExp(r'\s+')).first : null;
     final subtitulo = pantalla.isAdmin
-        ? 'Administra los usuarios y los domicilios de FarmaGo.'
+        ? 'Así va la operación de FarmaGo hoy, ${_fechaHoy()}.'
         : pantalla.isDriver
             ? 'Aquí ves los domicilios que puedes tomar y los que ya llevas.'
             : pantalla.isEps
@@ -309,12 +320,6 @@ class _Contenido extends StatelessWidget {
               descripcion: 'Toma una foto y te decimos qué medicamentos indica.',
               onTap: _w.onAnalyze,
             ),
-          FgAccionTarjeta(
-            icono: Icons.account_circle_outlined,
-            titulo: 'Mi cuenta',
-            descripcion: 'Tus datos, tu contraseña y cerrar sesión.',
-            onTap: _w.onAccount,
-          ),
         ]),
       ),
     ]);
