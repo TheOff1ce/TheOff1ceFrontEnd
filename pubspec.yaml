@@ -1,7 +1,7 @@
 name: farma_go
 description: Farma Go mobile prescription analysis app.
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.3+3
 environment: {sdk: '>=3.5.0 <4.0.0'}
 dependencies:
   flutter: {sdk: flutter}
