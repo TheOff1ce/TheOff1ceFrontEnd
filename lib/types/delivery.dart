@@ -139,6 +139,7 @@ class Delivery {
     this.deliveryCode,
     this.rating,
     this.deliveredAt,
+    this.statusTimes = const {},
   });
 
   final String id, orderId;
@@ -159,6 +160,12 @@ class Delivery {
 
   /// Cuándo se confirmó la entrega (`statusTimestamps.DELIVERED`).
   final DateTime? deliveredAt;
+
+  /// Cuándo entró a cada estado (`statusTimestamps`), p. ej. desde cuándo espera repartidor.
+  final Map<DeliveryStatus, DateTime> statusTimes;
+
+  /// Cuándo pasó al estado en que está ahora.
+  DateTime? get since => statusTimes[status];
 
   /// Ya entregado y sin calificar: el paciente puede dejar sus estrellas.
   bool get canBeRated => status == DeliveryStatus.delivered && rating == null;
@@ -182,7 +189,19 @@ class Delivery {
         deliveredAt: json['statusTimestamps'] is Map
             ? DateTime.tryParse((json['statusTimestamps'] as Map)['DELIVERED']?.toString() ?? '')
             : null,
+        statusTimes: _times(json['statusTimestamps']),
       );
+
+  static Map<DeliveryStatus, DateTime> _times(Object? raw) {
+    if (raw is! Map) return const {};
+    final out = <DeliveryStatus, DateTime>{};
+    raw.forEach((key, value) {
+      final status = DeliveryStatus.fromCode(key);
+      final at = DateTime.tryParse(value?.toString() ?? '');
+      if (status != DeliveryStatus.unknown && at != null) out[status] = at;
+    });
+    return out;
+  }
 
   /// Applies a `delivery.location` event.
   Delivery withLocation(Map<String, dynamic> event) => _copy(
@@ -213,6 +232,7 @@ class Delivery {
         deliveryCode: deliveryCode,
         rating: rating,
         deliveredAt: deliveredAt,
+        statusTimes: statusTimes,
       );
 }
 

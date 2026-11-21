@@ -4,6 +4,7 @@ import '../app/app_navigation.dart';
 import '../app/app_routes.dart';
 import '../app/theme/farmago_tokens.dart';
 import '../auth/auth_controller.dart';
+import '../components/calificar_entrega.dart';
 import '../components/farmago/acciones.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/estampado.dart';
@@ -13,6 +14,8 @@ import '../components/farmago/shell.dart';
 import '../components/farmago/status_badge.dart';
 import '../components/farmago/trail.dart';
 import '../components/farmago/wordmark.dart';
+import '../errors/app_error.dart';
+import '../hooks/admin_inicio_controller.dart';
 import '../hooks/eps_resumen_controller.dart';
 import '../hooks/patient_home_controller.dart';
 import '../notifications/notification_controller.dart';
@@ -26,6 +29,7 @@ import 'notifications_page.dart';
 
 part 'home_contenido.dart';
 part 'home_eps.dart';
+part 'home_admin.dart';
 
 /// Inicio de FarmaGo: el punto de entrada al estado real del paciente.
 ///
@@ -39,6 +43,8 @@ class HomePage extends StatefulWidget {
     required this.notifications,
     required this.inicio,
     this.resumenEps,
+    this.inicioAdmin,
+    this.onAdminTracking,
     required this.onAnalyze,
     required this.onNotifications,
     required this.onAccount,
@@ -63,6 +69,12 @@ class HomePage extends StatefulWidget {
 
   /// Cifras del plazo de 48 h para la EPS (solo ese rol).
   final EpsResumenController? resumenEps;
+
+  /// Tablero de la operación para el administrador (solo ese rol).
+  final AdminInicioController? inicioAdmin;
+
+  /// Abre el seguimiento de una entrega como administrador.
+  final void Function(String deliveryId)? onAdminTracking;
 
   final VoidCallback onAnalyze;
   final VoidCallback onNotifications;
@@ -106,6 +118,7 @@ class _HomePageState extends State<HomePage> {
     // Solo los pacientes tienen pedidos y pendientes propios; los demás roles no consultan esos datos.
     if (isPatient) widget.inicio.load();
     if (isEps) widget.resumenEps?.load();
+    if (isAdmin) widget.inicioAdmin?.load();
   }
 
   @override
@@ -115,6 +128,7 @@ class _HomePageState extends State<HomePage> {
           widget.notifications,
           widget.inicio,
           if (widget.resumenEps != null) widget.resumenEps!,
+          if (widget.inicioAdmin != null) widget.inicioAdmin!,
         ]),
         builder: (context, _) {
           final ancho = MediaQuery.sizeOf(context).width;
