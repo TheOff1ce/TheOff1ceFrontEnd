@@ -78,13 +78,13 @@ class _TrackingPageState extends State<TrackingPage> {
 
   Future<AppError?> _confirmar(String code) async {
     final error = await _controller.confirm(code);
-    if (error == null && mounted) showFgToast(context, 'Entrega confirmada. ¡Gracias!');
+    if (error == null && mounted) showFgToast(context, 'Entrega confirmada', detalle: 'Cuéntanos cómo te fue: califica la entrega aquí abajo.');
     return error;
   }
 
   Future<AppError?> _calificar(int stars, String? comment) async {
     final error = await _controller.rate(stars, comment: comment);
-    if (error == null && mounted) showFgToast(context, '¡Gracias por tu calificación!');
+    if (error == null && mounted) showFgToast(context, 'Calificación enviada', detalle: 'Gracias, nos ayuda a mejorar cada entrega.');
     return error;
   }
 

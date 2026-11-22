@@ -111,7 +111,9 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
       notes: _notes.text,
     );
     final order = await widget.controller.publish(request);
-    if (order != null && mounted) widget.onCreated(order);
+    if (order == null || !mounted) return;
+    showFgToast(context, 'Pedido confirmado', detalle: 'Te avisamos cuando un repartidor lo tome.');
+    widget.onCreated(order);
   }
 
   @override

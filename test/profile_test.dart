@@ -6,6 +6,7 @@ import 'package:farma_go/app/theme/app_theme.dart';
 import 'package:farma_go/auth/auth_controller.dart';
 import 'package:farma_go/auth/auth_repository.dart';
 import 'package:farma_go/components/account/profile_form.dart';
+import 'package:farma_go/components/farmago/feedback.dart';
 import 'package:farma_go/components/farmago/inputs.dart';
 import 'package:farma_go/errors/error_messages.dart';
 import 'package:farma_go/pages/account_page.dart';
@@ -98,7 +99,11 @@ Future<(AuthController, _Server)> _pump(WidgetTester tester, Widget Function(Aut
   final server = _Server(me ?? _me());
   final auth = AuthController(AuthRepository('https://auth.x', client: server.client, usesBrowserCookies: true));
   await tester.runAsync(auth.restore);
-  await tester.pumpWidget(MaterialApp(theme: AppTheme.light, home: Scaffold(body: page(auth))));
+  await tester.pumpWidget(MaterialApp(
+    theme: AppTheme.light,
+    builder: (context, child) => FgCapaAvisos(child: child!),
+    home: Scaffold(body: page(auth)),
+  ));
   await tester.pump();
   return (auth, server);
 }
@@ -201,6 +206,8 @@ void main() {
         'acceptDataPolicy': true,
       });
       expect(auth.user!.profileComplete, isTrue);
+      expect(find.text('Datos guardados'), findsOneWidget);
+      expect(find.text('Tu cuenta está lista para usar FarmaGo.'), findsOneWidget);
     });
 
     testWidgets('a document of another account is marked on its field', (tester) async {
@@ -284,7 +291,7 @@ void main() {
       expect(body['eps'], 'Nueva EPS');
       expect(body.containsKey('documentNumber'), isFalse);
       expect(body.containsKey('acceptDataPolicy'), isFalse);
-      expect(find.text('Guardamos tus datos.'), findsOneWidget);
+      expect(find.text('Datos guardados'), findsOneWidget);
       await tester.pumpAndSettle(const Duration(seconds: 10));
     });
   });

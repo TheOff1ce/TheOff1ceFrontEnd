@@ -162,7 +162,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(server.requests.where((r) => r.url.path == '/auth/change-password'), hasLength(1));
       expect(find.text('Guardar contraseña'), findsNothing);
-      expect(find.textContaining('Contraseña cambiada'), findsOneWidget);
+      expect(find.text('Contraseña actualizada'), findsOneWidget);
       expect(auth.accessToken, 'token-2');
       await tester.pump(const Duration(seconds: 7));
     });

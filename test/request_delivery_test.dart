@@ -54,6 +54,8 @@ void main() {
       {'name': 'Acetaminofén 500 mg', 'quantity': 2},
     ]);
     expect(r.events, ['created']);
+    expect(find.text('Pedido confirmado'), findsOneWidget);
+    expect(find.text('Te avisamos cuando un repartidor lo tome.'), findsOneWidget);
   });
 
   testWidgets('an incomplete form marks the fields and sends nothing', (tester) async {

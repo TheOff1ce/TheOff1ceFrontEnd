@@ -253,72 +253,136 @@ enum FgToastKind { exito, error, info }
 /// Toast (§7.8): confirma algo que ya ocurrió. Oscuro, flota sobre todo (también sobre paneles
 /// y diálogos), se cierra solo a los 6 s; los errores no se cierran solos.
 ///
-/// Se muestra uno a la vez: uno nuevo reemplaza al anterior.
+/// Se muestra uno a la vez: uno nuevo reemplaza al anterior. [detalle] es una segunda línea, más
+/// suave, con lo que sigue («Te avisamos cuando un repartidor lo tome»).
 void showFgToast(
   BuildContext context,
   String mensaje, {
   FgToastKind kind = FgToastKind.exito,
   double separacionInferior = 0,
+  String? detalle,
 }) {
-  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+  final overlay = FgCapaAvisos._capa.currentState ?? Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) return;
-  _ToastHost.mostrar(overlay, mensaje, kind, separacionInferior);
+  _ToastHost.mostrar(overlay, mensaje, detalle, kind, separacionInferior);
+}
+
+/// Aviso sin `BuildContext`, para cuando la pantalla que hizo la acción ya se cerró (por ejemplo,
+/// al verificar el código el enrutador lleva a otra pantalla). Necesita [FgCapaAvisos] en la app.
+void avisar(String mensaje, {String? detalle, FgToastKind kind = FgToastKind.exito}) {
+  final overlay = FgCapaAvisos._capa.currentState;
+  if (overlay == null) return;
+  _ToastHost.mostrar(overlay, mensaje, detalle, kind, 0);
+}
+
+/// Capa de avisos por encima de todas las pantallas (va en `MaterialApp.builder`). Así un aviso
+/// sigue visible aunque el enrutador cambie de pantalla o reconstruya su navegador.
+class FgCapaAvisos extends StatefulWidget {
+  const FgCapaAvisos({super.key, required this.child});
+
+  final Widget child;
+
+  static final _capa = GlobalKey<OverlayState>(debugLabel: 'FgCapaAvisos');
+
+  @override
+  State<FgCapaAvisos> createState() => _FgCapaAvisosState();
+}
+
+class _FgCapaAvisosState extends State<FgCapaAvisos> {
+  late final _app = OverlayEntry(builder: (_) => widget.child);
+
+  @override
+  void didUpdateWidget(FgCapaAvisos oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.child != widget.child) _app.markNeedsBuild();
+  }
+
+  @override
+  void dispose() {
+    _ToastHost.cerrar();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Overlay(key: FgCapaAvisos._capa, initialEntries: [_app]);
 }
 
 abstract final class _ToastHost {
   static OverlayEntry? _entrada;
-  static Timer? _temporizador;
-  static const _duracion = Duration(seconds: 6);
 
-  static void mostrar(OverlayState overlay, String mensaje, FgToastKind kind, double separacion) {
+  static void mostrar(OverlayState overlay, String mensaje, String? detalle, FgToastKind kind, double separacion) {
     cerrar();
     late final OverlayEntry entrada;
     entrada = OverlayEntry(
       builder: (context) => _ToastView(
+        key: UniqueKey(),
         mensaje: mensaje,
+        detalle: detalle,
         kind: kind,
         separacionInferior: separacion,
-        onCerrar: cerrar,
-        onPausa: () => _temporizador?.cancel(),
-        onReanudar: () => _armar(kind),
+        onCerrar: () {
+          if (identical(_entrada, entrada)) cerrar();
+        },
       ),
     );
     _entrada = entrada;
     overlay.insert(entrada);
-    _armar(kind);
-  }
-
-  static void _armar(FgToastKind kind) {
-    _temporizador?.cancel();
-    if (kind == FgToastKind.error) return; // los errores no se cierran solos
-    _temporizador = Timer(_duracion, cerrar);
   }
 
   static void cerrar() {
-    _temporizador?.cancel();
-    _temporizador = null;
-    _entrada?.remove();
+    final entrada = _entrada;
     _entrada = null;
+    if (entrada != null && entrada.mounted) entrada.remove();
   }
 }
 
-class _ToastView extends StatelessWidget {
+class _ToastView extends StatefulWidget {
   const _ToastView({
+    super.key,
     required this.mensaje,
+    required this.detalle,
     required this.kind,
     required this.separacionInferior,
     required this.onCerrar,
-    required this.onPausa,
-    required this.onReanudar,
   });
 
   final String mensaje;
+  final String? detalle;
   final FgToastKind kind;
   final double separacionInferior;
-  final VoidCallback onCerrar, onPausa, onReanudar;
+  final VoidCallback onCerrar;
+
+  @override
+  State<_ToastView> createState() => _ToastViewState();
+}
+
+class _ToastViewState extends State<_ToastView> {
+  static const _duracion = Duration(seconds: 6);
+
+  /// El aviso es dueño de su temporizador: si la app o la pantalla desaparecen, se cancela con él.
+  Timer? _temporizador;
+
+  @override
+  void initState() {
+    super.initState();
+    _armar();
+  }
+
+  void _armar() {
+    _temporizador?.cancel();
+    if (widget.kind == FgToastKind.error) return; // los errores no se cierran solos
+    _temporizador = Timer(_duracion, widget.onCerrar);
+  }
+
+  @override
+  void dispose() {
+    _temporizador?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final _ToastView(:mensaje, :detalle, :kind, :separacionInferior, :onCerrar) = widget;
     final medidas = MediaQuery.of(context);
     final compacto = FgBreakpoint.esCompacto(medidas.size.width);
     final (color, simbolo) = switch (kind) {
@@ -327,8 +391,9 @@ class _ToastView extends StatelessWidget {
       FgToastKind.info => (FgColors.azul600, Icons.info_outline),
     };
     final tarjeta = MouseRegion(
-      onEnter: (_) => onPausa(),
-      onExit: (_) => onReanudar(),
+      // Con el puntero encima no se cierra: da tiempo a leerlo.
+      onEnter: (_) => _temporizador?.cancel(),
+      onExit: (_) => _armar(),
       child: Material(
         color: FgColors.ink,
         borderRadius: BorderRadius.circular(FgRadius.md),
@@ -337,20 +402,32 @@ class _ToastView extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(FgSpace.sp4h, FgSpace.sp4, FgSpace.sp2, FgSpace.sp4),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(FgRadius.md), boxShadow: FgShadow.e3),
           child: Row(
+            // Con dos líneas, el símbolo y el botón de cerrar se alinean con el título.
+            crossAxisAlignment: detalle == null ? CrossAxisAlignment.center : CrossAxisAlignment.start,
             children: [
-              FgGlifo(color: color, simbolo: simbolo),
+              if (kind == FgToastKind.exito) const _CheckQueSeDibuja() else FgGlifo(color: color, simbolo: simbolo),
               const SizedBox(width: FgSpace.sp3),
               // Un mensaje muy largo se desplaza dentro del aviso en vez de salirse de la pantalla.
               Expanded(
                 child: SingleChildScrollView(
-                  child: Text(mensaje, style: FgText.body.copyWith(color: FgColors.blanco)),
+                  child: detalle == null
+                      ? Text(mensaje, style: FgText.body.copyWith(color: FgColors.blanco))
+                      : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(mensaje, style: FgText.label.copyWith(color: FgColors.blanco)),
+                          const SizedBox(height: FgSpace.sp1),
+                          Text(detalle, style: FgText.body.copyWith(color: FgColors.blanco.withValues(alpha: .72))),
+                        ]),
                 ),
               ),
-              IconButton(
-                tooltip: 'Cerrar aviso',
-                onPressed: onCerrar,
-                constraints: const BoxConstraints(minWidth: FgSize.ctrlSm, minHeight: FgSize.ctrlSm),
-                icon: const Icon(Icons.close, color: FgColors.blanco, size: FgSize.iconoMd),
+              Transform.translate(
+                // Con dos líneas, la X queda a la altura del título.
+                offset: Offset(0, detalle == null ? 0 : -FgSpace.sp2),
+                child: IconButton(
+                  tooltip: 'Cerrar aviso',
+                  onPressed: onCerrar,
+                  constraints: const BoxConstraints(minWidth: FgSize.ctrlSm, minHeight: FgSize.ctrlSm),
+                  icon: const Icon(Icons.close, color: FgColors.blanco, size: FgSize.iconoMd),
+                ),
               ),
             ],
           ),
@@ -381,12 +458,94 @@ class _ToastView extends StatelessWidget {
         child: Semantics(
           container: true,
           liveRegion: true,
-          label: kind == FgToastKind.error ? 'Error: $mensaje' : mensaje,
+          label: [if (kind == FgToastKind.error) 'Error:', mensaje, if (detalle != null) detalle].join(' '),
           child: ConstrainedBox(constraints: BoxConstraints(maxHeight: altoMaximo), child: tarjeta),
         ),
       ),
     );
   }
+}
+
+/// El check de un aviso de éxito se dibuja solo, trazo a trazo, justo después de que aparece la
+/// tarjeta: es la confirmación visible de que la acción terminó. Con movimiento reducido aparece
+/// ya dibujado.
+class _CheckQueSeDibuja extends StatefulWidget {
+  const _CheckQueSeDibuja();
+
+  @override
+  State<_CheckQueSeDibuja> createState() => _CheckQueSeDibujaState();
+}
+
+class _CheckQueSeDibujaState extends State<_CheckQueSeDibuja> with SingleTickerProviderStateMixin {
+  late final _trazo = AnimationController(vsync: this, duration: const Duration(milliseconds: 560));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _trazo.value = 1;
+    } else if (!_trazo.isAnimating && _trazo.value == 0) {
+      _trazo.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _trazo.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: SizedBox.square(
+          dimension: 28,
+          child: AnimatedBuilder(
+            animation: _trazo,
+            builder: (context, _) => CustomPaint(
+              painter: _CheckPainter(
+                // El círculo entra en el primer tercio; el check se traza después.
+                circulo: FgMotion.ease.transform((_trazo.value * 3).clamp(0, 1)),
+                trazo: Curves.easeOutCubic.transform(((_trazo.value - .3) / .7).clamp(0, 1)),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class _CheckPainter extends CustomPainter {
+  _CheckPainter({required this.circulo, required this.trazo});
+
+  final double circulo, trazo;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final centro = size.center(Offset.zero);
+    canvas.drawCircle(
+      centro,
+      size.width / 2 * (.6 + .4 * circulo),
+      Paint()..color = FgColors.cumplidoSolid.withValues(alpha: circulo),
+    );
+    if (trazo == 0) return;
+    final w = size.width;
+    final check = Path()
+      ..moveTo(w * .29, w * .52)
+      ..lineTo(w * .44, w * .66)
+      ..lineTo(w * .72, w * .37);
+    final metrica = check.computeMetrics().first;
+    canvas.drawPath(
+      metrica.extractPath(0, metrica.length * trazo),
+      Paint()
+        ..color = FgColors.blanco
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CheckPainter old) => old.circulo != circulo || old.trazo != trazo;
 }
 
 // Errores, carga y avisos de la app (antes en components/feedback.dart).
