@@ -79,6 +79,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     _guard(() => _reset.resetPassword(_password.text), onSuccess: () {
       _password.clear();
       _confirmation.clear();
+      if (_reset.step != ResetStep.done) return;
+      // Directo al inicio de sesión: el aviso confirma el cambio y dice qué hacer.
+      showFgToast(context, 'Contraseña actualizada', detalle: 'Inicia sesión con tu nueva contraseña.');
+      widget.onLogin();
     }).then((_) {
       // FE-016: an expired code returns to the code step with a clean field.
       if (mounted && _reset.step == ResetStep.enterCode) _code.clear();

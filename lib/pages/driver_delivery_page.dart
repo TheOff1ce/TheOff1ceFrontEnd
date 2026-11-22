@@ -35,21 +35,47 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
     DeliveryStatus.inTransit: ('Empezar viaje', Icons.navigation_outlined),
   };
 
+  DeliveryStatus? _estadoVisto;
+
   @override
   void initState() {
     super.initState();
+    _controller.addListener(_vigilarEntrega);
     _controller.start();
+  }
+
+  /// El paciente confirma con el código desde su celular: el repartidor se entera aquí.
+  void _vigilarEntrega() {
+    final estado = _controller.delivery?.status;
+    if (estado == null) return;
+    final antes = _estadoVisto;
+    _estadoVisto = estado;
+    if (!mounted || antes == null || antes == estado || estado != DeliveryStatus.delivered) return;
+    showFgToast(context, 'Entrega confirmada', detalle: 'El paciente confirmó con tu código.');
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_vigilarEntrega);
     _controller.dispose();
     super.dispose();
   }
 
   Future<void> _advance(DeliveryStatus status) async {
     final error = await _controller.advance(status);
-    if (mounted && error != null) showAppSnackBar(context, error.userMessage, error: true);
+    if (!mounted) return;
+    if (error != null) return showAppSnackBar(context, error.userMessage, error: true);
+    switch (status) {
+      case DeliveryStatus.pickedUp:
+        showFgToast(context, 'Pedido recogido', detalle: 'Cuando salgas hacia el paciente, toca «Empezar viaje».');
+      case DeliveryStatus.inTransit:
+        showFgToast(context, 'Viaje iniciado', detalle: 'El paciente ya puede seguirte en el mapa.');
+      case DeliveryStatus.failed:
+        showFgToast(context, 'Marcamos el pedido como no entregado',
+            detalle: 'Dejamos de compartir tu ubicación.', kind: FgToastKind.info);
+      default:
+        break;
+    }
   }
 
   Future<void> _fail() async {

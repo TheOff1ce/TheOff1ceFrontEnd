@@ -56,6 +56,10 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
   AuthUser? user;
   String? pendingEmail;
 
+  /// `true` cuando el código que se espera es el de una cuenta recién creada (no un inicio de
+  /// sesión): al verificarlo se confirma con «Tu cuenta quedó creada».
+  bool verificandoCuentaNueva = false;
+
   /// True while the silent refresh is failing for transient reasons.
   bool connectionIssue = false;
 
@@ -121,7 +125,7 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
   Future<AppError?> signUp({required String name, required String email, required String password}) =>
       _run(() async {
         await _repository.signUp(name: name, email: email, password: password);
-        _startVerification(email);
+        _startVerification(email, cuentaNueva: true);
       });
 
   Future<AppError?> login({required String email, required String password}) => _run(() async {
@@ -274,8 +278,9 @@ class AuthController extends ChangeNotifier implements AccessTokenSource {
     _retryAttempt = 0;
   }
 
-  void _startVerification(String email) {
+  void _startVerification(String email, {bool cuentaNueva = false}) {
     pendingEmail = email;
+    verificandoCuentaNueva = cuentaNueva;
     _setStatus(AuthStatus.verifying);
   }
 

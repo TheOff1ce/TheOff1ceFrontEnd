@@ -149,12 +149,15 @@ class _ProfileFormState extends State<ProfileForm> {
       _serviceError = null;
     });
     final error = await widget.auth.saveProfile(input);
-    if (!mounted) return;
-    setState(() => _busy = false);
     if (error == null) {
+      // Antes de mirar `mounted`: al completar el perfil el enrutador cierra esta pantalla y aun
+      // así hay que confirmar que los datos quedaron guardados.
       widget.onDone();
+      if (mounted) setState(() => _busy = false);
       return;
     }
+    if (!mounted) return;
+    setState(() => _busy = false);
     switch (error.code) {
       case 'DOCUMENT_IN_USE':
         setState(() => _errors['document'] = error.userMessage);

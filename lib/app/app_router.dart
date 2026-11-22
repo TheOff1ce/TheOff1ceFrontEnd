@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../auth/auth_controller.dart';
+import '../components/farmago/feedback.dart';
 import '../components/farmago/shell.dart';
 import '../pages/account_page.dart';
 import '../pages/admin_orders_page.dart';
@@ -329,6 +330,7 @@ class AppRouter {
                 final result = _deps.prescriptions.result;
                 if (result != null) {
                   _deps.notifications.addAnalysisCompleted(medicationCount: result.medications.length);
+                  showFgToast(context, 'Fórmula analizada', detalle: 'También la guardamos en tus notificaciones.');
                 }
                 context.go(AppRoutes.prescriptionResult);
               },
