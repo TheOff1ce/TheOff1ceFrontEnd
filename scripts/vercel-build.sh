@@ -28,4 +28,7 @@ done
 flutter pub get
 # --wasm: los navegadores con WasmGC (Chrome/Edge/Firefox recientes) cargan el renderizador
 # skwasm y main.dart.wasm, más livianos que CanvasKit + JS; los demás usan el JS de respaldo.
+# AUTH_SAME_ORIGIN: la sesión va por farmago-eta.vercel.app/auth/... (ver vercel.json) para que
+# Safari/iOS no bloquee la cookie de sesión por ser de otro dominio.
+defines+=("--dart-define=AUTH_SAME_ORIGIN=true")
 flutter build web --release --wasm "${defines[@]}"

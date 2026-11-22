@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -339,7 +340,12 @@ class _ToastView extends StatelessWidget {
             children: [
               FgGlifo(color: color, simbolo: simbolo),
               const SizedBox(width: FgSpace.sp3),
-              Expanded(child: Text(mensaje, style: FgText.body.copyWith(color: FgColors.blanco))),
+              // Un mensaje muy largo se desplaza dentro del aviso en vez de salirse de la pantalla.
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(mensaje, style: FgText.body.copyWith(color: FgColors.blanco)),
+                ),
+              ),
               IconButton(
                 tooltip: 'Cerrar aviso',
                 onPressed: onCerrar,
@@ -351,10 +357,18 @@ class _ToastView extends StatelessWidget {
         ),
       ),
     );
+    final margen = compacto ? FgSpace.sp4 : FgSpace.sp5;
+    // Sobre el teclado si está abierto, para que el aviso no quede tapado en el celular.
+    final abajo = margen +
+        (medidas.viewInsets.bottom > 0 ? medidas.viewInsets.bottom : medidas.padding.bottom) +
+        separacionInferior;
+    // Nunca más alto que el espacio libre: así no se sale por arriba de la pantalla.
+    final altoMaximo =
+        math.max(FgSize.ctrlSm + 2 * FgSpace.sp4, medidas.size.height - abajo - medidas.padding.top - margen);
     return Positioned(
-      left: compacto ? FgSpace.sp4 : FgSpace.sp5,
-      right: compacto ? FgSpace.sp4 : null,
-      bottom: (compacto ? FgSpace.sp4 : FgSpace.sp5) + medidas.padding.bottom + separacionInferior,
+      left: margen,
+      right: compacto ? margen : null,
+      bottom: abajo,
       width: compacto ? null : FgSize.toast,
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0, end: 1),
@@ -368,7 +382,7 @@ class _ToastView extends StatelessWidget {
           container: true,
           liveRegion: true,
           label: kind == FgToastKind.error ? 'Error: $mensaje' : mensaje,
-          child: tarjeta,
+          child: ConstrainedBox(constraints: BoxConstraints(maxHeight: altoMaximo), child: tarjeta),
         ),
       ),
     );
