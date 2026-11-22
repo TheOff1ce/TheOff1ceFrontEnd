@@ -55,7 +55,7 @@ class AppDependencies {
   });
 
   factory AppDependencies.create({String? googleHandoffCode}) {
-    final auth = AuthController(AuthRepository(AppConfig.authBaseUrl), googleHandoffCode: googleHandoffCode);
+    final auth = AuthController(AuthRepository(AppConfig.sessionAuthBaseUrl), googleHandoffCode: googleHandoffCode);
     // AI-001: every analysis request carries the access token issued by Auth.
     final api = ApiService(AppConfig.apiBaseUrl, tokens: auth);
     // Orders and tracking carry the same Bearer token; there are no other secrets in the app.
@@ -89,7 +89,7 @@ class AppDependencies {
       prescriptions: PrescriptionController(PrescriptionService(api)),
       auth: auth,
       // Password recovery uses its own client so it never shares session state.
-      passwordReset: PasswordResetController(AuthRepository(AppConfig.authBaseUrl)),
+      passwordReset: PasswordResetController(AuthRepository(AppConfig.sessionAuthBaseUrl)),
       notifications: NotificationController(NotificationRepository()),
       patientOrders: patientOrders,
       patientHome: PatientHomeController(orders: patientOrders, pendientes: pendientesService, deliveries: deliveries),

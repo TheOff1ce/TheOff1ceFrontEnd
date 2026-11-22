@@ -4,7 +4,14 @@
   "installCommand": "true",
   "buildCommand": "bash scripts/vercel-build.sh",
   "outputDirectory": "build/web",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "source": "/auth/:path(login|signup|verify-code|resend-code|forgot-password|verify-reset-code|reset-password|refresh|logout|me|profile|change-password)",
+      "destination": "https://farmago-gateway-jl.azurewebsites.net/auth/:path"
+    },
+    { "source": "/auth/google/exchange", "destination": "https://farmago-gateway-jl.azurewebsites.net/auth/google/exchange" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(index.html|flutter_bootstrap.js|flutter_service_worker.js|main.dart.js|version.json)",

@@ -31,6 +31,10 @@ abstract final class AppConfig {
 
   static const _aiUrl = String.fromEnvironment('API_BASE_URL', defaultValue: deployedGatewayUrl);
   static const _authUrl = String.fromEnvironment('AUTH_BASE_URL', defaultValue: deployedGatewayUrl);
+
+  /// Web en Vercel: las llamadas de sesión van al mismo dominio de la página
+  /// (`vercel.json` las reenvía al gateway), así la cookie de sesión es propia y Safari la acepta.
+  static const authSameOrigin = bool.fromEnvironment('AUTH_SAME_ORIGIN');
   static const _ordersUrl = String.fromEnvironment('ORDERS_BASE_URL', defaultValue: deployedGatewayUrl);
   static const _geolocationUrl = String.fromEnvironment('GEOLOCATION_BASE_URL', defaultValue: deployedGatewayUrl);
 
@@ -73,6 +77,21 @@ abstract final class AppConfig {
         platform: defaultTargetPlatform,
         pageUri: kIsWeb ? Uri.base : null,
       );
+
+  /// Base de las llamadas de sesión (login, refresh, logout, perfil…). En la web publicada con
+  /// `AUTH_SAME_ORIGIN` es el origen de la página; en lo demás, [authBaseUrl]. El inicio con
+  /// Google y el panel de usuarios del admin siguen usando [authBaseUrl].
+  static String get sessionAuthBaseUrl => sessionAuthFor(
+      isWeb: kIsWeb, sameOrigin: authSameOrigin, pageUri: kIsWeb ? Uri.base : null, fallback: authBaseUrl);
+
+  @visibleForTesting
+  static String sessionAuthFor(
+      {required bool isWeb, required bool sameOrigin, Uri? pageUri, required String fallback}) {
+    if (!isWeb || !sameOrigin || pageUri == null || !pageUri.hasScheme || !pageUri.scheme.startsWith('http')) {
+      return fallback;
+    }
+    return pageUri.origin;
+  }
 
   /// TheOff1ceOrderDelivery: patients request deliveries, drivers take them.
   static String get ordersBaseUrl => resolve(
