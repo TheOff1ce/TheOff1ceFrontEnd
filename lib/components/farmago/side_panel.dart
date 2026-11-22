@@ -64,7 +64,7 @@ class _MarcoPanel extends StatelessWidget {
               height: double.infinity,
               child: DecoratedBox(
                 decoration:
-                    const BoxDecoration(color: FgColors.superficie, borderRadius: esquinas, boxShadow: FgShadow.e4),
+                    BoxDecoration(color: FgColors.superficie, borderRadius: esquinas, boxShadow: FgShadow.e4),
                 child: ClipRRect(
                   borderRadius: esquinas,
                   child: Material(color: FgColors.superficie, child: SafeArea(child: child)),
@@ -125,7 +125,7 @@ class FgPanelScaffold extends StatelessWidget {
           if (pie != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp6, vertical: FgSpace.sp5),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: FgColors.superficie,
                 border: Border(top: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
               ),

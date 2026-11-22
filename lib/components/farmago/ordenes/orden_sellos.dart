@@ -171,7 +171,7 @@ class OrdenArco extends StatelessWidget {
             color: FgColors.lineaControl,
             diametro: size.lado,
             trazo: size.trazo,
-            centro: const Icon(Icons.event_busy_outlined, size: FgSize.simboloS, color: FgColors.inkSoft),
+            centro: Icon(Icons.event_busy_outlined, size: FgSize.simboloS, color: FgColors.inkSoft),
           ),
         ),
       );

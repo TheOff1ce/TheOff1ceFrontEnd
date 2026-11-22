@@ -61,7 +61,7 @@ class _CalificarEntregaState extends State<CalificarEntrega> {
   }
 
   Widget _gracias(int estrellas) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Semantics(header: true, child: const Text('¡Gracias por calificar!', style: FgText.h3)),
+        Semantics(header: true, child: Text('¡Gracias por calificar!', style: FgText.h3)),
         const SizedBox(height: FgSpace.sp2),
         _Estrellas(valor: estrellas),
         const SizedBox(height: FgSpace.sp2),
@@ -72,7 +72,7 @@ class _CalificarEntregaState extends State<CalificarEntrega> {
       ]);
 
   Widget _formulario() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Semantics(header: true, child: const Text('¿Cómo estuvo la entrega?', style: FgText.h3)),
+        Semantics(header: true, child: Text('¿Cómo estuvo la entrega?', style: FgText.h3)),
         const SizedBox(height: FgSpace.sp2),
         Text(
           'Tu calificación nos ayuda a mejorar. Es opcional y solo toma un momento.',

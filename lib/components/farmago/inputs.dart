@@ -202,8 +202,8 @@ class _FgTextFieldState extends State<FgTextField> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(top: 2),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
                   child: Icon(Icons.error_outline, size: FgSize.iconoSm, color: FgColors.incumplidoFg),
                 ),
                 const SizedBox(width: FgSpace.sp2),

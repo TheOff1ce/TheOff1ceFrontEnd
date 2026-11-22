@@ -170,17 +170,17 @@ class _FgPuntoEnVivoState extends State<FgPuntoEnVivo> with SingleTickerProvider
                   opacity: MediaQuery.disableAnimationsOf(context) ? 0 : .55 * (1 - t),
                   child: Transform.scale(
                     scale: 1 + 1.8 * t,
-                    child: const DecoratedBox(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(color: FgColors.cumplidoSolid, shape: BoxShape.circle),
-                      child: SizedBox(width: lado, height: lado),
+                      child: const SizedBox(width: lado, height: lado),
                     ),
                   ),
                 );
               },
             ),
-            const DecoratedBox(
+            DecoratedBox(
               decoration: BoxDecoration(color: FgColors.cumplidoSolid, shape: BoxShape.circle),
-              child: SizedBox(width: lado, height: lado),
+              child: const SizedBox(width: lado, height: lado),
             ),
           ],
         ),

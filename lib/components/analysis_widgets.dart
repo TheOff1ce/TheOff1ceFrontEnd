@@ -60,7 +60,7 @@ class StepIndicator extends StatelessWidget {
         textAlign: TextAlign.center,
         style: FgText.caption.copyWith(
           fontWeight: current ? FontWeight.w700 : FontWeight.w400,
-          color: reached ? FgColors.azul800 : FgColors.inkSoft,
+          color: reached ? FgColors.azulTexto : FgColors.inkSoft,
         ),
       ),
     ]);

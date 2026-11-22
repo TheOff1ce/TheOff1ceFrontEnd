@@ -8,10 +8,13 @@ import '../notifications/notification_item.dart';
 import '../components/farmago/buttons.dart';
 
 class NotificationsPage extends StatelessWidget {
-  const NotificationsPage({super.key, required this.notifications, required this.onBack});
+  const NotificationsPage({super.key, required this.notifications, required this.onBack, this.onAbrir});
 
   final NotificationController notifications;
   final VoidCallback onBack;
+
+  /// Abre la pantalla de una notificación con destino (por ejemplo, el seguimiento del domicilio).
+  final ValueChanged<String>? onAbrir;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -28,7 +31,7 @@ class NotificationsPage extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: 640),
                 child: notifications.loading
                     ? const Center(child: DelayedSpinner(label: 'Cargando notificaciones'))
-                    : _NotificationContent(notifications: notifications),
+                    : _NotificationContent(notifications: notifications, onAbrir: onAbrir),
               ),
             ),
           ),
@@ -74,9 +77,10 @@ class NotificationBellButton extends StatelessWidget {
 }
 
 class _NotificationContent extends StatelessWidget {
-  const _NotificationContent({required this.notifications});
+  const _NotificationContent({required this.notifications, this.onAbrir});
 
   final NotificationController notifications;
+  final ValueChanged<String>? onAbrir;
 
   Future<void> _remove(BuildContext context, NotificationItem item) async {
     final removed = await notifications.remove(item.id);
@@ -116,7 +120,7 @@ class _NotificationContent extends StatelessWidget {
         ]),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Aquí verás actualizaciones sobre los análisis que realizas en FARMA GO.',
+          'Aquí verás cómo van tus domicilios y los análisis de tus fórmulas.',
           style: context.text.bodyLarge,
         ),
         if (notifications.hasReadItems)
@@ -135,7 +139,11 @@ class _NotificationContent extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: AppSpacing.m),
             child: _NotificationCard(
               notification: item,
-              onOpen: () => notifications.markAsRead(item.id),
+              onOpen: () {
+                notifications.markAsRead(item.id);
+                final ruta = item.ruta;
+                if (ruta != null) onAbrir?.call(ruta);
+              },
               onDelete: () => _remove(context, item),
             ),
           ),
@@ -189,7 +197,7 @@ class _EmptyNotifications extends StatelessWidget {
               Text('No tienes notificaciones', style: context.text.headlineSmall, textAlign: TextAlign.center),
               const SizedBox(height: AppSpacing.s),
               Text(
-                'Cuando termine un análisis de fórmula, verás la actualización aquí.',
+                'Cuando un repartidor tome tu pedido o termine el análisis de una fórmula, lo verás aquí.',
                 style: context.text.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -272,7 +280,11 @@ class _NotificationKindIcon extends StatelessWidget {
           height: 42,
           decoration: BoxDecoration(color: context.colors.surface, borderRadius: BorderRadius.circular(AppRadii.s)),
           child: Icon(
-            kind == NotificationKind.analysis ? Icons.document_scanner_outlined : Icons.info_outline,
+            switch (kind) {
+              NotificationKind.analysis => Icons.document_scanner_outlined,
+              NotificationKind.delivery => Icons.delivery_dining_outlined,
+              NotificationKind.system => Icons.info_outline,
+            },
             color: context.colors.primary,
           ),
         ),

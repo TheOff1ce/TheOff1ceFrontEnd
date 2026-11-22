@@ -105,7 +105,7 @@ class LandingNoHace extends StatelessWidget {
           children: [
             const _Titular('Lo que FarmaGo no decide'),
             const SizedBox(height: FgSpace.sp3),
-            const Text(
+            Text(
               'FarmaGo organiza la logística y el seguimiento de cada entrega. No participa en estas decisiones:',
               style: FgText.bodyLg,
             ),
@@ -119,7 +119,7 @@ class LandingNoHace extends StatelessWidget {
                       // Guion centrado en la primera línea de texto: la altura de línea sale del propio estilo.
                       SizedBox(
                         height: FgText.body.fontSize! * FgText.body.height!,
-                        child: const ExcludeSemantics(
+                        child: ExcludeSemantics(
                           child: Center(
                             child: SizedBox(
                               width: FgSpace.sp3,

@@ -168,7 +168,7 @@ class _Encabezado extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Semantics(header: true, child: const Text(OrdenesTextos.pedirADomicilio, style: FgText.h2)),
+                  Semantics(header: true, child: Text(OrdenesTextos.pedirADomicilio, style: FgText.h2)),
                   Text(OrdenesTextos.ordenId(controlador.orden.id), style: FgText.num(FgText.caption)),
                 ],
               ),
@@ -365,7 +365,7 @@ class _Fila extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(minHeight: FgSize.filaTabla),
       padding: const EdgeInsets.symmetric(vertical: FgSpace.sp2),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1))),
       child: Row(
         children: [
           SizedBox(
@@ -379,8 +379,8 @@ class _Fila extends StatelessWidget {
                 child: ScaleTransition(scale: Tween<double>(begin: .6, end: 1).animate(animacion), child: hijo),
               ),
               child: confirmado
-                  ? const FgGlifo(
-                      key: ValueKey('ok'),
+                  ? FgGlifo(
+                      key: const ValueKey('ok'),
                       color: FgColors.cumplidoSolid,
                       simbolo: Icons.check,
                       diametro: FgSize.anilloSello,
@@ -431,7 +431,7 @@ class _Exito extends StatelessWidget {
                   fraccion: v,
                   centro: Opacity(
                     opacity: v,
-                    child: const Icon(Icons.check, size: FgSize.simboloS, color: FgColors.cumplidoSolid),
+                    child: Icon(Icons.check, size: FgSize.simboloS, color: FgColors.cumplidoSolid),
                   ),
                 ),
               ),
@@ -451,7 +451,7 @@ class _Exito extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Referencia del pedido', style: FgText.caption),
+                  Text('Referencia del pedido', style: FgText.caption),
                   Text(referencia, style: FgText.num(FgText.cifra)),
                 ],
               ),
@@ -515,7 +515,7 @@ class _Pie extends StatelessWidget {
     };
     return Container(
       padding: EdgeInsets.fromLTRB(relleno, FgSpace.sp4, relleno, compacto ? FgSpace.sp4 : FgSpace.sp5),
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: FgColors.linea, width: FgBorder.w1))),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: FgColors.linea, width: FgBorder.w1))),
       child: compacto
           ? Column(
               mainAxisSize: MainAxisSize.min,

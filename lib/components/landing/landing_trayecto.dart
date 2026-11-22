@@ -77,7 +77,7 @@ class _NumeroPaso extends StatelessWidget {
         width: FgSize.ctrlSm,
         height: FgSize.ctrlSm,
         alignment: Alignment.center,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             color: FgColors.azul600, shape: BoxShape.circle),
         child: ExcludeSemantics(
           child: Text('$numero',

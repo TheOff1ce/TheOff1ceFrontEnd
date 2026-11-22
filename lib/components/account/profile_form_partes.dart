@@ -11,11 +11,11 @@ class _LockedDocument extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Documento', style: FgText.label),
+            Text('Documento', style: FgText.label),
             const SizedBox(height: FgSpace.sp1),
             Text('${type.label} · $number', style: FgText.num(FgText.body)),
             const SizedBox(height: FgSpace.sp1),
-            const Text(
+            Text(
               'Para corregirlo, pide ayuda a un administrador.',
               style: FgText.caption,
             ),
@@ -44,9 +44,9 @@ class _ConsentCheck extends StatelessWidget {
                 children: [
                   Checkbox(value: value, onChanged: onChanged == null ? null : (v) => onChanged!(v ?? false)),
                   const SizedBox(width: FgSpace.sp2),
-                  const Expanded(
+                  Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(top: FgSpace.sp2),
+                      padding: const EdgeInsets.only(top: FgSpace.sp2),
                       child: Text(
                         'Autorizo a FARMA GO a tratar mis datos personales para gestionar mis medicamentos y '
                         'domicilios, según la Ley 1581 de 2012. Puedo consultarlos, corregirlos o pedir que se '
@@ -80,8 +80,8 @@ class _FieldError extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 2),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
               child: Icon(Icons.error_outline, size: 16, color: FgColors.peligro),
             ),
             const SizedBox(width: FgSpace.sp2),

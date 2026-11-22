@@ -289,7 +289,7 @@ class _PaginacionAncha extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         constraints: const BoxConstraints(minHeight: FgSize.pieTabla),
         padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp4h, vertical: FgSpace.sp2),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(top: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
         ),
         child: Wrap(
@@ -302,7 +302,7 @@ class _PaginacionAncha extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Filas por página', style: FgText.caption),
+                Text('Filas por página', style: FgText.caption),
                 const SizedBox(width: FgSpace.sp2),
                 _SelectorFilas(controller: controller),
                 const SizedBox(width: FgSpace.sp4),

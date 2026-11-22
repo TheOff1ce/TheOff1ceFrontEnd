@@ -234,11 +234,11 @@ class _Datos extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: FgSpace.sp3),
             decoration: BoxDecoration(
               border: indice == 0
-                  ? const Border(
+                  ? Border(
                       top: BorderSide(color: FgColors.linea, width: FgBorder.w1),
                       bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1),
                     )
-                  : const Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
+                  : Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
             ),
             child: Semantics(
               container: true,
@@ -322,7 +322,7 @@ class _Paso extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(etiqueta, style: FgText.label.copyWith(color: hecho ? FgColors.azul800 : FgColors.inkSoft)),
+                  Text(etiqueta, style: FgText.label.copyWith(color: hecho ? FgColors.azulTexto : FgColors.inkSoft)),
                   Text(detalle, style: FgText.num(FgText.caption)),
                 ],
               ),
@@ -353,8 +353,8 @@ class _Novedades extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: FgSpace.sp3),
             decoration: BoxDecoration(
               border: Border(
-                top: indice == 0 ? const BorderSide(color: FgColors.linea, width: FgBorder.w1) : BorderSide.none,
-                bottom: const BorderSide(color: FgColors.linea, width: FgBorder.w1),
+                top: indice == 0 ? BorderSide(color: FgColors.linea, width: FgBorder.w1) : BorderSide.none,
+                bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1),
               ),
             ),
             child: _NovedadItem(novedad: novedad, ahora: ahora),
