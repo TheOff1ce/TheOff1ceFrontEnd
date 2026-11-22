@@ -101,11 +101,12 @@ class _Contenido extends StatelessWidget {
   }
 
   /// «viernes 21 de noviembre» (hora local), para situar las cifras del administrador.
-  static String _fechaHoy() {
+  /// Usa el reloj del tablero (fijo en las pruebas) para que la captura no cambie según el día.
+  String _fechaHoy() {
     const dias = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
     const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre',
       'octubre', 'noviembre', 'diciembre'];
-    final hoy = DateTime.now();
+    final hoy = _w.inicioAdmin?.ahora ?? DateTime.now();
     return '${dias[hoy.weekday - 1]} ${hoy.day} de ${meses[hoy.month - 1]}';
   }
 
