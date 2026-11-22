@@ -5,6 +5,7 @@ import '../auth/auth_controller.dart';
 import '../components/farmago/banda_sin_conexion.dart';
 import '../components/farmago/feedback.dart';
 import '../notifications/vigia_domicilios.dart';
+import 'apariencia.dart';
 import 'app_dependencies.dart';
 import 'app_router.dart';
 import 'theme/app_theme.dart';
@@ -55,7 +56,10 @@ class _FarmaGoAppState extends State<FarmaGoApp> with WidgetsBindingObserver {
     super.initState();
     _auth.addListener(_syncSessionScopedState);
     WidgetsBinding.instance.addObserver(this);
-    FgModo.oscuro = _sistemaOscuro;
+    FgModo.oscuro = _oscuroAhora;
+    AparienciaController.instancia
+      ..addListener(_aplicarModo)
+      ..cargar();
     _ciclo; // empieza a escuchar si la app se ve o se oculta
     _auth.restore();
   }
@@ -64,6 +68,7 @@ class _FarmaGoAppState extends State<FarmaGoApp> with WidgetsBindingObserver {
   void dispose() {
     _auth.removeListener(_syncSessionScopedState);
     WidgetsBinding.instance.removeObserver(this);
+    AparienciaController.instancia.removeListener(_aplicarModo);
     _ciclo.dispose();
     _vigia?.detener();
     _router.dispose();
@@ -105,12 +110,18 @@ class _FarmaGoAppState extends State<FarmaGoApp> with WidgetsBindingObserver {
   static bool get _sistemaOscuro =>
       WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
 
-  /// El sistema cambió entre claro y oscuro: los tokens cambian de valor y toda la app se vuelve a
-  /// pintar, incluidos los widgets `const` (que Flutter no reconstruiría solos). No se pierde nada:
-  /// ni la pantalla abierta ni lo escrito en los formularios.
+  /// Oscuro o claro según la apariencia elegida (o el dispositivo, si es automática).
+  static bool get _oscuroAhora =>
+      AparienciaController.instancia.valor.oscuraCon(sistemaOscuro: _sistemaOscuro);
+
   @override
-  void didChangePlatformBrightness() {
-    final oscuro = _sistemaOscuro;
+  void didChangePlatformBrightness() => _aplicarModo();
+
+  /// Cambió el modo (el dispositivo o la persona en «Apariencia»): los tokens cambian de valor y toda
+  /// la app se vuelve a pintar, incluidos los widgets `const` (que Flutter no reconstruiría solos).
+  /// No se pierde nada: ni la pantalla abierta ni lo escrito en los formularios.
+  void _aplicarModo() {
+    final oscuro = _oscuroAhora;
     if (oscuro == FgModo.oscuro || !mounted) return;
     setState(() => FgModo.oscuro = oscuro);
     void marcar(Element e) {

@@ -7,6 +7,7 @@ import '../components/account/profile_form.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/layout.dart';
+import '../components/farmago/selector_apariencia.dart';
 import '../types/auth_models.dart';
 import '../utils/pendiente_format.dart';
 
@@ -108,6 +109,20 @@ class _AccountPageState extends State<AccountPage> {
                       ),
                       const SizedBox(height: FgSpace.sp6),
                     ],
+                    const _SectionTitle('Apariencia'),
+                    Text(
+                      'Automática sigue la configuración de tu dispositivo. El cambio se ve al instante.',
+                      style: FgText.body.copyWith(color: FgColors.inkSoft),
+                    ),
+                    const SizedBox(height: FgSpace.sp4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: const FgSelectorApariencia(),
+                      ),
+                    ),
+                    const SizedBox(height: FgSpace.sp6),
                     const _SectionTitle('Sesión'),
                     Text(
                       'Cierra la sesión en este dispositivo. Tus datos se quedan guardados.',

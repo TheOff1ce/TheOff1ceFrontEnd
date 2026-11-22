@@ -146,11 +146,13 @@ class _HomePageState extends State<HomePage> {
                   onPressed: widget.onNotifications,
                 ),
               ),
-              // Quién tiene la sesión abierta, junto a las notificaciones; abre «Mi cuenta».
+              // Quién tiene la sesión abierta, junto a las notificaciones; abre el menú de la cuenta.
               FgCuentaChip(
                 nombre: widget.auth.user?.name ?? '',
+                correo: widget.auth.user?.email,
                 rol: widget.auth.user?.roleLabel ?? '',
                 onTap: widget.onAccount,
+                onCerrarSesion: widget.auth.logout,
               ),
             ],
             cuerpo: _Contenido(pantalla: this, movil: false, ancho: ancho),
