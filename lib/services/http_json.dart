@@ -5,18 +5,23 @@ import 'package:http/http.dart' as http;
 
 import '../errors/app_error.dart';
 import '../errors/error_mapper.dart';
+import 'estado_conexion.dart';
 
 /// Sends a request within a time budget and turns transport failures into
 /// [AppError]s (FE-004). Works the same on web (ClientException) and on
 /// native platforms (SocketException wrapped or not).
 Future<http.Response> sendWithin(Duration budget, Future<http.Response> Function() request) async {
   try {
-    return await request().timeout(budget);
+    final response = await request().timeout(budget);
+    EstadoConexion.instancia.respuesta();
+    return response;
   } on TimeoutException catch (error) {
+    EstadoConexion.instancia.demora();
     throw ErrorMapper.fromException(error);
   } on AppError {
     rethrow;
   } on Exception catch (error) {
+    EstadoConexion.instancia.falloDeRed();
     throw ErrorMapper.network(error);
   }
 }

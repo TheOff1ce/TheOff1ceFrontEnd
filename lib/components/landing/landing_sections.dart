@@ -17,10 +17,11 @@ bool landingEscritorio(BuildContext context) =>
 
 /// Titular de sección: sin kicker ni numeración, el texto carga el peso.
 class _Titular extends StatelessWidget {
-  const _Titular(this.texto, {this.color = FgColors.ink});
+  const _Titular(this.texto, {Color? color}) : _color = color;
 
   final String texto;
-  final Color color;
+  final Color? _color;
+  Color get color => _color ?? FgColors.ink;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -41,7 +42,7 @@ class LogoOficial extends StatelessWidget {
         image: true,
         label: 'Logo de FarmaGo, de la farmacia a tu puerta',
         child: Image.asset(
-          'assets/images/logo_farmago.png',
+          FgColors.logoCompleto,
           width: ancho,
           fit: BoxFit.contain,
         ),
@@ -126,11 +127,11 @@ class _HeroTexto extends StatelessWidget {
           child: Text(
             'Tu medicamento, de la farmacia a tu puerta.',
             style: (ancha ? FgText.display : FgText.h1(ancho))
-                .copyWith(color: FgColors.azul800),
+                .copyWith(color: FgColors.azulTexto),
           ),
         ),
         const SizedBox(height: FgSpace.sp5),
-        const Text(
+        Text(
           'FarmaGo conecta a tu EPS, tu farmacia y tu repartidor, y te muestra en qué va cada entrega, desde que sale de la farmacia hasta que la recibes.',
           style: FgText.bodyLg,
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
+import '../app/theme/farmago_tokens.dart';
 import '../types/medication.dart';
 import 'farmago/card.dart';
 
@@ -112,7 +113,7 @@ class ConfidenceIndicator extends StatelessWidget {
         if (confidence != null) ...[
           const SizedBox(height: AppSpacing.s),
           ExcludeSemantics(
-            child: LinearProgressIndicator(value: confidence, color: foreground, backgroundColor: Colors.white),
+            child: LinearProgressIndicator(value: confidence, color: foreground, backgroundColor: FgColors.superficie),
           ),
         ],
         if (requiresReview)

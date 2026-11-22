@@ -137,7 +137,7 @@ class _RequestDeliveryPageState extends State<RequestDeliveryPage> {
               onPressed: _submit,
             ),
             children: [
-              const Text(
+              Text(
                 'Un repartidor recoge tu pedido en la farmacia y lo sigues en el mapa hasta tu puerta.',
                 style: FgText.bodyLg,
               ),
@@ -291,7 +291,7 @@ class QuantityStepper extends StatelessWidget {
         label: label,
         value: '$value',
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          const Text('Cantidad', style: FgText.label),
+          Text('Cantidad', style: FgText.label),
           const SizedBox(width: FgSpace.sp3),
           IconButton.outlined(
             tooltip: 'Quitar uno',

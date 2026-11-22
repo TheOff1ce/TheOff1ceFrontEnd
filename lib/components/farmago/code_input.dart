@@ -26,7 +26,7 @@ class _Box extends StatelessWidget {
         : active
             ? FgColors.azul600
             : filled
-                ? FgColors.azul800
+                ? FgColors.azulTexto
                 : FgColors.lineaControl;
     return AnimatedContainer(
       duration: FgMotion.reducir(context, FgMotion.rapida),
@@ -179,8 +179,8 @@ class _FgCodeInputState extends State<FgCodeInput> {
             liveRegion: hasError,
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (hasError) ...[
-                const Padding(
-                  padding: EdgeInsets.only(top: 2),
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
                   child: Icon(Icons.error_outline, size: 16, color: FgColors.peligro),
                 ),
                 const SizedBox(width: FgSpace.sp2),

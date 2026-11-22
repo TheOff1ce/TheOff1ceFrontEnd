@@ -121,8 +121,8 @@ class _TrackingPageState extends State<TrackingPage> {
             ),
           ),
       ] else
-        const Padding(
-          padding: EdgeInsets.only(bottom: FgSpace.sp4),
+        Padding(
+          padding: const EdgeInsets.only(bottom: FgSpace.sp4),
           child: Text('La ubicación del repartidor ya no se comparte.', style: FgText.body),
         ),
       if (widget.showPatientActions && d.awaitsCode) ...[
@@ -171,7 +171,7 @@ class _EnVivo extends StatelessWidget {
         Icon(
           connected ? Icons.wifi_tethering : Icons.wifi_tethering_off,
           size: FgSize.iconoSm,
-          color: connected ? FgColors.azul800 : FgColors.inkSoft,
+          color: connected ? FgColors.azulTexto : FgColors.inkSoft,
         ),
         const SizedBox(width: FgSpace.sp2),
         Text(connected ? 'En vivo' : 'Reconectando…', style: FgText.label),
@@ -180,10 +180,11 @@ class _EnVivo extends StatelessWidget {
 
 /// Dato con etiqueta pequeña y valor debajo, legible de un vistazo.
 class _Dato extends StatelessWidget {
-  const _Dato({required this.etiqueta, required this.valor, this.estilo = FgText.bodyLg});
+  const _Dato({required this.etiqueta, required this.valor, TextStyle? estilo}) : _estilo = estilo;
 
   final String etiqueta, valor;
-  final TextStyle estilo;
+  final TextStyle? _estilo;
+  TextStyle get estilo => _estilo ?? FgText.bodyLg;
 
   @override
   Widget build(BuildContext context) => Padding(

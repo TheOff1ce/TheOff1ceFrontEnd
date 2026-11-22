@@ -82,7 +82,7 @@ class _FgFocusRingState extends State<FgFocusRing> {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(widget.radius + fuera),
-                  border: Border.all(color: FgColors.azul800, width: FgBorder.foco),
+                  border: Border.all(color: FgColors.azulTexto, width: FgBorder.foco),
                 ),
               ),
             ),

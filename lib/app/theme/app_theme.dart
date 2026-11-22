@@ -5,21 +5,21 @@ import 'farmago_tokens.dart';
 /// Brand palette = tokens of the unified FarmaGo manual (`farmago_tokens.dart`). Widgets never
 /// use these directly: they read the [ColorScheme] and [AppStatusColors] built from them (FE-009).
 abstract final class _Palette {
-  static const navy = FgColors.azul800;
-  static const blue = FgColors.azul600;
-  static const light = FgColors.azul100;
-  static const background = FgColors.fondo;
-  static const text = FgColors.ink;
-  static const secondaryText = FgColors.inkSoft;
-  static const outline = FgColors.lineaControl;
-  static const line = FgColors.linea;
-  static const warning = FgColors.riesgoBg;
-  static const warningText = FgColors.riesgoFg;
-  static const error = FgColors.peligro;
-  static const errorContainer = FgColors.incumplidoBg;
-  static const errorText = FgColors.incumplidoFg;
-  static const success = FgColors.cumplidoFg;
-  static const successContainer = FgColors.cumplidoBg;
+  static Color get navy => FgColors.azulTexto;
+  static Color get blue => FgColors.azul600;
+  static Color get light => FgColors.azul100;
+  static Color get background => FgColors.fondo;
+  static Color get text => FgColors.ink;
+  static Color get secondaryText => FgColors.inkSoft;
+  static Color get outline => FgColors.lineaControl;
+  static Color get line => FgColors.linea;
+  static Color get warning => FgColors.riesgoBg;
+  static Color get warningText => FgColors.riesgoFg;
+  static Color get error => FgColors.peligro;
+  static Color get errorContainer => FgColors.incumplidoBg;
+  static Color get errorText => FgColors.incumplidoFg;
+  static Color get success => FgColors.cumplidoFg;
+  static Color get successContainer => FgColors.cumplidoBg;
 }
 
 /// Spacing scale (multiples of 4). Legacy aliases of [FgSpace]; new code uses [FgSpace] directly.
@@ -64,7 +64,7 @@ class AppStatusColors extends ThemeExtension<AppStatusColors> {
   final Color decorative;
   final Color mutedText;
 
-  static const light = AppStatusColors(
+  static AppStatusColors get light => AppStatusColors(
     warningContainer: _Palette.warning,
     onWarningContainer: _Palette.warningText,
     successContainer: _Palette.successContainer,
@@ -116,7 +116,8 @@ abstract final class AppTheme {
   static const fontFamily = FgText.family;
 
   static ThemeData get light {
-    const scheme = ColorScheme.light(
+    // El mismo esquema en los dos modos: los tokens ya traen el color de cada uno.
+    final scheme = (FgModo.oscuro ? ColorScheme.dark : ColorScheme.light)(
       primary: _Palette.blue,
       onPrimary: FgColors.blanco,
       primaryContainer: _Palette.light,
@@ -163,9 +164,9 @@ abstract final class AppTheme {
       dividerColor: _Palette.line,
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
-      extensions: const [AppStatusColors.light],
-      dividerTheme: const DividerThemeData(color: _Palette.line, thickness: FgBorder.w1, space: FgBorder.w1),
-      appBarTheme: const AppBarTheme(
+      extensions: [AppStatusColors.light],
+      dividerTheme: DividerThemeData(color: _Palette.line, thickness: FgBorder.w1, space: FgBorder.w1),
+      appBarTheme: AppBarTheme(
         backgroundColor: FgColors.superficie,
         surfaceTintColor: Colors.transparent,
         foregroundColor: _Palette.text,
@@ -211,7 +212,7 @@ abstract final class AppTheme {
               ? FgColors.deshabilitadoBg
               : pick(s, rest: FgColors.azul100, hover: FgColors.azul200, pressed: FgColors.azul200)),
           foregroundColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azul800),
+              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azulTexto),
           side: const WidgetStatePropertyAll(BorderSide.none),
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
@@ -223,7 +224,7 @@ abstract final class AppTheme {
           backgroundColor: WidgetStateProperty.resolveWith(
               (s) => pick(s, rest: Colors.transparent, hover: FgColors.azul100, pressed: FgColors.azul200)),
           foregroundColor: WidgetStateProperty.resolveWith(
-              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azul800),
+              (s) => s.contains(WidgetState.disabled) ? FgColors.deshabilitadoFg : FgColors.azulTexto),
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
@@ -232,26 +233,26 @@ abstract final class AppTheme {
           minimumSize: const WidgetStatePropertyAll(Size(FgSize.tapMin, FgSize.tapMin)),
           iconSize: const WidgetStatePropertyAll(FgSize.iconoMd),
           shape: buttonShape,
-          foregroundColor: const WidgetStatePropertyAll(_Palette.text),
+          foregroundColor: WidgetStatePropertyAll(_Palette.text),
           backgroundColor: WidgetStateProperty.resolveWith(
               (s) => pick(s, rest: Colors.transparent, hover: FgColors.azul100, pressed: FgColors.azul200)),
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: FgColors.azul600,
         foregroundColor: FgColors.blanco,
         elevation: 0,
-        extendedTextStyle: TextStyle(fontFamily: FgText.family, fontSize: 18, fontWeight: FontWeight.w700),
+        extendedTextStyle: const TextStyle(fontFamily: FgText.family, fontSize: 18, fontWeight: FontWeight.w700),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: FgColors.superficie,
         selectedColor: FgColors.azul100,
         disabledColor: FgColors.deshabilitadoBg,
         labelStyle: FgText.caption.copyWith(color: _Palette.text, fontWeight: FontWeight.w600),
-        secondaryLabelStyle: FgText.caption.copyWith(color: FgColors.azul800, fontWeight: FontWeight.w700),
-        checkmarkColor: FgColors.azul800,
-        side: const BorderSide(color: _Palette.outline, width: FgBorder.control),
+        secondaryLabelStyle: FgText.caption.copyWith(color: FgColors.azulTexto, fontWeight: FontWeight.w700),
+        checkmarkColor: FgColors.azulTexto,
+        side: BorderSide(color: _Palette.outline, width: FgBorder.control),
         shape: const StadiumBorder(),
         padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3, vertical: FgSpace.sp2),
       ),
@@ -271,10 +272,10 @@ abstract final class AppTheme {
         titleTextStyle: FgText.h3,
         contentTextStyle: FgText.body,
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
+      bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: FgColors.superficie,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(FgRadius.lg))),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(FgRadius.lg))),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -283,7 +284,7 @@ abstract final class AppTheme {
         actionTextColor: FgColors.enlaceSobreOscuro,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.sm)),
       ),
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
+      progressIndicatorTheme: ProgressIndicatorThemeData(
         color: FgColors.azul600,
         linearTrackColor: FgColors.track,
         circularTrackColor: Colors.transparent,
@@ -298,7 +299,7 @@ abstract final class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp3, vertical: FgSpace.sp2),
         waitDuration: const Duration(milliseconds: 300),
       ),
-      listTileTheme: const ListTileThemeData(minVerticalPadding: FgSpace.sp3, iconColor: _Palette.secondaryText),
+      listTileTheme: ListTileThemeData(minVerticalPadding: FgSpace.sp3, iconColor: _Palette.secondaryText),
     );
   }
 

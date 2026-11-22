@@ -69,7 +69,7 @@ class _AdminRatingsPageState extends State<AdminRatingsPage> {
                 _Malas(reporte: r, controller: c, onVerEntrega: widget.onVerEntrega),
                 if (r.truncado) ...[
                   const SizedBox(height: FgSpace.sp3),
-                  const Text('Hay muchas calificaciones en este periodo: las cifras cubren las más recientes.',
+                  Text('Hay muchas calificaciones en este periodo: las cifras cubren las más recientes.',
                       style: FgText.caption),
                 ],
               ],
@@ -149,11 +149,11 @@ class _Repartidores extends StatelessWidget {
   Widget build(BuildContext context) => FgCard(
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const SectionHeading('Por repartidor'),
-          const Text('El promedio más bajo aparece primero.', style: FgText.caption),
+          Text('El promedio más bajo aparece primero.', style: FgText.caption),
           const SizedBox(height: FgSpace.sp3),
-          if (reporte.repartidores.isEmpty) const Text('Sin repartidores calificados.', style: FgText.body),
+          if (reporte.repartidores.isEmpty) Text('Sin repartidores calificados.', style: FgText.body),
           for (final (i, d) in reporte.repartidores.indexed) ...[
-            if (i > 0) const Divider(height: FgSpace.sp5, color: FgColors.lineaSuave),
+            if (i > 0) Divider(height: FgSpace.sp5, color: FgColors.lineaSuave),
             Semantics(
               label: '${controller.nombreDe(d.repartidorId)}: promedio ${_decimal(d.promedio)}, '
                   '${d.cantidad} ${d.cantidad == 1 ? 'calificación' : 'calificaciones'}'
@@ -191,7 +191,7 @@ class _Malas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Semantics(header: true, child: const Text('Calificaciones malas (1 o 2 estrellas)', style: FgText.h3)),
+        Semantics(header: true, child: Text('Calificaciones malas (1 o 2 estrellas)', style: FgText.h3)),
         const SizedBox(height: FgSpace.sp3),
         if (reporte.malas.isEmpty)
           const FgBanner(kind: FgBannerKind.exito, message: 'No hubo calificaciones malas en este periodo.')

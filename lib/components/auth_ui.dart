@@ -431,7 +431,7 @@ class LoginLayout extends StatelessWidget {
         // Logo oficial de FarmaGo.
         Center(
           child: Image.asset(
-            'assets/images/logo_farmago.png',
+            FgColors.logoCompleto,
             width: isMobile ? 200 : 240,
             fit: BoxFit.contain,
             semanticLabel: 'FarmaGo, de la farmacia a tu puerta',

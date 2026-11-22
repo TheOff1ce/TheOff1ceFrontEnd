@@ -34,7 +34,8 @@ class _Contenido extends StatelessWidget {
             ]),
             const SizedBox(height: FgSpace.sp5),
           ],
-          if (_w.auth.connectionIssue)
+          // Si no hay internet, ya lo dice la banda de arriba: no se repite aquí.
+          if (_w.auth.connectionIssue && !EstadoConexion.instancia.sinConexion)
             Padding(
               padding: const EdgeInsets.only(bottom: FgSpace.sp5),
               child: FgBanner(
@@ -256,11 +257,11 @@ class _Contenido extends StatelessWidget {
   /// Sin domicilio en curso ni pendientes: qué pasa y qué hacer. Aquí no se usa ilustración;
   /// el manual §22 la permite solo con condiciones.
   Widget _bloqueVacio() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Semantics(header: true, child: const Text('No tienes domicilios ni pendientes activos.', style: FgText.h2)),
+        Semantics(header: true, child: Text('No tienes domicilios ni pendientes activos.', style: FgText.h2)),
         const SizedBox(height: FgSpace.sp2),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: FgSize.medidaTexto),
-          child: const Text('Cuando pidas un domicilio o se registre un pendiente, lo verás aquí.', style: FgText.body),
+          child: Text('Cuando pidas un domicilio o se registre un pendiente, lo verás aquí.', style: FgText.body),
         ),
         const SizedBox(height: FgSpace.sp5),
         FgButton(
@@ -370,10 +371,11 @@ class _Panel extends StatelessWidget {
 }
 
 class _Dato extends StatelessWidget {
-  const _Dato({required this.etiqueta, required this.valor, this.estilo = FgText.bodyLg});
+  const _Dato({required this.etiqueta, required this.valor, TextStyle? estilo}) : _estilo = estilo;
 
   final String etiqueta, valor;
-  final TextStyle estilo;
+  final TextStyle? _estilo;
+  TextStyle get estilo => _estilo ?? FgText.bodyLg;
 
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

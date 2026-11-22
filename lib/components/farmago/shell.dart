@@ -169,7 +169,7 @@ class _BarraLateral extends StatelessWidget {
         child: Container(
           key: const ValueKey('navegacion-lateral'),
           width: colapsada ? FgSize.sidebarColapsado : FgSize.sidebar,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: FgColors.superficie,
             border: Border(right: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
           ),
@@ -184,7 +184,7 @@ class _BarraLateral extends StatelessWidget {
                   child: colapsada
                       ? const Center(child: FgLogoSimbolo(lado: FgSize.ctrlSm))
                       : Image.asset(
-                          'assets/images/logo_farmago.png',
+                          FgColors.logoCompleto,
                           width: FgSize.logoBarraLateral,
                           semanticLabel: 'FarmaGo',
                         ),
@@ -243,7 +243,7 @@ class _ItemLateralState extends State<_ItemLateral> {
         children: [
           // Icono + etiqueta (§23): se reconoce el destino sin leer. Inactivos en tinta suave.
           ExcludeSemantics(
-            child: Icon(d.icono, size: FgSize.iconoMd, color: activo ? FgColors.azul800 : FgColors.navInactivo),
+            child: Icon(d.icono, size: FgSize.iconoMd, color: activo ? FgColors.azulTexto : FgColors.navInactivo),
           ),
           if (!widget.colapsada) ...[
             const SizedBox(width: FgSpace.sp3),
@@ -251,7 +251,7 @@ class _ItemLateralState extends State<_ItemLateral> {
               child: Text(
                 d.etiqueta,
                 style: (activo ? FgText.label : FgText.labelMedio).copyWith(
-                  color: activo ? FgColors.azul800 : FgColors.ink,
+                  color: activo ? FgColors.azulTexto : FgColors.ink,
                   fontWeight: activo ? FgWeight.bold : FgWeight.medio,
                 ),
               ),
@@ -312,7 +312,7 @@ class _PieLateralState extends State<_PieLateral> {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: FgSpace.sp3),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(top: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -362,8 +362,8 @@ class _FgCuentaChipState extends State<FgCuentaChip> {
       width: FgSize.ctrlSm,
       height: FgSize.ctrlSm,
       alignment: Alignment.center,
-      decoration: const BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
-      child: Text(inicial, style: FgText.label.copyWith(color: FgColors.azul800, fontWeight: FgWeight.bold)),
+      decoration: BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
+      child: Text(inicial, style: FgText.label.copyWith(color: FgColors.azulTexto, fontWeight: FgWeight.bold)),
     );
     final contenido = Padding(
       padding: EdgeInsets.fromLTRB(FgSpace.sp1, FgSpace.sp1, compacto ? FgSpace.sp1 : FgSpace.sp3, FgSpace.sp1),
@@ -420,7 +420,7 @@ class _BarraSuperior extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         height: FgSize.topbar,
         padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp6),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: FgColors.superficie,
           border: Border(bottom: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
         ),
@@ -441,7 +441,7 @@ class _BarraInferior extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: FgColors.superficie,
           border: Border(top: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
           boxShadow: FgShadow.barra,
@@ -513,7 +513,7 @@ class _ItemInferiorState extends State<_ItemInferior> {
                     child: Icon(
                       d.icono,
                       size: FgSize.iconoMd,
-                      color: activo ? FgColors.azul800 : FgColors.navInactivo,
+                      color: activo ? FgColors.azulTexto : FgColors.navInactivo,
                     ),
                   ),
                   const SizedBox(height: FgSpace.sp1),
@@ -521,7 +521,7 @@ class _ItemInferiorState extends State<_ItemInferior> {
                     d.etiqueta,
                     overflow: TextOverflow.ellipsis,
                     style: FgText.navMovil.copyWith(
-                      color: activo ? FgColors.azul800 : FgColors.navInactivo,
+                      color: activo ? FgColors.azulTexto : FgColors.navInactivo,
                       fontWeight: activo ? FgWeight.bold : FgWeight.medio,
                     ),
                   ),

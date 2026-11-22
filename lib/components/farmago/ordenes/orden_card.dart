@@ -94,7 +94,7 @@ class OrdenCard extends StatelessWidget {
                 onElegirTodos: onElegirTodos,
               ),
             for (final (j, m) in orden.medicamentos.indexed) ...[
-              if (j > 0) const Divider(height: FgBorder.w1, thickness: FgBorder.w1, color: FgColors.linea),
+              if (j > 0) Divider(height: FgBorder.w1, thickness: FgBorder.w1, color: FgColors.linea),
               FgEntrada(
                 retraso: retrasoBase + FgMotion.escalon * ((j < 5 ? j : 5) + 1),
                 child: MedicamentoOrdenRow(
@@ -213,7 +213,7 @@ class _Instruccion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: FgColors.linea, width: FgBorder.w1)),
         ),
         padding: EdgeInsets.symmetric(horizontal: relleno, vertical: FgSpace.sp2),
@@ -225,7 +225,7 @@ class _Instruccion extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const ExcludeSemantics(child: Icon(Icons.local_shipping_outlined, size: FgSize.iconoMd, color: FgColors.azul800)),
+                ExcludeSemantics(child: Icon(Icons.local_shipping_outlined, size: FgSize.iconoMd, color: FgColors.azulTexto)),
                 const SizedBox(width: FgSpace.sp3),
                 Flexible(child: Text(OrdenesTextos.puedesPedir(elegibles), style: FgText.caption.copyWith(color: FgColors.ink))),
               ],
@@ -324,7 +324,7 @@ class _MedicamentoOrdenRowState extends State<MedicamentoOrdenRow> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const ExcludeSemantics(child: Icon(Icons.block, size: FgSize.iconoSm, color: FgColors.inkSoft)),
+                          ExcludeSemantics(child: Icon(Icons.block, size: FgSize.iconoSm, color: FgColors.inkSoft)),
                           const SizedBox(width: FgSpace.sp2),
                           Expanded(child: Text(motivos, style: FgText.caption)),
                         ],
@@ -332,10 +332,10 @@ class _MedicamentoOrdenRowState extends State<MedicamentoOrdenRow> {
                     ],
                     if (widget.actualizado) ...[
                       const SizedBox(height: FgSpace.sp2),
-                      const Row(
+                      Row(
                         children: [
                           ExcludeSemantics(child: Icon(Icons.sync, size: FgSize.iconoSm, color: FgColors.riesgoFg)),
-                          SizedBox(width: FgSpace.sp2),
+                          const SizedBox(width: FgSpace.sp2),
                           Flexible(
                             child: Text(
                               OrdenesTextos.actualizadoPorEps,
@@ -355,7 +355,7 @@ class _MedicamentoOrdenRowState extends State<MedicamentoOrdenRow> {
                       Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          const Text(OrdenesTextos.tienePendiente, style: FgText.caption),
+                          Text(OrdenesTextos.tienePendiente, style: FgText.caption),
                           FgLinkButton(label: OrdenesTextos.verEnPendientes, onPressed: widget.onVerPendientes),
                         ],
                       ),

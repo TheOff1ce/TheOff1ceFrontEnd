@@ -11,78 +11,98 @@ import 'package:flutter/material.dart';
 ///
 /// Modernización visual (manual §23): los tokens marcados «§23» aligeran bordes, sombras y fondo
 /// sin cambiar la paleta ni los tamaños de texto.
+/// Modo de color de la app. Lo pone `FarmaGoApp` según el sistema (claro u oscuro) antes de
+/// construir el tema; los tokens de [FgColors] leen su valor de aquí.
+abstract final class FgModo {
+  static bool oscuro = false;
+}
+
 abstract final class FgColors {
   // Marca
-  static const azul100 = Color(0xFFE3F1F9);
-  static const azul200 = Color(0xFFBFDDF0);
-  static const azul600 = Color(0xFF0474AC);
-  static const azul700 = Color(0xFF035C8C);
-  static const azul800 = Color(0xFF034E78);
+  static Color get azul100 => FgModo.oscuro ? const Color(0xFF12344A) : const Color(0xFFE3F1F9);
+  static Color get azul200 => FgModo.oscuro ? const Color(0xFF1D4A66) : const Color(0xFFBFDDF0);
+  static Color get azul600 => FgModo.oscuro ? const Color(0xFF1C77AE) : const Color(0xFF0474AC);
+  static Color get azul700 => FgModo.oscuro ? const Color(0xFF17699B) : const Color(0xFF035C8C);
+  static Color get azul800 => FgModo.oscuro ? const Color(0xFF0D4566) : const Color(0xFF034E78);
 
   // Neutros y superficies
-  static const ink = Color(0xFF12303F);
-  static const inkSoft = Color(0xFF35505E);
-  static const placeholder = Color(0xFF5E7683);
-  static const fondo = Color(0xFFF3F8FA);
-  static const fondoHundido = Color(0xFFE9F1F4);
-  static const superficie = Color(0xFFFFFFFF);
-  static const linea = Color(0xFFC9DCE3);
-  static const lineaControl = Color(0xFF6B8795);
-  static const deshabilitadoBg = Color(0xFFE3ECF0);
-  static const deshabilitadoFg = Color(0xFF4B6573);
-  static const track = Color(0xFFC3D6DE);
-  static const skeleton = Color(0xFFDDE8ED);
-  static const scrim = Color(0x8F12303F); // rgb(18 48 63 / .56)
-  static const scrimSuave = Color(0x5212303F); // rgb(18 48 63 / .32)
+  static Color get ink => FgModo.oscuro ? const Color(0xFFE4EEF2) : const Color(0xFF12303F);
+  static Color get inkSoft => FgModo.oscuro ? const Color(0xFFB3C6CF) : const Color(0xFF35505E);
+  static Color get placeholder => FgModo.oscuro ? const Color(0xFF8EA5B0) : const Color(0xFF5E7683);
+  static Color get fondo => FgModo.oscuro ? const Color(0xFF0C171D) : const Color(0xFFF3F8FA);
+  static Color get fondoHundido => FgModo.oscuro ? const Color(0xFF08121A) : const Color(0xFFE9F1F4);
+  static Color get superficie => FgModo.oscuro ? const Color(0xFF13232C) : const Color(0xFFFFFFFF);
+  static Color get linea => FgModo.oscuro ? const Color(0xFF2C424D) : const Color(0xFFC9DCE3);
+  static Color get lineaControl => FgModo.oscuro ? const Color(0xFF6F8A97) : const Color(0xFF6B8795);
+  static Color get deshabilitadoBg => FgModo.oscuro ? const Color(0xFF1B2C35) : const Color(0xFFE3ECF0);
+  static Color get deshabilitadoFg => FgModo.oscuro ? const Color(0xFF8299A4) : const Color(0xFF4B6573);
+  static Color get track => FgModo.oscuro ? const Color(0xFF2C424D) : const Color(0xFFC3D6DE);
+  static Color get skeleton => FgModo.oscuro ? const Color(0xFF1B2C35) : const Color(0xFFDDE8ED);
+  static Color get scrim => FgModo.oscuro ? const Color(0xB3000000) : const Color(0x8F12303F); // rgb(18 48 63 / .56)
+  static Color get scrimSuave => FgModo.oscuro ? const Color(0x73000000) : const Color(0x5212303F); // rgb(18 48 63 / .32)
 
   // Estados del plazo y avisos
-  static const vigenteFg = Color(0xFF034E78);
-  static const vigenteBg = Color(0xFFE3F1F9);
-  static const vigenteSolid = Color(0xFF0474AC);
-  static const riesgoFg = Color(0xFF6B3F00);
-  static const riesgoBg = Color(0xFFFFF1D6);
-  static const riesgoSolid = Color(0xFFB35C00);
-  static const incumplidoFg = Color(0xFF8C1D18);
-  static const incumplidoBg = Color(0xFFFDE7E5);
-  static const incumplidoSolid = Color(0xFFB3261E);
-  static const cumplidoFg = Color(0xFF18552A);
-  static const cumplidoBg = Color(0xFFE4F3E6);
-  static const cumplidoSolid = Color(0xFF23703A);
+  static Color get vigenteFg => FgModo.oscuro ? const Color(0xFF9CD2F2) : const Color(0xFF034E78);
+  static Color get vigenteBg => FgModo.oscuro ? const Color(0xFF0F3247) : const Color(0xFFE3F1F9);
+  static Color get vigenteSolid => FgModo.oscuro ? const Color(0xFF2F95D0) : const Color(0xFF0474AC);
+  static Color get riesgoFg => FgModo.oscuro ? const Color(0xFFFFD08A) : const Color(0xFF6B3F00);
+  static Color get riesgoBg => FgModo.oscuro ? const Color(0xFF3A2A10) : const Color(0xFFFFF1D6);
+  static Color get riesgoSolid => FgModo.oscuro ? const Color(0xFFE08A2B) : const Color(0xFFB35C00);
+  static Color get incumplidoFg => FgModo.oscuro ? const Color(0xFFFFB4AB) : const Color(0xFF8C1D18);
+  static Color get incumplidoBg => FgModo.oscuro ? const Color(0xFF3D1715) : const Color(0xFFFDE7E5);
+  static Color get incumplidoSolid => FgModo.oscuro ? const Color(0xFFE0574C) : const Color(0xFFB3261E);
+  static Color get cumplidoFg => FgModo.oscuro ? const Color(0xFF9ED8A9) : const Color(0xFF18552A);
+  static Color get cumplidoBg => FgModo.oscuro ? const Color(0xFF12301C) : const Color(0xFFE4F3E6);
+  static Color get cumplidoSolid => FgModo.oscuro ? const Color(0xFF2F8A49) : const Color(0xFF23703A);
   // Derivados de la paleta (§23): fondos y bordes sutiles. Solo superficies y decoración, nunca texto.
   /// Tinte casi blanco del azul de marca: hover de filas y tarjetas, fondo de zonas activas.
-  static const azul50 = Color(0xFFF1F8FC);
+  static Color get azul50 => FgModo.oscuro ? const Color(0xFF10222D) : const Color(0xFFF1F8FC);
 
   /// Borde decorativo más suave que [linea] para tarjetas con sombra. No delimita controles.
-  static const lineaSuave = Color(0xFFDFEAEF);
+  static Color get lineaSuave => FgModo.oscuro ? const Color(0xFF1F323C) : const Color(0xFFDFEAEF);
 
   /// Iconos y etiquetas de navegación inactivos (7,97:1 sobre `fondo`). Reemplaza al verde de
   /// marca en la navegación: el verde se lee como «éxito».
-  static const navInactivo = inkSoft;
+  static Color get navInactivo => inkSoft;
 
   /// Color de sombra para widgets de Material con `elevation` (§23): `ink` al 18 %.
-  static const sombraMaterial = Color(0x2E12303F);
+  static Color get sombraMaterial => FgModo.oscuro ? const Color(0x66000000) : const Color(0x2E12303F);
 
-  static const neutroFg = Color(0xFF35505E);
-  static const neutroBg = Color(0xFFEEF2F4);
-  static const peligro = Color(0xFFB3261E);
-  static const peligroHover = Color(0xFF9C1F18);
-  static const peligroPressed = Color(0xFF8C1D18);
+  static Color get neutroFg => FgModo.oscuro ? const Color(0xFFB3C6CF) : const Color(0xFF35505E);
+  static Color get neutroBg => FgModo.oscuro ? const Color(0xFF1B2C35) : const Color(0xFFEEF2F4);
+  static Color get peligro => FgModo.oscuro ? const Color(0xFFC9372C) : const Color(0xFFB3261E);
+  static Color get peligroHover => FgModo.oscuro ? const Color(0xFFB33026) : const Color(0xFF9C1F18);
+  static Color get peligroPressed => FgModo.oscuro ? const Color(0xFF9E2A21) : const Color(0xFF8C1D18);
 
   /// Excepción permitida por el manual (§0.2): texto sobre fondos de color.
   static const blanco = Color(0xFFFFFFFF);
 
   /// Superficie blanca translúcida para el velo de las bandas claras (`FgGradients.velo`).
-  static const veloFuerte = Color(0xF0FFFFFF);
+  static Color get veloFuerte => FgModo.oscuro ? const Color(0xF013232C) : const Color(0xF0FFFFFF);
 
   /// Versiones transparentes de blanco y de los azules oscuros: los degradados que funden una banda
   /// con la siguiente terminan en ellas. Mantienen el tono: un degradado hacia `Colors.transparent`
   /// pasa por gris.
-  static const blancoTransparente = Color(0x00FFFFFF);
+  static Color get blancoTransparente => FgModo.oscuro ? const Color(0x0013232C) : const Color(0x00FFFFFF);
   static const azul800Transparente = Color(0x00034E78);
   static const azul700Transparente = Color(0x00035C8C);
 
+  /// Azul de marca para texto, iconos y bordes de foco sobre superficies: el `azul800` del modo
+  /// claro; en el oscuro, un azul claro que se lee sobre fondos oscuros (9,9:1 sobre superficie).
+  /// `azul800` queda para fondos (bandas profundas, botón presionado).
+  static Color get azulTexto => FgModo.oscuro ? const Color(0xFF9CD2F2) : const Color(0xFF034E78);
+
+  /// Superficie de lo que flota con texto blanco (avisos, banda sin conexión, etiquetas oscuras):
+  /// `ink` en el modo claro; en el oscuro, un escalón más claro que las superficies para que se vea.
+  static Color get superficieInversa => FgModo.oscuro ? const Color(0xFF2A4555) : const Color(0xFF12303F);
+
   /// Enlace de acción dentro del toast oscuro (manual §7.8).
   static const enlaceSobreOscuro = Color(0xFF8CC8EA);
+
+  /// Logo completo con el lema: en el modo oscuro, la variante con el lema en gris claro (el dibujo
+  /// y los colores de la marca son los mismos).
+  static String get logoCompleto =>
+      FgModo.oscuro ? 'assets/images/logo_farmago_oscuro.png' : 'assets/images/logo_farmago.png';
 
   /// Acentos de marca del logo (Anexo A). Son identidad, no datos: las estelas solo dentro del logo
   /// y `FgGradients.marca` solo en la bienvenida (manual §22). Nunca texto, estados ni datos
@@ -96,18 +116,20 @@ abstract final class FgColors {
 /// Solo en la pantalla de bienvenida y, si tiene sentido para la identidad, en splash y login
 /// (manual §3.4 y §22). No se usa como franja decorativa en cabeceras de la app.
 abstract final class FgGradients {
-  static const marca = LinearGradient(
+  static LinearGradient get marca =>
+      LinearGradient(
     // 100deg en CSS: dirección casi horizontal, ligeramente descendente.
-    begin: Alignment(-.985, -.174),
-    end: Alignment(.985, .174),
+    begin: const Alignment(-.985, -.174),
+    end: const Alignment(.985, .174),
     colors: [FgColors.azul600, FgColors.cian500, FgColors.verde400],
-    stops: [0, .45, 1],
+    stops: const [0, .45, 1],
   );
 
   /// Degradado profundo de marca, solo azules: para bandas oscuras con texto blanco. El verde y el
   /// cian del degradado de marca no dan contraste con texto blanco.
   /// Va de arriba abajo para empalmar con [entradaProfundo] y [salidaProfundo].
-  static const profundo = LinearGradient(
+  static LinearGradient get profundo =>
+      LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [FgColors.azul800, FgColors.azul700],
@@ -115,44 +137,48 @@ abstract final class FgGradients {
 
   /// Funde la banda anterior con [profundo]: de transparente a `azul800`.
   /// La opacidad sube con curva (lenta al inicio): una rampa lineal se ve como una mancha.
-  static const entradaProfundo = LinearGradient(
+  static LinearGradient get entradaProfundo =>
+      LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
       FgColors.azul800Transparente,
-      Color(0x14034E78),
-      Color(0x47034E78),
-      Color(0x99034E78),
+      const Color(0x14034E78),
+      const Color(0x47034E78),
+      const Color(0x99034E78),
       FgColors.azul800,
     ],
-    stops: [0, .3, .55, .8, 1],
+    stops: const [0, .3, .55, .8, 1],
   );
 
   /// Funde [profundo] con la banda siguiente: de `azul700` a transparente.
-  static const salidaProfundo = LinearGradient(
+  static LinearGradient get salidaProfundo =>
+      LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [
       FgColors.azul700,
-      Color(0x99035C8C),
-      Color(0x47035C8C),
-      Color(0x14035C8C),
+      const Color(0x99035C8C),
+      const Color(0x47035C8C),
+      const Color(0x14035C8C),
       FgColors.azul700Transparente,
     ],
-    stops: [0, .2, .45, .7, 1],
+    stops: const [0, .2, .45, .7, 1],
   );
 
   /// Velo blanco para bandas claras sobre el fondo con estampado: casi opaco al centro y transparente
   /// en los bordes, así la banda se funde con las vecinas en vez de cortarlas.
-  static const velo = LinearGradient(
+  static LinearGradient get velo =>
+      LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [FgColors.blancoTransparente, FgColors.veloFuerte, FgColors.veloFuerte, FgColors.blancoTransparente],
-    stops: [0, .3, .7, 1],
+    stops: const [0, .3, .7, 1],
   );
 
   /// Degradado suave para paneles sobre superficie blanca: de `fondo` a `azul100`.
-  static const suave = LinearGradient(
+  static LinearGradient get suave =>
+      LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [FgColors.fondo, FgColors.azul100],
@@ -241,8 +267,8 @@ abstract final class FgShadow {
 abstract final class FgDecor {
   /// Tarjeta en reposo: superficie, borde `lineaSuave`, radio 14 y sombra baja.
   /// [destacada]: borde azul de 2 px para lo que pide atención ahora (una sola por pantalla).
-  static BoxDecoration tarjeta({bool destacada = false, Color color = FgColors.superficie}) => BoxDecoration(
-        color: color,
+  static BoxDecoration tarjeta({bool destacada = false, Color? color}) => BoxDecoration(
+        color: color ?? FgColors.superficie,
         borderRadius: BorderRadius.circular(FgRadius.md),
         border: Border.all(
           color: destacada ? FgColors.azul600 : FgColors.lineaSuave,
@@ -254,7 +280,7 @@ abstract final class FgDecor {
   /// Forma de tarjeta interactiva (Material + InkWell): mismo borde que [tarjeta].
   static RoundedRectangleBorder formaTarjeta() => RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(FgRadius.md),
-        side: const BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1),
+        side: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1),
       );
 }
 
@@ -365,46 +391,46 @@ abstract final class FgText {
 
   static const _tabular = [FontFeature.tabularFigures()];
 
-  static const display =
+  static TextStyle get display =>
       TextStyle(fontFamily: family, fontSize: 48, fontWeight: FontWeight.w700, height: 1.1, color: FgColors.ink);
-  static const h1Movil =
+  static TextStyle get h1Movil =>
       TextStyle(fontFamily: family, fontSize: 30, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
-  static const h1Ancho =
+  static TextStyle get h1Ancho =>
       TextStyle(fontFamily: family, fontSize: 38, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
-  static const h2 =
+  static TextStyle get h2 =>
       TextStyle(fontFamily: family, fontSize: 24, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
-  static const h3 =
+  static TextStyle get h3 =>
       TextStyle(fontFamily: family, fontSize: 20, fontWeight: FontWeight.w700, height: 1.3, color: FgColors.ink);
-  static const body =
+  static TextStyle get body =>
       TextStyle(fontFamily: family, fontSize: 18, fontWeight: FontWeight.w400, height: 1.6, color: FgColors.ink);
-  static const bodyLg =
+  static TextStyle get bodyLg =>
       TextStyle(fontFamily: family, fontSize: 20, fontWeight: FontWeight.w400, height: 1.6, color: FgColors.ink);
-  static const label =
+  static TextStyle get label =>
       TextStyle(fontFamily: family, fontSize: 18, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
-  static const cell =
+  static TextStyle get cell =>
       TextStyle(fontFamily: family, fontSize: 17, fontWeight: FontWeight.w400, height: 1.4, color: FgColors.ink);
-  static const caption =
+  static TextStyle get caption =>
       TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w400, height: 1.5, color: FgColors.inkSoft);
 
   /// Etiqueta secundaria (§23): mismo tamaño que [label] con peso medio. Para etiquetas de datos,
   /// ítems de menú inactivos y textos que no son la acción principal.
-  static const labelMedio =
+  static TextStyle get labelMedio =>
       TextStyle(fontFamily: family, fontSize: 18, fontWeight: FontWeight.w500, height: 1.3, color: FgColors.ink);
 
   /// Metadato destacado (§23): 16 / 600. Encabezados de grupo dentro de una tarjeta.
-  static const captionFuerte =
+  static TextStyle get captionFuerte =>
       TextStyle(fontFamily: family, fontSize: 16, fontWeight: FontWeight.w600, height: 1.4, color: FgColors.inkSoft);
 
   /// Cifra del plazo junto al reloj (§8.10 y §8.13 tamaño `m`): 28 / 700.
-  static const cifra =
+  static TextStyle get cifra =>
       TextStyle(fontFamily: family, fontSize: 28, fontWeight: FontWeight.w700, height: 1.2, color: FgColors.ink);
 
   /// Minutos del reloj tamaño `l` (§8.13): 24 / 600.
-  static const minutos =
+  static TextStyle get minutos =>
       TextStyle(fontFamily: family, fontSize: 24, fontWeight: FontWeight.w600, height: 1.2, color: FgColors.ink);
 
   /// Etiqueta de la barra inferior en móvil: 14 / 600 (manual §8.12).
-  static const navMovil =
+  static TextStyle get navMovil =>
       TextStyle(fontFamily: family, fontSize: 14, fontWeight: FontWeight.w600, height: 1.3, color: FgColors.ink);
 
   /// Texto de botón: 20 (lg) · 18 (md) · 16 (sm), siempre 700.

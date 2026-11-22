@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import 'notification_item.dart';
 import 'notification_repository.dart';
+import 'vigia_domicilios.dart';
 
 class NotificationController extends ChangeNotifier {
   NotificationController(this._repository);
@@ -69,6 +70,18 @@ class NotificationController extends ChangeNotifier {
       ),
     );
   }
+
+  /// Un cambio en un domicilio (repartidor asignado, en camino, entrega confirmada…).
+  Future<void> addDomicilio(EventoDomicilio evento) => _add(
+        NotificationItem(
+          id: 'domicilio-${evento.clave}-${DateTime.now().microsecondsSinceEpoch}',
+          title: evento.titulo,
+          message: evento.mensaje,
+          createdAt: DateTime.now(),
+          kind: NotificationKind.delivery,
+          ruta: evento.ruta,
+        ),
+      );
 
   Future<void> markAsRead(String id) async {
     final index = _items.indexWhere((item) => item.id == id);

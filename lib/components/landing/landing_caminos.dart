@@ -317,7 +317,7 @@ class _Celda extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         width: double.infinity,
         padding: const EdgeInsets.only(top: FgSpace.sp4),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             border: Border(top: BorderSide(color: FgColors.linea))),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,7 +326,7 @@ class _Celda extends StatelessWidget {
             const SizedBox(height: FgSpace.sp1),
             Text(fila.valor,
                 style: fila.destacada
-                    ? FgText.display.copyWith(color: FgColors.azul800)
+                    ? FgText.display.copyWith(color: FgColors.azulTexto)
                     : FgText.body),
           ],
         ),
