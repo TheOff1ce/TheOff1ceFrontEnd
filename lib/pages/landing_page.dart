@@ -54,10 +54,10 @@ class _LandingPageState extends State<LandingPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Degradado de marca de la bienvenida: 8 px sobre la landing (manual §3.4 y §22).
-              const DecoratedBox(
+              DecoratedBox(
                 decoration: BoxDecoration(gradient: FgGradients.marca),
                 child:
-                    SizedBox(height: FgBorder.w4 * 2, width: double.infinity),
+                    const SizedBox(height: FgBorder.w4 * 2, width: double.infinity),
               ),
               _Banda(
                 margen: margen,
@@ -89,14 +89,14 @@ class _LandingPageState extends State<LandingPage> {
                   child: const LandingRoles()),
               // La banda oscura entra y sale con un degradado propio: el texto siempre queda sobre
               // el azul pleno y los bordes se funden con las bandas vecinas.
-              const _Fundido(FgGradients.entradaProfundo),
+              _Fundido(FgGradients.entradaProfundo),
               _Banda(
                   margen: margen,
                   aire: ancha ? FgSpace.sp7 : FgSpace.sp6,
                   gradient: FgGradients.profundo,
                   estampado: true,
                   child: const LandingCierre()),
-              const _Fundido(FgGradients.salidaProfundo),
+              _Fundido(FgGradients.salidaProfundo),
               _Banda(
                   margen: margen,
                   aire: aire,
@@ -177,11 +177,11 @@ class _Pie extends StatelessWidget {
   const _Pie();
 
   @override
-  Widget build(BuildContext context) => const Column(
+  Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Divider(height: 1, color: FgColors.linea),
-          SizedBox(height: FgSpace.sp6),
+          const SizedBox(height: FgSpace.sp6),
           Text(
             'Esta información no reemplaza a tu médico ni a tu EPS.',
             style: FgText.body,

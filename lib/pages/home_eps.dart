@@ -53,7 +53,7 @@ class _FocoEps extends StatelessWidget {
     final porcentaje = r.porcentajeATiempo;
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Row(children: [
-        Expanded(child: Semantics(header: true, child: const Text('Plazo de 48 h', style: FgText.h3))),
+        Expanded(child: Semantics(header: true, child: Text('Plazo de 48 h', style: FgText.h3))),
         FgIconButton(
           icon: Icons.refresh,
           tooltip: 'Actualizar cifras',
@@ -99,7 +99,7 @@ class _FocoEps extends StatelessWidget {
       }),
       if (r.urgentes.isNotEmpty) ...[
         const SizedBox(height: FgSpace.sp5),
-        const Text('Los que vencen primero', style: FgText.label),
+        Text('Los que vencen primero', style: FgText.label),
         const SizedBox(height: FgSpace.sp2),
         for (final p in r.urgentes)
           _Urgente(
@@ -169,7 +169,7 @@ class _Urgente extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: FgSpace.sp2),
               child: Row(children: [
-                const Icon(Icons.schedule, size: FgSize.iconoMd, color: FgColors.riesgoSolid),
+                Icon(Icons.schedule, size: FgSize.iconoMd, color: FgColors.riesgoSolid),
                 const SizedBox(width: FgSpace.sp3),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -178,7 +178,7 @@ class _Urgente extends StatelessWidget {
                   ]),
                 ),
                 const SizedBox(width: FgSpace.sp2),
-                const Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
+                Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
               ]),
             ),
           ),

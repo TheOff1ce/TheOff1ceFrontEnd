@@ -32,7 +32,7 @@ class DriverDeliveryCodeCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Código de entrega', style: FgText.label.copyWith(color: FgColors.azul800)),
+              Text('Código de entrega', style: FgText.label.copyWith(color: FgColors.azulTexto)),
               const SizedBox(height: FgSpace.sp2),
               FgCodeBoxes(code: code),
               const SizedBox(height: FgSpace.sp2),
@@ -105,7 +105,7 @@ class _PatientConfirmDeliveryState extends State<PatientConfirmDelivery> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Semantics(header: true, child: const Text('¿Ya recibiste tu pedido?', style: FgText.h3)),
+            Semantics(header: true, child: Text('¿Ya recibiste tu pedido?', style: FgText.h3)),
             const SizedBox(height: FgSpace.sp2),
             Text(
               'Pídele al repartidor su código de 6 dígitos y escríbelo aquí para confirmar la entrega.',

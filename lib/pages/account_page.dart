@@ -156,11 +156,11 @@ class _Identity extends StatelessWidget {
       width: compacto ? 64 : 80,
       height: compacto ? 64 : 80,
       alignment: Alignment.center,
-      decoration: const BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
       child: ExcludeSemantics(
         child: Text(
           _initials(user.name, user.email),
-          style: (compacto ? FgText.h3 : FgText.h2).copyWith(color: FgColors.azul800),
+          style: (compacto ? FgText.h3 : FgText.h2).copyWith(color: FgColors.azulTexto),
         ),
       ),
     );
@@ -285,7 +285,7 @@ class _Details extends StatelessWidget {
                 ),
                 for (final (index, (label, value)) in filas.indexed) ...[
                   if (index > 0)
-                    const Divider(
+                    Divider(
                       height: FgBorder.w1,
                       thickness: FgBorder.w1,
                       color: FgColors.lineaSuave,

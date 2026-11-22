@@ -146,7 +146,7 @@ class _InicioAdmin extends StatelessWidget {
       if (o == null && c.errorOperacion == null)
         const FgListaCargando(cantidad: 1, etiqueta: 'Cargando la semana')
       else if (o == null)
-        const Text('No pudimos cargar la semana.', style: FgText.body)
+        Text('No pudimos cargar la semana.', style: FgText.body)
       else ...[
         Wrap(spacing: FgSpace.sp7, runSpacing: FgSpace.sp3, children: [
           _Dato(etiqueta: 'Entregados', valor: '${o.entregadosSemana}', estilo: FgText.num(FgText.h2)),
@@ -169,15 +169,15 @@ class _InicioAdmin extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       _encabezado('Esperan repartidor'),
       const SizedBox(height: FgSpace.sp1),
-      const Text('El que lleva más tiempo esperando va primero.', style: FgText.caption),
+      Text('El que lleva más tiempo esperando va primero.', style: FgText.caption),
       const SizedBox(height: FgSpace.sp3),
       if (o == null && c.errorOperacion == null)
         const FgListaCargando(cantidad: 2, etiqueta: 'Cargando los pedidos en espera')
       else if (o == null)
-        const Text('No pudimos cargar los pedidos en espera.', style: FgText.body)
+        Text('No pudimos cargar los pedidos en espera.', style: FgText.body)
       else if (o.esperando.isEmpty)
         Row(children: [
-          const Icon(Icons.check_circle_outline, size: FgSize.iconoMd, color: FgColors.cumplidoSolid),
+          Icon(Icons.check_circle_outline, size: FgSize.iconoMd, color: FgColors.cumplidoSolid),
           const SizedBox(width: FgSpace.sp3),
           Expanded(
             child: Text('Ningún pedido espera repartidor.', style: FgText.body.copyWith(color: FgColors.inkSoft)),
@@ -185,7 +185,7 @@ class _InicioAdmin extends StatelessWidget {
         ])
       else ...[
         for (final (i, d) in o.esperando.take(visibles).indexed) ...[
-          if (i > 0) const Divider(height: FgSpace.sp1, color: FgColors.lineaSuave),
+          if (i > 0) Divider(height: FgSpace.sp1, color: FgColors.lineaSuave),
           _PedidoEnEspera(entrega: d, ahora: c.ahora, onTap: () => _w.onAdminTracking?.call(d.id)),
         ],
         if (o.esperando.length > visibles) ...[
@@ -306,7 +306,7 @@ class _PedidoEnEspera extends StatelessWidget {
                 style: FgText.num(FgText.label).copyWith(color: demorado ? FgColors.riesgoFg : FgColors.inkSoft),
               ),
               const SizedBox(width: FgSpace.sp2),
-              const Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
+              Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
             ]),
           ),
         ),
@@ -346,7 +346,7 @@ class _GraficaSemana extends StatelessWidget {
         }),
       ),
       const SizedBox(height: FgSpace.sp3),
-      const Wrap(spacing: FgSpace.sp5, runSpacing: FgSpace.sp2, children: [
+      Wrap(spacing: FgSpace.sp5, runSpacing: FgSpace.sp2, children: [
         _Leyenda(color: FgColors.cumplidoSolid, texto: 'Entregados'),
         _Leyenda(color: FgColors.incumplidoSolid, texto: 'Cancelados o fallidos'),
       ]),
@@ -430,7 +430,7 @@ class _EnlaceEncabezado extends StatelessWidget {
   Widget build(BuildContext context) => TextButton(
         onPressed: onPressed,
         style: TextButton.styleFrom(
-          foregroundColor: FgColors.azul800,
+          foregroundColor: FgColors.azulTexto,
           minimumSize: const Size(FgSize.tapMin, FgSize.tapMin),
           padding: const EdgeInsets.only(left: FgSpace.sp2),
           alignment: Alignment.centerRight,

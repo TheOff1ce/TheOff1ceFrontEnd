@@ -91,7 +91,7 @@ class _FgAccionTarjetaState extends State<FgAccionTarjeta> {
                         ),
                       ),
                       const SizedBox(width: FgSpace.sp2),
-                      const Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
+                      Icon(Icons.chevron_right, size: FgSize.iconoMd, color: FgColors.inkSoft),
                     ]),
                   ),
                 ),

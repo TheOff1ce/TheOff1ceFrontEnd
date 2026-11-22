@@ -147,7 +147,7 @@ class _FilaState extends State<_Fila> {
       decoration: BoxDecoration(
         color: widget.seleccionada ? FgColors.azul100 : null,
         border: Border(
-          top: const BorderSide(color: FgColors.linea, width: FgBorder.w1),
+          top: BorderSide(color: FgColors.linea, width: FgBorder.w1),
           left: BorderSide(
             color: widget.seleccionada ? FgColors.azul600 : Colors.transparent,
             width: FgBorder.w4,

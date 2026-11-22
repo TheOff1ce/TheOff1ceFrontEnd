@@ -13,13 +13,14 @@ class FgWordmark extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
         label: 'FarmaGo',
-        child: const ExcludeSemantics(
+        child: ExcludeSemantics(
           child: Text.rich(
             TextSpan(
               style: FgText.h3,
               children: [
-                TextSpan(text: 'Farma', style: TextStyle(color: FgColors.azul600)),
-                TextSpan(text: 'Go', style: TextStyle(color: FgColors.verde700)),
+                // En el modo oscuro, los tonos claros del mismo logo: el azul y el verde oscuros no se leen.
+                TextSpan(text: 'Farma', style: TextStyle(color: FgModo.oscuro ? FgColors.enlaceSobreOscuro : FgColors.azul600)),
+                TextSpan(text: 'Go', style: TextStyle(color: FgModo.oscuro ? FgColors.verde400 : FgColors.verde700)),
               ],
             ),
           ),

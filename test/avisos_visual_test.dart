@@ -18,9 +18,9 @@ void main() {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         builder: (context, child) => FgCapaAvisos(child: child!),
-        home: const Scaffold(
+        home: Scaffold(
           backgroundColor: FgColors.fondo,
-          body: Padding(padding: EdgeInsets.all(24), child: Text('Seguimiento del domicilio', style: FgText.bodyLg)),
+          body: Padding(padding: const EdgeInsets.all(24), child: Text('Seguimiento del domicilio', style: FgText.bodyLg)),
         ),
       ));
       avisar('Pedido confirmado', detalle: 'Te avisamos cuando un repartidor lo tome.');

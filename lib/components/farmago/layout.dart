@@ -107,7 +107,7 @@ class _Encabezado extends StatelessWidget {
     return Material(
       color: FgColors.superficie,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1)),
         ),
         child: SafeArea(
@@ -154,7 +154,7 @@ class _BarraAccion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        decoration: const BoxDecoration(color: FgColors.superficie, boxShadow: FgShadow.eArriba),
+        decoration: BoxDecoration(color: FgColors.superficie, boxShadow: FgShadow.eArriba),
         child: SafeArea(
           top: false,
           child: Align(

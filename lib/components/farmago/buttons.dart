@@ -108,7 +108,7 @@ class _FgButtonState extends State<FgButton> {
     if (estados.contains(WidgetState.disabled)) return FgColors.deshabilitadoFg;
     return switch (widget.variant) {
       FgButtonVariant.primary || FgButtonVariant.danger => FgColors.blanco,
-      FgButtonVariant.secondary || FgButtonVariant.ghost => FgColors.azul800,
+      FgButtonVariant.secondary || FgButtonVariant.ghost => FgColors.azulTexto,
       FgButtonVariant.marca => FgColors.verde700,
     };
   }
@@ -211,7 +211,7 @@ class _FgIconButtonState extends State<FgIconButton> {
             minimumSize: const WidgetStatePropertyAll(Size(FgSize.tapMin, FgSize.tapMin)),
             fixedSize: const WidgetStatePropertyAll(Size(FgSize.tapMin, FgSize.tapMin)),
             shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(FgRadius.md))),
-            foregroundColor: const WidgetStatePropertyAll(FgColors.ink),
+            foregroundColor: WidgetStatePropertyAll(FgColors.ink),
             overlayColor: WidgetStateProperty.resolveWith(
               (estados) => estados.contains(WidgetState.pressed)
                   ? FgColors.azul200
@@ -235,7 +235,7 @@ class FgLinkButton extends StatelessWidget {
   Widget build(BuildContext context) => TextButton(
         onPressed: onPressed,
         style: TextButton.styleFrom(
-          foregroundColor: FgColors.azul800,
+          foregroundColor: FgColors.azulTexto,
           minimumSize: const Size(FgSize.tapMin, FgSize.tapMin),
           padding: const EdgeInsets.symmetric(horizontal: FgSpace.sp2),
           textStyle: FgText.boton(18).copyWith(
@@ -307,7 +307,7 @@ class _FgChipState extends State<FgChip> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     if (seleccionado) ...[
-                      const Icon(Icons.check, size: FgSize.iconoSm, color: FgColors.azul800),
+                      Icon(Icons.check, size: FgSize.iconoSm, color: FgColors.azulTexto),
                       const SizedBox(width: FgSpace.sp2),
                     ],
                     // En pantallas angostas o con texto grande la etiqueta baja de línea, no se corta.
@@ -316,7 +316,7 @@ class _FgChipState extends State<FgChip> {
                         widget.label,
                         textAlign: TextAlign.center,
                         style: FgText.caption.copyWith(
-                          color: seleccionado ? FgColors.azul800 : FgColors.ink,
+                          color: seleccionado ? FgColors.azulTexto : FgColors.ink,
                           fontWeight: seleccionado ? FontWeight.w700 : FontWeight.w600,
                         ),
                       ),
@@ -334,10 +334,11 @@ class _FgChipState extends State<FgChip> {
 
 /// Spinner de rueda (§8.1): arco de 270°, trazo 3, gira en 800 ms. Con movimiento reducido no gira.
 class FgSpinner extends StatefulWidget {
-  const FgSpinner({super.key, this.size = FgSize.iconoSm, this.color = FgColors.azul600});
+  const FgSpinner({super.key, this.size = FgSize.iconoSm, Color? color}) : _color = color;
 
   final double size;
-  final Color color;
+  final Color? _color;
+  Color get color => _color ?? FgColors.azul600;
 
   @override
   State<FgSpinner> createState() => _FgSpinnerState();

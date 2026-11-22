@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../auth/auth_controller.dart';
+import '../components/farmago/banda_sin_conexion.dart';
 import '../components/farmago/feedback.dart';
+import '../notifications/vigia_domicilios.dart';
 import 'app_dependencies.dart';
 import 'app_router.dart';
 import 'theme/app_theme.dart';
+import 'theme/farmago_tokens.dart';
+import 'titulos.dart';
 
 class FarmaGoApp extends StatefulWidget {
   const FarmaGoApp({super.key, this.dependencies, this.googleHandoffCode});
@@ -20,10 +24,29 @@ class FarmaGoApp extends StatefulWidget {
   State<FarmaGoApp> createState() => _FarmaGoAppState();
 }
 
-class _FarmaGoAppState extends State<FarmaGoApp> {
+class _FarmaGoAppState extends State<FarmaGoApp> with WidgetsBindingObserver {
   late final AppDependencies _deps = widget.dependencies ?? AppDependencies.create(googleHandoffCode: widget.googleHandoffCode);
   late final AppRouter _router = AppRouter(_deps);
   String? _lastUserId;
+  late final VigiaDomicilios? _vigia = _deps.vigia?.call(_avisarCambio);
+  late final AppLifecycleListener _ciclo = AppLifecycleListener(
+    onShow: () => _vigia?.reanudar(),
+    onHide: () => _vigia?.pausar(),
+  );
+
+  /// Un cambio en un domicilio: queda en la campana y, si la app está abierta, se ve flotando.
+  void _avisarCambio(EventoDomicilio evento) {
+    _deps.notifications.addDomicilio(evento);
+    avisar(
+      evento.titulo,
+      detalle: evento.mensaje,
+      kind: switch (evento.tono) {
+        TonoEvento.exito => FgToastKind.exito,
+        TonoEvento.problema => FgToastKind.error,
+        TonoEvento.info => FgToastKind.info,
+      },
+    );
+  }
 
   AuthController get _auth => _deps.auth;
 
@@ -31,12 +54,18 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
   void initState() {
     super.initState();
     _auth.addListener(_syncSessionScopedState);
+    WidgetsBinding.instance.addObserver(this);
+    FgModo.oscuro = _sistemaOscuro;
+    _ciclo; // empieza a escuchar si la app se ve o se oculta
     _auth.restore();
   }
 
   @override
   void dispose() {
     _auth.removeListener(_syncSessionScopedState);
+    WidgetsBinding.instance.removeObserver(this);
+    _ciclo.dispose();
+    _vigia?.detener();
     _router.dispose();
     _deps.dispose();
     super.dispose();
@@ -57,7 +86,13 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
       }
       _lastUserId = user.id;
       _deps.notifications.loadForUser(user.id);
+      _vigia?.iniciar(switch (user.role) {
+        'PATIENT' => RolVigilado.paciente,
+        'DELIVERY_DRIVER' => RolVigilado.repartidor,
+        _ => null,
+      });
     } else if (_auth.status == AuthStatus.unauthenticated) {
+      _vigia?.detener();
       _deps.notifications.clearSession();
       _deps.patientOrders.clear();
       _deps.driverBoard.clear();
@@ -67,16 +102,40 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
     }
   }
 
+  static bool get _sistemaOscuro =>
+      WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
+
+  /// El sistema cambió entre claro y oscuro: los tokens cambian de valor y toda la app se vuelve a
+  /// pintar, incluidos los widgets `const` (que Flutter no reconstruiría solos). No se pierde nada:
+  /// ni la pantalla abierta ni lo escrito en los formularios.
+  @override
+  void didChangePlatformBrightness() {
+    final oscuro = _sistemaOscuro;
+    if (oscuro == FgModo.oscuro || !mounted) return;
+    setState(() => FgModo.oscuro = oscuro);
+    void marcar(Element e) {
+      e.markNeedsBuild();
+      e.visitChildren(marcar);
+    }
+
+    (context as Element).visitChildren(marcar);
+  }
+
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-        title: 'FARMA GO',
+        title: TitulosDePantalla.marca,
         debugShowCheckedModeBanner: false,
+        // Tema del modo actual (claro u oscuro, según el sistema): los tokens ya traen sus colores.
         theme: AppTheme.light,
+        themeAnimationDuration: Duration.zero,
         locale: const Locale('es'),
         supportedLocales: const [Locale('es')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         routerConfig: _router.router,
         // Los avisos flotantes viven encima de todas las pantallas (sobreviven a los cambios de ruta).
-        builder: (context, child) => FgCapaAvisos(child: child ?? const SizedBox.shrink()),
+        builder: (context, child) => TituloDePantalla(
+          router: _router.router,
+          child: FgCapaAvisos(child: BandaSinConexion(child: child ?? const SizedBox.shrink())),
+        ),
       );
 }

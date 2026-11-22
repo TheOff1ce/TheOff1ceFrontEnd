@@ -70,7 +70,7 @@ class OrdenesConsultaPanel extends StatelessWidget {
                   ),
                   // El descargo vive con la hora de la consulta, no en un bloque aparte antes de las órdenes.
                   const SizedBox(height: FgSpace.sp3),
-                  const Text(OrdenesTextos.notaEps, style: FgText.caption),
+                  Text(OrdenesTextos.notaEps, style: FgText.caption),
                 ] else
                   _FilaConsulta(consultadoEn: null, onRecargar: onRecargar, compacto: compacto),
               ],
@@ -114,11 +114,11 @@ class _Cargando extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const ExcludeSemantics(
+            ExcludeSemantics(
               child: Row(
                 children: [
-                  FgSpinner(),
-                  SizedBox(width: FgSpace.sp3),
+                  const FgSpinner(),
+                  const SizedBox(width: FgSpace.sp3),
                   Flexible(child: Text(OrdenesTextos.consultando, style: FgText.bodyLg)),
                 ],
               ),
@@ -155,7 +155,7 @@ class _Cifras extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final elegibles = respuesta.totalElegibles;
-    if (elegibles == 0) return const Text(OrdenesTextos.sinElegibles, style: FgText.bodyLg);
+    if (elegibles == 0) return Text(OrdenesTextos.sinElegibles, style: FgText.bodyLg);
     final compacto = FgBreakpoint.esCompacto(MediaQuery.sizeOf(context).width);
     final etiqueta = OrdenesTextos.cifraElegibles(elegibles);
     final numero = FgConteo(
@@ -200,7 +200,7 @@ class _FilaConsulta extends StatelessWidget {
     final texto = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(OrdenesTextos.respuestaDeEps, style: FgText.label),
+        Text(OrdenesTextos.respuestaDeEps, style: FgText.label),
         if (hora != null) Text(hora, style: FgText.num(FgText.caption.copyWith(color: FgColors.ink))),
       ],
     );
@@ -217,7 +217,7 @@ class _FilaConsulta extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         if (!compacto)
-          const ExcludeSemantics(child: Icon(Icons.schedule_outlined, size: FgSize.iconoMd, color: FgColors.azul800)),
+          ExcludeSemantics(child: Icon(Icons.schedule_outlined, size: FgSize.iconoMd, color: FgColors.azulTexto)),
         compacto ? SizedBox(width: double.infinity, child: texto) : texto,
         compacto ? SizedBox(width: double.infinity, child: boton) : boton,
       ],

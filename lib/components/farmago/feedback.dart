@@ -122,7 +122,7 @@ class FgNota extends StatelessWidget {
   Widget build(BuildContext context) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const FgGlifo(color: FgColors.azul600, simbolo: 'i', diametro: 24, tamanoSimbolo: 14),
+          FgGlifo(color: FgColors.azul600, simbolo: 'i', diametro: 24, tamanoSimbolo: 14),
           const SizedBox(width: FgSpace.sp3),
           Expanded(child: Text(texto, style: FgText.caption)),
         ],
@@ -239,7 +239,7 @@ class _FgSkeletonState extends State<FgSkeleton> with SingleTickerProviderStateM
                 gradient: LinearGradient(
                   begin: Alignment(-2 + 4 * t, 0),
                   end: Alignment(-1 + 4 * t, 0),
-                  colors: const [FgColors.skeleton, FgColors.fondoHundido, FgColors.skeleton],
+                  colors: [FgColors.skeleton, FgColors.fondoHundido, FgColors.skeleton],
                 ),
               ),
             );
@@ -395,7 +395,7 @@ class _ToastViewState extends State<_ToastView> {
       onEnter: (_) => _temporizador?.cancel(),
       onExit: (_) => _armar(),
       child: Material(
-        color: FgColors.ink,
+        color: FgColors.superficieInversa,
         borderRadius: BorderRadius.circular(FgRadius.md),
         elevation: 0,
         child: Container(
@@ -614,7 +614,7 @@ class ErrorStateView extends StatelessWidget {
             child: Semantics(
               liveRegion: true,
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const FgGlifo(color: FgColors.peligro, simbolo: Icons.close, diametro: 56, tamanoSimbolo: 32),
+                FgGlifo(color: FgColors.peligro, simbolo: Icons.close, diametro: 56, tamanoSimbolo: 32),
                 const SizedBox(height: FgSpace.sp5),
                 Semantics(
                   header: true,

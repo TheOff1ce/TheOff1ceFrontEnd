@@ -363,6 +363,7 @@ class AppRouter {
           builder: (context, state) => _gate(NotificationsPage(
             notifications: _deps.notifications,
             onBack: () => AppRoutes.backOrGo(context, AppRoutes.home),
+            onAbrir: (ruta) => context.push(ruta),
           )),
         ),
         GoRoute(

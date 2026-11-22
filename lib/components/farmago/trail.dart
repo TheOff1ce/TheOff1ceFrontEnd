@@ -65,7 +65,7 @@ class _Paso extends StatelessWidget {
   Widget build(BuildContext context) {
     final texto = switch (estado) {
       _Estado.completado => FgText.label.copyWith(color: FgColors.ink),
-      _Estado.enCurso => FgText.h3.copyWith(color: FgColors.azul800),
+      _Estado.enCurso => FgText.h3.copyWith(color: FgColors.azulTexto),
       _Estado.pendiente => FgText.body.copyWith(color: FgColors.inkSoft),
     };
 
@@ -121,7 +121,7 @@ class _Nodo extends StatelessWidget {
         _Estado.completado => Container(
             width: FgTrail._nodo,
             height: FgTrail._nodo,
-            decoration: const BoxDecoration(color: FgColors.azul600, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: FgColors.azul600, shape: BoxShape.circle),
             child: const Icon(Icons.check, size: FgSize.iconoSm, color: FgColors.blanco),
           ),
         _Estado.enCurso => Container(
@@ -136,7 +136,7 @@ class _Nodo extends StatelessWidget {
             child: Container(
               width: FgSpace.sp3,
               height: FgSpace.sp3,
-              decoration: const BoxDecoration(color: FgColors.azul600, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: FgColors.azul600, shape: BoxShape.circle),
             ),
           ),
         _Estado.pendiente => Container(

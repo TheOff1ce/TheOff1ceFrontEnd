@@ -1,4 +1,4 @@
-enum NotificationKind { analysis, system }
+enum NotificationKind { analysis, delivery, system }
 
 class NotificationItem {
   const NotificationItem({
@@ -8,6 +8,7 @@ class NotificationItem {
     required this.createdAt,
     required this.kind,
     this.isRead = false,
+    this.ruta,
   });
 
   final String id;
@@ -17,6 +18,9 @@ class NotificationItem {
   final NotificationKind kind;
   final bool isRead;
 
+  /// Pantalla que abre la notificación (por ejemplo el seguimiento de un domicilio).
+  final String? ruta;
+
   NotificationItem copyWith({bool? isRead}) => NotificationItem(
         id: id,
         title: title,
@@ -24,6 +28,7 @@ class NotificationItem {
         createdAt: createdAt,
         kind: kind,
         isRead: isRead ?? this.isRead,
+        ruta: ruta,
       );
 
   Map<String, dynamic> toJson() => {
@@ -33,6 +38,7 @@ class NotificationItem {
         'createdAt': createdAt.toUtc().toIso8601String(),
         'kind': kind.name,
         'isRead': isRead,
+        if (ruta != null) 'ruta': ruta,
       };
 
   factory NotificationItem.fromJson(Map<String, dynamic> json) {
@@ -48,6 +54,7 @@ class NotificationItem {
               DateTime.now(),
       kind: kind.isEmpty ? NotificationKind.system : kind.first,
       isRead: json['isRead'] == true,
+      ruta: json['ruta'] is String && (json['ruta'] as String).startsWith('/') ? json['ruta'] as String : null,
     );
   }
 }

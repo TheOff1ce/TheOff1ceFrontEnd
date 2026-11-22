@@ -1,4 +1,5 @@
 import '../auth/auth_controller.dart';
+import 'app_routes.dart';
 import '../auth/auth_repository.dart';
 import '../auth/password_reset_controller.dart';
 import '../hooks/admin_orders_controller.dart';
@@ -17,6 +18,7 @@ import '../hooks/prescription_hook.dart';
 import '../hooks/tracking_controller.dart';
 import '../notifications/notification_controller.dart';
 import '../notifications/notification_repository.dart';
+import '../notifications/vigia_domicilios.dart';
 import '../services/admin_service.dart';
 import '../services/api_service.dart';
 import '../services/authorized_json_client.dart';
@@ -52,6 +54,7 @@ class AppDependencies {
     required this.pendientes,
     required this.patientHome,
     this.deliveryClients = const [],
+    this.vigia,
   });
 
   factory AppDependencies.create({String? googleHandoffCode}) {
@@ -104,6 +107,14 @@ class AppDependencies {
       adminOrders: AdminOrdersController(admin, deliveries),
       adminRatings: AdminRatingsController(deliveries: deliveries, admin: admin),
       adminInicio: AdminInicioController(deliveries: deliveries, admin: admin),
+      vigia: (onEvento) => VigiaDomicilios(
+        orders: orders,
+        deliveries: deliveries,
+        onEvento: onEvento,
+        rutaSeguimiento: AppRoutes.tracking,
+        rutaEntrega: AppRoutes.driverDelivery,
+        rutaTablero: AppRoutes.driverBoard,
+      ),
       deliveryClients: [ordersClient, trackingClient, pendientesClient, ordenesClient, authClient],
     );
   }
@@ -117,6 +128,9 @@ class AppDependencies {
   final PatientHomeController patientHome;
   final DriverBoardController driverBoard;
   final DeliveryService deliveries;
+
+  /// Vigila los domicilios de la sesión y avisa de cada cambio (null en pruebas que no lo usan).
+  final VigiaDomicilios Function(void Function(EventoDomicilio evento) onEvento)? vigia;
   final TrackingChannelFactory trackingChannels;
   final AdminUsersController adminUsers;
   final AdminOrdersController adminOrders;
