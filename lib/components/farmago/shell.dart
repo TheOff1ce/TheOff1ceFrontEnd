@@ -4,6 +4,7 @@ import '../../app/theme/farmago_tokens.dart';
 import 'wordmark.dart';
 import 'buttons.dart';
 import 'focus_ring.dart';
+import 'selector_apariencia.dart';
 
 /// Destino de navegación real de la aplicación (manual §8.12).
 class FgDestino {
@@ -330,15 +331,29 @@ class _PieLateralState extends State<_PieLateral> {
 }
 
 /// Quién tiene la sesión abierta, en la barra superior junto a las notificaciones: inicial, nombre
-/// y rol. Tocarlo abre «Mi cuenta». En pantallas angostas queda solo la inicial.
+/// y rol. En pantallas angostas queda solo la inicial.
+///
+/// Con [onCerrarSesion], tocarlo abre el menú de la cuenta (datos, Mi cuenta, Apariencia y Cerrar
+/// sesión); sin él, abre «Mi cuenta» directamente.
 class FgCuentaChip extends StatefulWidget {
-  const FgCuentaChip({super.key, required this.nombre, required this.rol, required this.onTap});
+  const FgCuentaChip({
+    super.key,
+    required this.nombre,
+    required this.rol,
+    required this.onTap,
+    this.correo,
+    this.onCerrarSesion,
+  });
 
   final String nombre;
 
   /// Rol legible («Paciente», «Repartidor»…).
   final String rol;
+
+  /// Abre «Mi cuenta».
   final VoidCallback onTap;
+  final String? correo;
+  final Future<void> Function()? onCerrarSesion;
 
   @override
   State<FgCuentaChip> createState() => _FgCuentaChipState();
@@ -346,6 +361,7 @@ class FgCuentaChip extends StatefulWidget {
 
 class _FgCuentaChipState extends State<FgCuentaChip> {
   final _focus = FocusNode();
+  final _menu = MenuController();
 
   @override
   void dispose() {
@@ -353,18 +369,25 @@ class _FgCuentaChipState extends State<FgCuentaChip> {
     super.dispose();
   }
 
+  bool get _conMenu => widget.onCerrarSesion != null;
+
+  static const _anchoMenu = 336.0;
+
+  void _tocar() {
+    if (!_conMenu) return widget.onTap();
+    if (_menu.isOpen) return _menu.close();
+    // Alineado al borde derecho del chip, que está al final de la barra superior.
+    final caja = context.findRenderObject() as RenderBox?;
+    final tamano = caja?.size ?? Size.zero;
+    _menu.open(position: Offset(tamano.width - _anchoMenu, tamano.height + FgSpace.sp2));
+  }
+
   @override
   Widget build(BuildContext context) {
     final nombre = widget.nombre.trim();
     final inicial = nombre.isEmpty ? '?' : nombre.characters.first.toUpperCase();
     final compacto = MediaQuery.sizeOf(context).width < FgBreakpoint.desktop;
-    final avatar = Container(
-      width: FgSize.ctrlSm,
-      height: FgSize.ctrlSm,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
-      child: Text(inicial, style: FgText.label.copyWith(color: FgColors.azulTexto, fontWeight: FgWeight.bold)),
-    );
+    final avatar = _Avatar(inicial: inicial, lado: FgSize.ctrlSm);
     final contenido = Padding(
       padding: EdgeInsets.fromLTRB(FgSpace.sp1, FgSpace.sp1, compacto ? FgSpace.sp1 : FgSpace.sp3, FgSpace.sp1),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -382,12 +405,13 @@ class _FgCuentaChipState extends State<FgCuentaChip> {
         ],
       ]),
     );
-    return Tooltip(
-      message: 'Mi cuenta',
+    final quien = '${nombre.isEmpty ? '' : '$nombre, '}${widget.rol}';
+    final chip = Tooltip(
+      message: _conMenu ? 'Tu cuenta' : 'Mi cuenta',
       child: _Presionable(
         child: Semantics(
           button: true,
-          label: 'Mi cuenta. ${nombre.isEmpty ? '' : '$nombre, '}${widget.rol}',
+          label: _conMenu ? 'Menú de tu cuenta. $quien' : 'Mi cuenta. $quien',
           excludeSemantics: true,
           child: FgFocusRing(
             focusNode: _focus,
@@ -398,7 +422,7 @@ class _FgCuentaChipState extends State<FgCuentaChip> {
               child: InkWell(
                 focusNode: _focus,
                 borderRadius: BorderRadius.circular(FgRadius.pill),
-                onTap: widget.onTap,
+                onTap: _tocar,
                 hoverColor: FgColors.azul50,
                 child: ConstrainedBox(constraints: const BoxConstraints(minHeight: FgSize.ctrlMd), child: contenido),
               ),
@@ -407,7 +431,137 @@ class _FgCuentaChipState extends State<FgCuentaChip> {
         ),
       ),
     );
+    if (!_conMenu) return chip;
+    return MenuAnchor(
+      controller: _menu,
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(FgColors.superficie),
+        surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+        shadowColor: WidgetStatePropertyAll(FgColors.sombraMaterial),
+        elevation: const WidgetStatePropertyAll(3),
+        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(FgRadius.md),
+          side: BorderSide(color: FgColors.lineaSuave, width: FgBorder.w1),
+        )),
+      ),
+      menuChildren: [
+        _MenuCuenta(
+          inicial: inicial,
+          nombre: nombre,
+          correo: widget.correo,
+          rol: widget.rol,
+          onMiCuenta: () {
+            _menu.close();
+            widget.onTap();
+          },
+          onCerrarSesion: () {
+            _menu.close();
+            widget.onCerrarSesion!();
+          },
+        ),
+      ],
+      child: chip,
+    );
   }
+}
+
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.inicial, required this.lado});
+
+  final String inicial;
+  final double lado;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: lado,
+        height: lado,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: FgColors.azul100, shape: BoxShape.circle),
+        child: Text(
+          inicial,
+          style: (lado > FgSize.ctrlSm ? FgText.h3 : FgText.label)
+              .copyWith(color: FgColors.azulTexto, fontWeight: FgWeight.bold),
+        ),
+      );
+}
+
+/// Menú de la cuenta: quién es, Mi cuenta, Apariencia y Cerrar sesión. La apariencia se cambia
+/// ahí mismo y se ve al instante; el menú no se cierra para que se pueda comparar.
+class _MenuCuenta extends StatelessWidget {
+  const _MenuCuenta({
+    required this.inicial,
+    required this.nombre,
+    required this.correo,
+    required this.rol,
+    required this.onMiCuenta,
+    required this.onCerrarSesion,
+  });
+
+  final String inicial, nombre, rol;
+  final String? correo;
+  final VoidCallback onMiCuenta, onCerrarSesion;
+
+  @override
+  Widget build(BuildContext context) {
+    final separador = Divider(height: FgBorder.w1, thickness: FgBorder.w1, color: FgColors.lineaSuave);
+    return SizedBox(
+      width: _FgCuentaChipState._anchoMenu,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.min, children: [
+        Padding(
+          padding: const EdgeInsets.all(FgSpace.sp4),
+          child: Row(children: [
+            _Avatar(inicial: inicial, lado: FgSize.tapMin),
+            const SizedBox(width: FgSpace.sp3),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(nombre.isEmpty ? 'Tu cuenta' : nombre,
+                    style: FgText.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                if (correo != null && correo!.isNotEmpty)
+                  Text(correo!, style: FgText.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(rol, style: FgText.caption.copyWith(color: FgColors.azulTexto, fontWeight: FgWeight.semibold)),
+              ]),
+            ),
+          ]),
+        ),
+        separador,
+        _ItemMenu(icono: Icons.person_outline, etiqueta: 'Mi cuenta', onPressed: onMiCuenta),
+        separador,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(FgSpace.sp4, FgSpace.sp3, FgSpace.sp4, FgSpace.sp4),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('Apariencia', style: FgText.captionFuerte),
+            const SizedBox(height: FgSpace.sp2),
+            const FgSelectorApariencia(),
+          ]),
+        ),
+        separador,
+        _ItemMenu(icono: Icons.logout, etiqueta: 'Cerrar sesión', onPressed: onCerrarSesion),
+      ]),
+    );
+  }
+}
+
+class _ItemMenu extends StatelessWidget {
+  const _ItemMenu({required this.icono, required this.etiqueta, required this.onPressed});
+
+  final IconData icono;
+  final String etiqueta;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => MenuItemButton(
+        onPressed: onPressed,
+        leadingIcon: Icon(icono, size: FgSize.iconoMd, color: FgColors.inkSoft),
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size.fromHeight(FgSize.tapMin + FgSpace.sp1)),
+          padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: FgSpace.sp4)),
+          foregroundColor: WidgetStatePropertyAll(FgColors.ink),
+          overlayColor: WidgetStatePropertyAll(FgColors.azul50),
+          textStyle: WidgetStatePropertyAll(FgText.labelMedio),
+        ),
+        child: Text(etiqueta),
+      );
 }
 
 class _BarraSuperior extends StatelessWidget {
