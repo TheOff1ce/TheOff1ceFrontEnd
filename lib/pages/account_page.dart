@@ -27,8 +27,9 @@ class _AccountPageState extends State<AccountPage> {
   bool _signingOut = false;
 
   void _profileSaved() {
+    if (!mounted) return;
     setState(() => _editingProfile = false);
-    showFgToast(context, 'Guardamos tus datos.');
+    showFgToast(context, 'Datos guardados');
   }
 
   Future<void> _logout() async {
@@ -40,7 +41,7 @@ class _AccountPageState extends State<AccountPage> {
 
   void _passwordChanged() {
     setState(() => _changingPassword = false);
-    showFgToast(context, 'Contraseña cambiada. Cerramos tu sesión en los demás dispositivos.');
+    showFgToast(context, 'Contraseña actualizada', detalle: 'Cerramos tu sesión en los demás dispositivos.');
   }
 
   @override

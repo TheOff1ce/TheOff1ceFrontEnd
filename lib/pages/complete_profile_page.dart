@@ -5,6 +5,7 @@ import '../auth/auth_controller.dart';
 import '../components/account/profile_form.dart';
 import '../components/auth_ui.dart';
 import '../components/farmago/buttons.dart';
+import '../components/farmago/feedback.dart';
 
 /// Paso obligatorio después de crear la cuenta (correo o Google): sin estos datos no se usa la
 /// app, porque órdenes, pendientes y domicilios necesitan saber quién es la persona.
@@ -31,7 +32,12 @@ class CompleteProfilePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // El formulario guarda y el enrutador deja pasar en cuanto el perfil queda completo.
-          ProfileForm(auth: auth, submitLabel: 'Guardar y continuar', onDone: () {}),
+          ProfileForm(
+            auth: auth,
+            submitLabel: 'Guardar y continuar',
+            // Al quedar completo, el enrutador lleva al inicio: el aviso va en la capa de la app.
+            onDone: () => avisar('Datos guardados', detalle: 'Tu cuenta está lista para usar FarmaGo.'),
+          ),
           const SizedBox(height: FgSpace.sp5),
           Center(
             child: FgButton(

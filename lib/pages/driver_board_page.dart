@@ -35,6 +35,7 @@ class _DriverBoardPageState extends State<DriverBoardPage> {
     if (error != null) {
       showAppSnackBar(context, error.userMessage, error: true);
     } else if (taken != null) {
+      showFgToast(context, 'Tomaste el pedido', detalle: 'Recógelo en ${order.pharmacy.name}.');
       widget.onOpen(taken);
     }
   }

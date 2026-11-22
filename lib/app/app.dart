@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../auth/auth_controller.dart';
+import '../components/farmago/feedback.dart';
 import 'app_dependencies.dart';
 import 'app_router.dart';
 import 'theme/app_theme.dart';
@@ -75,5 +76,7 @@ class _FarmaGoAppState extends State<FarmaGoApp> {
         supportedLocales: const [Locale('es')],
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         routerConfig: _router.router,
+        // Los avisos flotantes viven encima de todas las pantallas (sobreviven a los cambios de ruta).
+        builder: (context, child) => FgCapaAvisos(child: child ?? const SizedBox.shrink()),
       );
 }

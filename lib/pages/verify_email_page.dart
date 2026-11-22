@@ -38,7 +38,17 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       _verifying = true;
       _error = null;
     });
+    final cuentaNueva = widget.auth.verificandoCuentaNueva;
     final error = await widget.auth.verify(_code.text);
+    // La pantalla se cierra al verificar (el enrutador lleva a la siguiente): el aviso va en la
+    // capa de avisos de la app, no en esta pantalla.
+    if (error == null && cuentaNueva) {
+      final incompleta = widget.auth.user?.profileComplete == false;
+      avisar(
+        'Tu cuenta quedó creada',
+        detalle: incompleta ? 'Completa tus datos para empezar a usar FarmaGo.' : 'Te damos la bienvenida a FarmaGo.',
+      );
+    }
     if (!mounted) return;
     setState(() {
       _verifying = false;
