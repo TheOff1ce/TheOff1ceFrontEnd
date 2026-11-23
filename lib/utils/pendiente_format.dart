@@ -29,6 +29,10 @@ abstract final class PendienteFormat {
     return '${b.day} ${_mesesCortos[b.month - 1]} ${b.year}';
   }
 
+  /// Día de calendario sin hora (p. ej. el vencimiento de una fórmula, `2026-11-30`), con el
+  /// formato de [fecha]. No se pasa a la hora de Bogotá: es un día, no un instante, y cambiaría.
+  static String fechaDia(DateTime dia) => '${dia.day} ${_mesesCortos[dia.month - 1]} ${dia.year}';
+
   /// `h:mm a. m./p. m.` (12 h), p. ej. "3:30 p. m.".
   static String hora(DateTime instante) {
     final b = _bogota(instante);

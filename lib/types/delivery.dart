@@ -48,8 +48,9 @@ enum DeliveryStatus {
         created => 'Estamos buscando un repartidor. Te avisamos cuando alguien tome tu pedido.',
         assigned => 'Un repartidor va a la farmacia por tu pedido.',
         pickedUp => 'El repartidor ya tiene tu pedido y está por salir.',
-        inTransit => 'Tu pedido va en camino. Al recibirlo, confírmalo con el código del repartidor.',
-        arriving => 'El repartidor está llegando. Ten a la mano tu app para escribir su código.',
+        inTransit =>
+          'Tu pedido va en camino. Al recibirlo, el repartidor te pedirá firmar en su celular, o te dará un código para confirmarlo aquí.',
+        arriving => 'El repartidor está llegando. Al recibir, firma en su celular o escribe aquí el código que te dé.',
         delivered => 'Recibiste este pedido.',
         cancelled => 'Este pedido se canceló.',
         failed => 'El repartidor no pudo entregarlo. Puedes pedirlo de nuevo.',
@@ -60,7 +61,8 @@ enum DeliveryStatus {
   String get driverHint => switch (this) {
         assigned => 'Ve a la farmacia y recoge el pedido.',
         pickedUp => 'Cuando salgas hacia la dirección de entrega, empieza el viaje.',
-        inTransit || arriving => 'Entrega el pedido y dile tu código al paciente. Él cierra la entrega en su app.',
+        inTransit || arriving =>
+          'Al entregar, toca «Registrar entrega»: una foto, la firma de quien recibe y tu ubicación. O dile tu código al paciente.',
         delivered => 'Entrega terminada. ¡Buen trabajo!',
         failed => 'Marcaste que no se pudo entregar.',
         cancelled => 'El paciente canceló este pedido.',
@@ -124,6 +126,51 @@ class DeliveryRating {
   }
 }
 
+/// Prueba de entrega que registró el repartidor (CU-14): foto, firma y ubicación en la puerta.
+/// Las imágenes se piden aparte con `DeliveryService.proofImage`.
+class DeliveryProof {
+  const DeliveryProof({
+    required this.recordedAt,
+    required this.location,
+    required this.accuracyMeters,
+    required this.distanceToDestinationMeters,
+    this.receiverName,
+  });
+
+  final DateTime recordedAt;
+  final GeoPoint location;
+  final double accuracyMeters;
+  final int distanceToDestinationMeters;
+
+  /// Quién recibió el pedido, si el repartidor lo anotó.
+  final String? receiverName;
+
+  static DeliveryProof? fromJson(Object? json) {
+    if (json is! Map) return null;
+    final location = json['location'];
+    final at = DateTime.tryParse(json['recordedAt']?.toString() ?? '');
+    if (location is! Map || at == null) return null;
+    final name = json['receiverName']?.toString().trim() ?? '';
+    return DeliveryProof(
+      recordedAt: at,
+      location: GeoPoint.fromJson(_map(location)),
+      accuracyMeters: (location['accuracy'] as num?)?.toDouble() ?? 0,
+      distanceToDestinationMeters: (json['distanceToDestinationMeters'] as num?)?.round() ?? 0,
+      receiverName: name.isEmpty ? null : name,
+    );
+  }
+}
+
+/// Qué imagen de la prueba de entrega se pide.
+enum DeliveryProofImage {
+  photo('photo'),
+  signature('signature');
+
+  const DeliveryProofImage(this.path);
+
+  final String path;
+}
+
 class Delivery {
   const Delivery({
     required this.id,
@@ -138,6 +185,7 @@ class Delivery {
     required this.distanceToDestinationMeters,
     this.deliveryCode,
     this.rating,
+    this.proof,
     this.deliveredAt,
     this.statusTimes = const {},
   });
@@ -158,6 +206,9 @@ class Delivery {
   /// `null` mientras el paciente no haya calificado.
   final DeliveryRating? rating;
 
+  /// Prueba de entrega del repartidor (CU-14); `null` si se cerró con el código o sigue abierto.
+  final DeliveryProof? proof;
+
   /// Cuándo se confirmó la entrega (`statusTimestamps.DELIVERED`).
   final DateTime? deliveredAt;
 
@@ -173,6 +224,9 @@ class Delivery {
   /// El paciente cierra la entrega escribiendo el código (solo en camino o llegando).
   bool get awaitsCode => status == DeliveryStatus.inTransit || status == DeliveryStatus.arriving;
 
+  /// El repartidor puede cerrar la entrega con foto, firma y ubicación (mismos estados que el código).
+  bool get acceptsProof => awaitsCode;
+
   factory Delivery.fromJson(Map<String, dynamic> json) => Delivery(
         id: json['id']?.toString() ?? '',
         orderId: json['orderId']?.toString() ?? '',
@@ -186,6 +240,7 @@ class Delivery {
         distanceToDestinationMeters: (json['distanceToDestinationMeters'] as num?)?.round(),
         deliveryCode: switch (json['deliveryCode']) { final String code when code.isNotEmpty => code, _ => null },
         rating: DeliveryRating.fromJson(json['rating']),
+        proof: DeliveryProof.fromJson(json['proof']),
         deliveredAt: json['statusTimestamps'] is Map
             ? DateTime.tryParse((json['statusTimestamps'] as Map)['DELIVERED']?.toString() ?? '')
             : null,
@@ -231,6 +286,7 @@ class Delivery {
         distanceToDestinationMeters: distance,
         deliveryCode: deliveryCode,
         rating: rating,
+        proof: proof,
         deliveredAt: deliveredAt,
         statusTimes: statusTimes,
       );

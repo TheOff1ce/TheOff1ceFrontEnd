@@ -10,18 +10,27 @@ class ImageService {
   static const maxDimension = 2048.0;
   static const quality = 85;
 
+  /// Foto de la prueba de entrega: más pequeña, para no pasar de los 3 MB que acepta el servicio.
+  static const proofMaxDimension = 1600.0;
+  static const proofQuality = 80;
+
   final ImagePicker _picker;
 
   Future<XFile?> camera() => _pick(ImageSource.camera);
   Future<XFile?> gallery() => _pick(ImageSource.gallery);
 
-  Future<XFile?> _pick(ImageSource source) async {
+  /// Foto de la entrega con la cámara (CU-14), siempre con la trasera.
+  Future<XFile?> deliveryPhoto() =>
+      _pick(ImageSource.camera, maxSide: proofMaxDimension, jpegQuality: proofQuality);
+
+  Future<XFile?> _pick(ImageSource source, {double maxSide = maxDimension, int jpegQuality = quality}) async {
     try {
       return await _picker.pickImage(
         source: source,
-        maxWidth: maxDimension,
-        maxHeight: maxDimension,
-        imageQuality: quality,
+        maxWidth: maxSide,
+        maxHeight: maxSide,
+        imageQuality: jpegQuality,
+        preferredCameraDevice: CameraDevice.rear,
       );
     } catch (error) {
       throw AppError(

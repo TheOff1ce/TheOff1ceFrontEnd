@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../errors/error_mapper.dart';
 import '../types/calificaciones.dart';
 import '../types/delivery.dart';
@@ -81,6 +83,38 @@ class DeliveryService {
       status: DeliveryStatus.fromCode(json['status']),
     );
   }
+
+  /// CU-14: el repartidor cierra la entrega con la foto, la firma (PNG) y su ubicación en la
+  /// puerta. El servidor exige estar cerca de la dirección y una ubicación reciente y precisa.
+  Future<Delivery> registerProof(
+    String deliveryId, {
+    required Uint8List photo,
+    required String photoContentType,
+    required Uint8List signaturePng,
+    required GpsFix fix,
+    String? receiverName,
+  }) async {
+    final name = receiverName?.trim() ?? '';
+    final extension = switch (photoContentType) { 'image/png' => 'png', 'image/webp' => 'webp', _ => 'jpg' };
+    return _parse(await _client.postMultipart(
+      '/deliveries/${_id(deliveryId)}/proof',
+      fields: {
+        'lat': '${fix.point.lat}',
+        'lng': '${fix.point.lng}',
+        'accuracy': '${fix.accuracy}',
+        'recordedAt': fix.recordedAt.toUtc().toIso8601String(),
+        if (name.isNotEmpty) 'receiverName': name,
+      },
+      files: [
+        MultipartFilePart(field: 'photo', bytes: photo, filename: 'entrega.$extension', contentType: photoContentType),
+        MultipartFilePart(field: 'signature', bytes: signaturePng, filename: 'firma.png', contentType: 'image/png'),
+      ],
+    ));
+  }
+
+  /// La foto o la firma de la prueba de entrega (paciente dueño, repartidor asignado o admin).
+  Future<Uint8List> proofImage(String deliveryId, DeliveryProofImage image) =>
+      _client.getBytes('/deliveries/${_id(deliveryId)}/proof/${image.path}');
 
   static String _id(String id) => Uri.encodeComponent(id);
 

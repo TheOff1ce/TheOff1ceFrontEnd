@@ -99,6 +99,14 @@ abstract final class FgColors {
   /// Enlace de acción dentro del toast oscuro (manual §7.8).
   static const enlaceSobreOscuro = Color(0xFF8CC8EA);
 
+  /// Panel de firma de la prueba de entrega: papel blanco y trazo oscuro en los dos modos, para
+  /// que la firma se lea igual en pantalla y en el PNG que se guarda (14,9:1).
+  static const firmaFondo = blanco;
+  static const firmaTrazo = Color(0xFF12303F);
+
+  /// Texto guía «Firma aquí» sobre el panel blanco (4,7:1).
+  static const firmaGuia = Color(0xFF5E7683);
+
   /// Logo completo con el lema: en el modo oscuro, la variante con el lema en gris claro (el dibujo
   /// y los colores de la marca son los mismos).
   static String get logoCompleto =>
@@ -320,6 +328,8 @@ abstract final class FgSize {
   static const casilla = 28.0; // caja de checkbox (§8.4)
   static const puntoEnVivo = 10.0; // punto «en vivo» del panel de consulta (D11)
   static const medidaTexto = 600.0; // ~66 caracteres a 18 px (--w-lectura, manual §4)
+  static const firmaAlto = 200.0; // panel de firma de la prueba de entrega
+  static const fotoPruebaAlto = 200.0; // foto y firma de la prueba de entrega
   static const iconoSm = 20.0;
   static const iconoMd = 24.0;
   static const iconoLg = 32.0;

@@ -100,7 +100,25 @@ abstract final class ErrorMessages {
   static const ratingNotAllowed = 'Podrás calificar la entrega cuando confirmes que la recibiste.';
   static const alreadyRated = 'Ya calificaste esta entrega. ¡Gracias!';
   static const codeConfirmationRequired =
-      'La entrega la confirma el paciente con tu código. Díselo cuando le entregues el pedido.';
+      'Para cerrar la entrega, registra la foto y la firma de quien recibe, o dile tu código al paciente para que lo confirme en su app.';
+
+  // Prueba de entrega (CU-14)
+  static const proofInvalid =
+      'No pudimos guardar la foto o la firma. Toma la foto de nuevo, pide que firmen otra vez y vuelve a intentarlo.';
+  static const proofLocationInvalid =
+      'Tu ubicación no es lo bastante precisa. Sal a un lugar despejado, espera unos segundos y vuelve a intentarlo.';
+  static const proofTooFar = 'Estás lejos de la dirección de entrega. Acércate y vuelve a intentarlo.';
+  static const proofNotFound = 'Esta entrega no tiene foto ni firma guardadas.';
+  static const payloadTooLarge = 'La foto pesa demasiado. Tómala de nuevo y vuelve a intentarlo.';
+  static const proofPhotoTooLarge = 'La foto pesa más de 3 MB. Tómala de nuevo para poder enviarla.';
+  static const proofSignatureFailed =
+      'No pudimos guardar la firma. Bórrala, pide que firmen de nuevo y vuelve a intentarlo.';
+  static const proofLocationDisabled =
+      'Activa la ubicación del teléfono para registrar la entrega. La usamos para comprobar que estás en la dirección.';
+  static const proofLocationPermission =
+      'Permite el acceso a tu ubicación para registrar la entrega. Si lo negaste antes, actívalo en los ajustes del teléfono.';
+  static const proofLocationUnavailable =
+      'No pudimos obtener tu ubicación. Revisa que el GPS esté encendido y vuelve a intentarlo.';
   static const locationDisabled =
       'Activa la ubicación del teléfono para compartir tu recorrido con el paciente.';
   static const locationPermission =

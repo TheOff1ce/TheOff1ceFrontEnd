@@ -38,7 +38,7 @@ class DriverDeliveryCodeCard extends StatelessWidget {
               const SizedBox(height: FgSpace.sp2),
               Text(
                 awaitingPatient
-                    ? 'Díselo al paciente cuando le entregues el pedido. La entrega se cierra cuando lo escriba en su app.'
+                    ? 'Si no puedes registrar la foto y la firma, díselo al paciente: la entrega se cierra cuando lo escriba en su app.'
                     : 'Al entregar, díselo al paciente: él lo escribe en su app para cerrar la entrega.',
                 style: FgText.body,
               ),
