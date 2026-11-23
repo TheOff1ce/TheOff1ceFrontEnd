@@ -91,32 +91,44 @@ Local signed build: `flutter build apk --release` (uses `android/key.properties`
 
 ## 🧩 The FarmaGo Ecosystem
 
-**FarmaGo** helps patients get their medications: they photograph a medical prescription, an AI reads it, and they can request home delivery and follow the courier live on a map. The platform is split into independent microservices behind a single API Gateway.
+**FarmaGo** helps patients get their medications: they photograph a medical prescription and an AI reads it, check which medications of their medical orders their EPS has authorized, follow pending medications with a 48-hour deadline, and request home delivery while following the courier live on a map. The platform is split into independent microservices behind a single API Gateway.
 
 ```mermaid
 flowchart LR
-    U["📱 Flutter App<br/>(Web · Android · iOS)"] -->|HTTPS| G["🦍 API Gateway<br/>(Kong)"]
+    U["📱 Flutter App<br/>(Web · Android · iOS)"] -->|HTTPS| G["🦍 API Gateway<br/>Kong on Azure"]
     G -->|/auth · /admin/users| A["🔐 Auth<br/>NestJS + MongoDB"]
     G -->|/analyze| I["🤖 AI<br/>FastAPI + LLM"]
-    G -->|/home-deliveries| O["🛵 Order Delivery<br/>NestJS + MongoDB/PostgreSQL"]
-    G -->|/deliveries · /socket.io| L["📍 Geolocation<br/>NestJS + Socket.IO"]
-    G -->|/pendientes| P["⏱️ Pendientes<br/>AWS Lambda"]
-    G -->|/ordenes| R["📋 Órdenes<br/>AWS Lambda"]
+    G -->|/home-deliveries| O["🛵 Order Delivery<br/>NestJS + MongoDB"]
+    G -->|/deliveries · /socket.io| L["📍 Geolocation<br/>NestJS + MongoDB + Socket.IO"]
+    G -->|/pendientes| P["⏱️ Pendientes<br/>NestJS on AWS Lambda<br/>+ PostgreSQL (Neon)"]
+    G -->|/ordenes → /v1/ordenes| R["📋 Órdenes<br/>Hono on AWS Lambda<br/>no database"]
     O -->|user's Bearer token| L
+    R -->|GET /auth/me| A
+    R -->|POST /home-deliveries<br/>through the gateway| O
+    R -->|service credential| M["🔀 EPS Middleware<br/>Hono on AWS Lambda"]
+    M --> E[("🏥 EPS Norte · EPS Sur<br/>simulated")]
     I -.->|prescription images| S[("Supabase Storage")]
-    L -.->|routes · geocoding| M["🗺️ Google Maps"]
+    I -.-> LLM["🧠 OpenAI / Gemini"]
+    L -.->|routes · geocoding| GM["🗺️ Google Maps"]
+    D["🏪 Dispensary system<br/>(API key)"] -.->|POST /pendientes · planned| P
+    O -.->|POST /entregas · planned| P
 ```
+
+Solid arrows are calls that run today. Dashed arrows are external providers, or integrations that are designed but have no caller yet (*planned*).
 
 | Repository | Role |
 |---|---|
-| [TheOff1ceFrontEnd](https://github.com/TheOff1ce/TheOff1ceFrontEnd) | Flutter app for patients, couriers, EPS staff and admins |
-| [TheOff1ceApiGateway](https://github.com/TheOff1ce/TheOff1ceApiGateway) | Single entry point (Kong), routing, load balancing, rate limiting |
+| [TheOff1ceFrontEnd](https://github.com/TheOff1ce/TheOff1ceFrontEnd) | **This service:** flutter app for patients, couriers, EPS staff and admins |
+| [TheOff1ceApiGateway](https://github.com/TheOff1ce/TheOff1ceApiGateway) | Single entry point (Kong, DB-less): routing, load balancing, rate limiting |
 | [TheOff1ceAuth](https://github.com/TheOff1ce/TheOff1ceAuth) | Sign-up, login with email code, Google OAuth, JWT, profiles, roles |
 | [TheOff1ceAI](https://github.com/TheOff1ce/TheOff1ceAI) | Reads medications from a prescription photo with OpenAI / Gemini |
 | [TheOff1ceOrderDelivery](https://github.com/TheOff1ce/TheOff1ceOrderDelivery) | Home-delivery board: patients request, couriers take orders |
 | [TheOff1ceGeolocation](https://github.com/TheOff1ce/TheOff1ceGeolocation) | Live tracking: route, ETA, delivery status and courier location |
+| [TheOff1cePendings](https://github.com/TheOff1ce/TheOff1cePendings) | Pending medications with a 48-hour deadline |
+| [TheOff1ceOrders](https://github.com/TheOff1ce/TheOff1ceOrders) | Medical orders and EPS authorizations, asked live to the EPS |
+| [TheOff1ceMiddleWareEps](https://github.com/TheOff1ce/TheOff1ceMiddleWareEps) | Anti-corruption layer: one canonical contract, one adapter per EPS |
 
-All services trust the same access token issued by **TheOff1ceAuth** (HS256 JWT, `iss=theoff1ce-auth`, `aud=theoff1ce-api`, 600 s lifetime).
+Every service except the EPS Middleware validates the same access token issued by **TheOff1ceAuth** (HS256 JWT, `iss=theoff1ce-auth`, `aud=theoff1ce-api`, 600 s lifetime), so they all share Auth's `JWT_SECRET`. The Middleware is not exposed by the gateway and only accepts Órdenes' service credential; the patient's token never reaches it. Pendientes also accepts dispensary API keys (`x-api-key`).
 
 ---
 
@@ -129,6 +141,7 @@ All services trust the same access token issued by **TheOff1ceAuth** (HS256 JWT,
 | Routing | **go_router** |
 | HTTP | `http`, `http_parser` |
 | Real time | `socket_io_client` |
+| Sign-in | `flutter_web_auth_2` (Google sign-in on Android/iOS) |
 | Maps & location | `google_maps_flutter`, `geolocator` |
 | Camera & images | `camera`, `image_picker` |
 | Storage | `flutter_secure_storage` |
@@ -200,7 +213,7 @@ android/ ios/ web/  # Platform projects
 ### Prerequisites
 
 - 💙 **Flutter stable** (`flutter --version`)
-- 🌐 Nothing else! By default the app uses the **deployed API Gateway**. To work against local services, run them (e.g. `docker compose -f docker-compose-up.yml up --build` from the FarmaGo root folder) and point the app to them.
+- 🌐 Nothing else! By default the app uses the **deployed API Gateway**. To work against local services, run each one from its own repository (there is no shared compose file) and point the app to them with `--dart-define`.
 
 ### Prepare
 
@@ -241,9 +254,12 @@ Every service URL defaults to the **API Gateway** (`https://farmago-gateway-jl.a
 | `API_BASE_URL` | 🤖 TheOff1ceAI | `http://localhost:8000` |
 | `ORDERS_BASE_URL` | 🛵 TheOff1ceOrderDelivery (home deliveries) | `http://localhost:3002` |
 | `GEOLOCATION_BASE_URL` | 📍 TheOff1ceGeolocation (REST + Socket.IO) | `http://localhost:3001` |
-| `PENDIENTES_BASE_URL` | ⏱️ pendientes-service | `http://localhost:3003` |
-| `ORDENES_BASE_URL` | 📋 ordenes-service (medical orders & EPS authorizations — not home deliveries) | `http://localhost:3004` |
+| `PENDIENTES_BASE_URL` | ⏱️ TheOff1cePendings (`pendientes-service`, run it with `PORT=3003`) | `http://localhost:3003` |
+| `ORDENES_BASE_URL` | 📋 TheOff1ceOrders (medical orders & EPS authorizations — not home deliveries) | `http://localhost:8080` (a local gateway, see below) |
 | `MAPS_API_KEY` | 🗺️ Google Maps **client** key (optional) | — |
+| `AUTH_SAME_ORIGIN` | `true` makes session calls go to the page's own domain; `vercel.json` forwards them to the gateway so Safari/iOS keeps the session cookie. `scripts/vercel-build.sh` always sets it on Vercel | — |
+
+📋 **Órdenes locally:** the app calls `/ordenes/...` (the gateway path) and the service answers on `/v1/ordenes/...`, so `ORDENES_BASE_URL=http://localhost:3004` ends in `404`. Run a local [TheOff1ceApiGateway](https://github.com/TheOff1ce/TheOff1ceApiGateway) with `ORDENES_HOST=host.docker.internal`, `ORDENES_PROTOCOL=http` and `ORDENES_PORT=3004`, and point `ORDENES_BASE_URL` to it (`http://localhost:8080`). For the same reason, the direct deployed URL of Órdenes below does not work as `ORDENES_BASE_URL`.
 
 <details>
 <summary>Direct deployed URLs (to bypass the gateway)</summary>
@@ -309,7 +325,7 @@ Requires TheOff1ceAuth with `platform=app` support (deep link set by `GOOGLE_APP
 
 ## ⏱️ Pendientes (48-hour deadline)
 
-Screens of the `pendientes-service` microservice (`/pendientes` and `/pendientes/:id`), with Auth's access token in `Authorization: Bearer`:
+Screens of the [TheOff1cePendings](https://github.com/TheOff1ce/TheOff1cePendings) microservice (`/pendientes` and `/pendientes/:id`), with Auth's access token in `Authorization: Bearer`:
 
 - 🧑 **Patient**: *My pending items* (only theirs). 🏥 **EPS**: pending items assigned to them. 🛵 **Courier**: all of them (the backend still has to restrict it to their deliveries).
 - List with filters (All / Pending / Delivered), search by order code and pagination. On mobile they are cards; from 768 px, a table whose detail opens in a side panel.
