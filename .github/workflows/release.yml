@@ -80,6 +80,8 @@ jobs:
         run: |
           tag="${{ github.event.inputs.tag || github.ref_name }}"
           cp build/app/outputs/flutter-apk/app-release.apk "FarmaGo-${tag}.apk"
+          # Fixed name for the QR: releases/latest/download/FarmaGo.apk always serves the newest APK.
+          cp build/app/outputs/flutter-apk/app-release.apk FarmaGo.apk
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "file=FarmaGo-${tag}.apk" >> "$GITHUB_OUTPUT"
 
@@ -90,7 +92,9 @@ jobs:
           name: FarmaGo ${{ steps.apk.outputs.tag }}
           target_commitish: ${{ github.sha }}
           generate_release_notes: true
-          files: ${{ steps.apk.outputs.file }}
+          files: |
+            ${{ steps.apk.outputs.file }}
+            FarmaGo.apk
           body: |
             ## 📱 Install FarmaGo
 
