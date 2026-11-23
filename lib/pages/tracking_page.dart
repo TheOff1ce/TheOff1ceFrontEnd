@@ -4,6 +4,7 @@ import '../app/theme/farmago_tokens.dart';
 import '../components/calificar_entrega.dart';
 import '../components/delivery_code.dart';
 import '../components/delivery_map.dart';
+import '../components/delivery_proof.dart';
 import '../components/farmago/feedback.dart';
 import '../components/farmago/layout.dart';
 import '../components/farmago/trail.dart';
@@ -136,7 +137,7 @@ class _TrackingPageState extends State<TrackingPage> {
         Padding(
           padding: const EdgeInsets.only(bottom: FgSpace.sp4),
           child: Text(
-            'Cuando te entreguen el pedido, el repartidor te dará un código de 6 dígitos para confirmarlo aquí.',
+            'Cuando te entreguen el pedido, el repartidor te pedirá firmar en su celular o te dará un código de 6 dígitos para confirmarlo aquí.',
             style: FgText.body.copyWith(color: FgColors.inkSoft),
           ),
         ),
@@ -153,6 +154,11 @@ class _TrackingPageState extends State<TrackingPage> {
               ? DeliveryStatus.steps.length
               : DeliveryStatus.steps.indexOf(d.status),
         ),
+      // Solo si el repartidor la registró; cerrada con el código no hay nada que mostrar.
+      if (d.status == DeliveryStatus.delivered && d.proof != null) ...[
+        const SizedBox(height: FgSpace.sp6),
+        DeliveryProofSection(proof: d.proof!, loadImage: _controller.proofImage),
+      ],
       const SizedBox(height: FgSpace.sp7),
       _Dato(etiqueta: 'Farmacia', valor: d.origin.address),
       _Dato(etiqueta: 'Entrega', valor: d.destination.address),

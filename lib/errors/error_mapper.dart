@@ -68,6 +68,11 @@ abstract final class ErrorMapper {
     'CODE_CONFIRMATION_REQUIRED': (AppErrorKind.conflict, ErrorMessages.codeConfirmationRequired, false),
     'RATING_NOT_ALLOWED': (AppErrorKind.conflict, ErrorMessages.ratingNotAllowed, false),
     'ALREADY_RATED': (AppErrorKind.conflict, ErrorMessages.alreadyRated, false),
+    'PROOF_INVALID': (AppErrorKind.validation, ErrorMessages.proofInvalid, false),
+    'PROOF_LOCATION_INVALID': (AppErrorKind.validation, ErrorMessages.proofLocationInvalid, true),
+    'PROOF_TOO_FAR': (AppErrorKind.validation, ErrorMessages.proofTooFar, true),
+    'PROOF_NOT_FOUND': (AppErrorKind.notFound, ErrorMessages.proofNotFound, false),
+    'PAYLOAD_TOO_LARGE': (AppErrorKind.invalidFile, ErrorMessages.payloadTooLarge, false),
     'CONFLICT': (AppErrorKind.conflict, ErrorMessages.conflict, true),
     'TOKEN_INVALID': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
     'TOKEN_REQUIRED': (AppErrorKind.unauthorized, ErrorMessages.sessionEnded, false),
@@ -81,6 +86,23 @@ abstract final class ErrorMapper {
   /// Error answered by TheOff1ceOrderDelivery or TheOff1ceGeolocation.
   static AppError fromDelivery(int status, Map<String, dynamic> body) =>
       _fromCode(_deliveryCodes, status, body);
+
+  /// Problema de ubicación al registrar la prueba de entrega: el mismo error del GPS, pero con la
+  /// frase de este flujo (la general habla de compartir el recorrido con el paciente).
+  static AppError forProofLocation(AppError error) {
+    final message = switch (error.userMessage) {
+      ErrorMessages.locationDisabled => ErrorMessages.proofLocationDisabled,
+      ErrorMessages.locationPermission => ErrorMessages.proofLocationPermission,
+      _ => ErrorMessages.proofLocationUnavailable,
+    };
+    return AppError(
+      kind: error.kind,
+      userMessage: message,
+      retryable: true,
+      code: error.code ?? 'LOCATION_UNAVAILABLE',
+      cause: error.cause ?? error,
+    );
+  }
 
   /// Error answered by `pendientes-service` (NestJS: `{statusCode, error, message, path, ...}`).
   ///
@@ -183,6 +205,7 @@ abstract final class ErrorMapper {
     if (status == 403) return (AppErrorKind.forbidden, ErrorMessages.forbidden, false);
     if (status == 404) return (AppErrorKind.notFound, ErrorMessages.notFound, false);
     if (status == 409) return (AppErrorKind.conflict, ErrorMessages.conflict, true);
+    if (status == 413) return (AppErrorKind.invalidFile, ErrorMessages.payloadTooLarge, false);
     if (status == 429) return (AppErrorKind.rateLimit, ErrorMessages.rateLimit, true);
     if (status == 504) return (AppErrorKind.timeout, ErrorMessages.timeout, true);
     if (status >= 500) return (AppErrorKind.server, ErrorMessages.server, true);

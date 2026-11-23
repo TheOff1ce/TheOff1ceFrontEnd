@@ -8,8 +8,9 @@ import '../app/theme/app_theme.dart';
 /// Used on the web: there `image_picker` can only open a file input, and desktop browsers
 /// ignore its `capture` hint, so "Tomar foto" would open the file explorer instead of the
 /// camera. This screen uses the browser camera (getUserMedia) on desktop and mobile alike.
-Future<XFile?> showCameraCapture(BuildContext context) => Navigator.of(context).push<XFile>(
-      MaterialPageRoute(fullscreenDialog: true, builder: (_) => const CameraCapturePage()),
+Future<XFile?> showCameraCapture(BuildContext context, {String hint = CameraCapturePage.formulaHint}) =>
+    Navigator.of(context).push<XFile>(
+      MaterialPageRoute(fullscreenDialog: true, builder: (_) => CameraCapturePage(hint: hint)),
     );
 
 /// Why the camera cannot be shown; each case explains what the user can do.
@@ -34,10 +35,15 @@ enum CameraIssue {
 }
 
 class CameraCapturePage extends StatefulWidget {
-  const CameraCapturePage({super.key, this.loadCameras = availableCameras});
+  const CameraCapturePage({super.key, this.loadCameras = availableCameras, this.hint = formulaHint});
+
+  static const formulaHint = 'Encuadra toda la fórmula, con buena luz y sin reflejos.';
 
   /// Injected in tests.
   final Future<List<CameraDescription>> Function() loadCameras;
+
+  /// Qué encuadrar (la fórmula o, en la prueba de entrega, el pedido en la puerta).
+  final String hint;
 
   @override
   State<CameraCapturePage> createState() => _CameraCapturePageState();
@@ -185,9 +191,9 @@ class _CameraCapturePageState extends State<CameraCapturePage> {
                 Padding(
                   padding: const EdgeInsets.all(AppSpacing.l),
                   child: Column(children: [
-                    const Text(
-                      'Encuadra toda la fórmula, con buena luz y sin reflejos.',
-                      style: TextStyle(color: Colors.white70),
+                    Text(
+                      widget.hint,
+                      style: const TextStyle(color: Colors.white70),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.m),

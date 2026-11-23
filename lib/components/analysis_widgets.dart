@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../app/theme/app_theme.dart';
 import '../app/theme/farmago_tokens.dart';
+import '../types/analysis_response.dart';
+import '../utils/pendiente_format.dart';
+import 'farmago/card.dart';
+import 'farmago/feedback.dart';
 
 /// Progress through the three analysis steps. Each step is a numbered node with its word
 /// underneath; the steps share the width evenly, so long words never overflow on small screens.
@@ -100,4 +104,104 @@ class PhotoTips extends StatelessWidget {
             ),
         ]),
       );
+}
+
+/// Dato que le falta a la fórmula, dicho al paciente (`missing_fields` del servicio).
+String missingPrescriptionField(String field) => switch (field) {
+      'patient.name' => 'El nombre del paciente',
+      'patient.document_number' => 'El número de documento del paciente',
+      'prescription.issue_date' => 'La fecha en que se hizo la fórmula',
+      'medications' => 'Los medicamentos recetados',
+      _ => 'Otro dato obligatorio de la fórmula',
+    };
+
+/// Aviso de la validación de la fórmula (vigente, incompleta o vencida), con qué hacer.
+/// Sin estado reconocible no muestra nada.
+class PrescriptionValidationNotice extends StatelessWidget {
+  const PrescriptionValidationNotice({super.key, required this.validation});
+
+  final PrescriptionValidation validation;
+
+  @override
+  Widget build(BuildContext context) {
+    final vence = validation.expiresOn;
+    switch (validation.status) {
+      case PrescriptionValidationStatus.valid:
+        return FgBanner(
+          kind: FgBannerKind.exito,
+          title: 'Fórmula vigente',
+          message: vence == null
+              ? 'Tiene los datos necesarios para reclamar tus medicamentos.'
+              : 'Puedes usarla hasta el ${PendienteFormat.fechaDia(vence)}.',
+        );
+      case PrescriptionValidationStatus.incomplete:
+        final faltan = {for (final campo in validation.missingFields) missingPrescriptionField(campo)}.toList();
+        final lista = faltan.isEmpty ? '' : '\n${faltan.map((f) => '• $f').join('\n')}';
+        return FgBanner(
+          kind: FgBannerKind.aviso,
+          title: 'A la fórmula le faltan datos',
+          message: 'No encontramos estos datos en la foto:$lista\n'
+              'Revisa que se vean completos y toma otra foto. Si no están en la fórmula, pide a tu médico que la complete.',
+        );
+      case PrescriptionValidationStatus.expired:
+        return FgBanner(
+          kind: FgBannerKind.error,
+          title: 'La fórmula está vencida',
+          message: vence == null
+              ? 'Ya pasó el plazo para usarla. Pide una fórmula nueva a tu médico para reclamar tus medicamentos.'
+              : 'Venció el ${PendienteFormat.fechaDia(vence)}. Pide una fórmula nueva a tu médico para reclamar tus medicamentos.',
+        );
+      case PrescriptionValidationStatus.unknown:
+        return const SizedBox.shrink();
+    }
+  }
+}
+
+/// Datos impresos en la fórmula que el servicio logró leer (solo los que existen).
+class PrescriptionInfoCard extends StatelessWidget {
+  const PrescriptionInfoCard({super.key, required this.info});
+
+  final PrescriptionInfo info;
+
+  /// La fecha llega en ISO si el servicio la reconoció; si no, tal como se leyó.
+  static String _fecha(String valor) {
+    final dia = DateTime.tryParse(valor);
+    return dia == null ? valor : PendienteFormat.fechaDia(dia);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final medico = [
+      if (info.prescriberName != null) info.prescriberName!,
+      if (info.prescriberLicense != null) 'Registro ${info.prescriberLicense}',
+    ].join(' · ');
+    final datos = [
+      if (info.issueDate != null) ('Fecha de la fórmula', _fecha(info.issueDate!)),
+      if (info.authorizationNumber != null) ('Número de autorización', info.authorizationNumber!),
+      if (medico.isNotEmpty) ('Médico', medico),
+      if (info.epsName != null) ('EPS', info.epsName!),
+    ];
+    if (datos.isEmpty) return const SizedBox.shrink();
+    return FgCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Semantics(header: true, child: Text('Datos de la fórmula', style: FgText.h3)),
+          for (final (etiqueta, valor) in datos)
+            Padding(
+              padding: const EdgeInsets.only(top: FgSpace.sp3),
+              child: MergeSemantics(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(etiqueta, style: FgText.caption),
+                    Text(valor, style: FgText.body),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

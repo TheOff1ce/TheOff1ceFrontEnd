@@ -61,6 +61,9 @@ class TrackingController extends ChangeNotifier {
     }
   }
 
+  /// Foto o firma de la prueba de entrega (paciente dueño o administrador).
+  Future<Uint8List> proofImage(DeliveryProofImage image) => _deliveries.proofImage(deliveryId, image);
+
   Future<void> start() async {
     loading = true;
     error = null;
