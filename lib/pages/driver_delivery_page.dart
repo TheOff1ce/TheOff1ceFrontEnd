@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../app/theme/farmago_tokens.dart';
 import '../components/abrir_navegacion.dart';
 import '../components/delivery_code.dart';
 import '../components/delivery_map.dart';
+import '../components/delivery_proof.dart';
 import '../components/farmago/buttons.dart';
 import '../components/farmago/dialogs.dart';
 import '../components/farmago/feedback.dart';
 import '../components/delivery_widgets.dart';
 import '../hooks/driver_delivery_controller.dart';
+import '../services/image_service.dart';
 import '../types/delivery.dart';
 import '../types/order.dart';
-import '../utils/delivery_format.dart';
+import '../utils/delivery_format.dart';
 import '../components/farmago/card.dart';
+import 'register_delivery_proof_page.dart';
 
 /// Driver's active delivery: what to pick up, where to take it, status buttons and
 /// automatic location sharing while on the way.
 class DriverDeliveryPage extends StatefulWidget {
-  const DriverDeliveryPage({super.key, required this.order, required this.createController, required this.onBack});
+  const DriverDeliveryPage({
+    super.key,
+    required this.order,
+    required this.createController,
+    required this.onBack,
+    this.takeProofPhoto,
+    this.proofImages,
+  });
 
   final DriverOrder order;
   final DriverDeliveryController Function(String deliveryId) createController;
   final VoidCallback onBack;
+
+  /// Cámara para la foto de la prueba de entrega (inyectable en pruebas).
+  final Future<XFile?> Function(BuildContext context)? takeProofPhoto;
+  final ImageService? proofImages;
 
   @override
   State<DriverDeliveryPage> createState() => _DriverDeliveryPageState();
@@ -51,7 +66,22 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
     final antes = _estadoVisto;
     _estadoVisto = estado;
     if (!mounted || antes == null || antes == estado || estado != DeliveryStatus.delivered) return;
+    // Con prueba de entrega la cerró el propio repartidor: ese aviso lo da _registrarEntrega.
+    if (_controller.delivery?.proof != null || _controller.registeringProof) return;
     showFgToast(context, 'Entrega confirmada', detalle: 'El paciente confirmó con tu código.');
+  }
+
+  /// CU-14: foto, firma y ubicación en la puerta.
+  Future<void> _registrarEntrega() async {
+    final registrada = await showRegisterDeliveryProof(
+      context,
+      address: widget.order.deliveryAddress,
+      onSubmit: _controller.registerProof,
+      takePhoto: widget.takeProofPhoto,
+      images: widget.proofImages,
+    );
+    if (!mounted || !registrada) return;
+    showFgToast(context, 'Entrega registrada', detalle: 'Guardamos la foto, la firma y tu ubicación.');
   }
 
   @override
@@ -139,15 +169,34 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
         const SizedBox(height: FgSpace.sp3),
       ],
       // Qué hacer ahora, antes que el mapa: es lo que el repartidor necesita con el pedido en la mano.
-      if (d.status == DeliveryStatus.delivered)
-        const FgBanner(kind: FgBannerKind.exito, message: 'El paciente confirmó la entrega con tu código.')
-      else if (d.status.driverHint.isNotEmpty)
+      if (d.status == DeliveryStatus.delivered) ...[
+        FgBanner(
+          kind: FgBannerKind.exito,
+          message: d.proof != null
+              ? 'Registraste la entrega con foto, firma y ubicación.'
+              : 'El paciente confirmó la entrega con tu código.',
+        ),
+        if (d.proof != null) ...[
+          const SizedBox(height: FgSpace.sp4),
+          DeliveryProofSection(proof: d.proof!, loadImage: _controller.proofImage),
+        ],
+      ] else if (d.status.driverHint.isNotEmpty)
         FgCard(
           destacada: step != null,
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             if (step != null) Text('Paso $step de 3', style: FgText.caption),
             if (step != null) const SizedBox(height: FgSpace.sp1),
             Text(d.status.driverHint, style: FgText.bodyLg),
+            if (_controller.canRegisterProof) ...[
+              const SizedBox(height: FgSpace.sp4),
+              FgButton(
+                label: 'Registrar entrega',
+                icon: Icons.task_alt,
+                size: FgButtonSize.lg,
+                expand: true,
+                onPressed: _controller.updating || _controller.registeringProof ? null : _registrarEntrega,
+              ),
+            ],
             if (d.deliveryCode != null && d.awaitsCode) ...[
               const SizedBox(height: FgSpace.sp4),
               DriverDeliveryCodeCard(code: d.deliveryCode!, awaitingPatient: true),
@@ -200,7 +249,7 @@ class _DriverDeliveryPageState extends State<DriverDeliveryPage> {
           child: FgButton(
             label: 'No se pudo entregar',
             variant: FgButtonVariant.ghost,
-            onPressed: _controller.updating ? null : _fail,
+            onPressed: _controller.updating || _controller.registeringProof ? null : _fail,
           ),
         ),
       ],

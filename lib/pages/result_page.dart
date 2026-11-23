@@ -4,7 +4,7 @@ import '../app/theme/app_theme.dart';
 import '../components/farmago/estampado.dart';
 import '../components/analysis_widgets.dart';
 import '../components/medication_card.dart';
-import '../types/analysis_response.dart';
+import '../types/analysis_response.dart';
 import '../components/farmago/card.dart';
 import '../components/farmago/buttons.dart';
 import '../types/order.dart';
@@ -56,9 +56,19 @@ class ResultPage extends StatelessWidget {
                         style: context.text.headlineSmall,
                       ),
                     ),
+                    // Validación de la fórmula (servicios recientes); con APIs viejas no aparece nada.
+                    if (result.validation case final validation?
+                        when validation.status != PrescriptionValidationStatus.unknown) ...[
+                      const SizedBox(height: AppSpacing.l),
+                      PrescriptionValidationNotice(validation: validation),
+                    ],
                     if (result.patient != null) ...[
                       const SizedBox(height: AppSpacing.l),
                       _PatientCard(patient: result.patient!),
+                    ],
+                    if (result.validation != null && result.prescription != null) ...[
+                      const SizedBox(height: AppSpacing.l),
+                      PrescriptionInfoCard(info: result.prescription!),
                     ],
                     if (result.requiresHumanReview || result.warnings.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.l),

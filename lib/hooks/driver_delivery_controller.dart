@@ -8,6 +8,22 @@ import '../services/delivery_service.dart';
 import '../services/location_source.dart';
 import '../types/delivery.dart';
 
+/// Lo que el repartidor reunió en la puerta para la prueba de entrega (CU-14). La ubicación se
+/// toma al enviar, para que sea reciente.
+class DeliveryProofDraft {
+  const DeliveryProofDraft({
+    required this.photo,
+    required this.photoContentType,
+    required this.signaturePng,
+    this.receiverName,
+  });
+
+  final Uint8List photo;
+  final String photoContentType;
+  final Uint8List signaturePng;
+  final String? receiverName;
+}
+
 /// Driver side of one delivery: status buttons and periodic location sharing.
 ///
 /// The location is sent every [interval] only while the delivery is PICKED_UP, IN_TRANSIT or
@@ -30,6 +46,10 @@ class DriverDeliveryController extends ChangeNotifier {
   static const maxPendientes = 30;
   static const vigenciaPendiente = Duration(seconds: 110);
 
+  /// El servicio rechaza la prueba con una ubicación menos precisa que esto; se avisa antes de
+  /// subir la foto.
+  static const precisionMaximaPrueba = 100.0;
+
   final String deliveryId;
   final Duration interval;
   final DeliveryService _deliveries;
@@ -47,6 +67,9 @@ class DriverDeliveryController extends ChangeNotifier {
   AppError? locationError;
   bool loading = true;
   bool updating = false;
+
+  /// Se está enviando la prueba de entrega.
+  bool registeringProof = false;
   DateTime? lastSentAt;
 
   /// La última ubicación no salió por falta de conexión; se reintenta sola.
@@ -64,6 +87,9 @@ class DriverDeliveryController extends ChangeNotifier {
         DeliveryStatus.pickedUp => DeliveryStatus.inTransit,
         _ => null,
       };
+
+  /// En camino o llegando: el repartidor puede registrar la entrega con foto y firma.
+  bool get canRegisterProof => delivery?.acceptsProof ?? false;
 
   bool get canFail => switch (delivery?.status) {
         DeliveryStatus.assigned || DeliveryStatus.pickedUp || DeliveryStatus.inTransit || DeliveryStatus.arriving => true,
@@ -98,6 +124,53 @@ class DriverDeliveryController extends ChangeNotifier {
       updating = false;
       _notify();
     }
+  }
+
+  /// CU-14: cierra la entrega con la foto, la firma y la ubicación actual. `null` = entregado.
+  ///
+  /// Repetirlo con la entrega ya cerrada devuelve el envío cerrado, así que un reintento tras
+  /// perder la respuesta no duplica nada.
+  Future<AppError?> registerProof(DeliveryProofDraft draft) async {
+    if (registeringProof) return null;
+    registeringProof = true;
+    _notify();
+    try {
+      final GpsFix fix;
+      try {
+        await _location.ensureReady();
+        fix = await _location.currentFix();
+      } catch (e) {
+        return _reportar(ErrorMapper.forProofLocation(ErrorMapper.fromException(e)));
+      }
+      if (fix.accuracy > precisionMaximaPrueba) {
+        return _reportar(ErrorMapper.fromDelivery(422, const {
+          'error': {'code': 'PROOF_LOCATION_INVALID'},
+        }));
+      }
+      delivery = await _deliveries.registerProof(
+        deliveryId,
+        photo: draft.photo,
+        photoContentType: draft.photoContentType,
+        signaturePng: draft.signaturePng,
+        fix: fix,
+        receiverName: draft.receiverName,
+      );
+      await _syncSharing();
+      return null;
+    } catch (e) {
+      return _reportar(ErrorMapper.fromException(e));
+    } finally {
+      registeringProof = false;
+      _notify();
+    }
+  }
+
+  /// Foto o firma de la prueba de entrega ya registrada.
+  Future<Uint8List> proofImage(DeliveryProofImage image) => _deliveries.proofImage(deliveryId, image);
+
+  static AppError _reportar(AppError error) {
+    ErrorReporter.report(error);
+    return error;
   }
 
   Future<void> _syncSharing() async {
