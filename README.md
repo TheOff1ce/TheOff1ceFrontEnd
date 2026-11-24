@@ -353,10 +353,12 @@ Without `MAPS_API_KEY` a simplified view is shown (route and points drawn, no ti
 | Platform | Where it goes | Google Cloud restriction |
 |---|---|---|
 | Web | `--dart-define=MAPS_API_KEY=...` (the app loads Maps JavaScript API) | *HTTP referrers* (`http://localhost:5173/*`, your domain) + only *Maps JavaScript API* |
-| Android | `MAPS_API_KEY=...` in `android/local.properties` (not committed) | Android app (package + SHA-1) + only *Maps SDK for Android* |
+| Android | `MAPS_API_KEY=...` in `android/local.properties` (not committed), or `--dart-define=MAPS_API_KEY=...`, which Gradle also reads for the manifest | Android app (package + SHA-1) + only *Maps SDK for Android* |
 | iOS | `MAPS_API_KEY=...` in `ios/Flutter/Secrets.xcconfig` (included by Debug/Release, not committed) | iOS app (bundle ID) + only *Maps SDK for iOS* |
 
 ⚠️ The client key must never have Routes or Geocoding enabled (only the backend uses those).
+
+**Android:** a referrer-restricted web key does not work there (the map stays grey). When Gradle finds no key, it warns `MAPS_API_KEY no está configurada para Android`.
 
 ---
 

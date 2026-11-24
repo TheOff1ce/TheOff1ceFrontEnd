@@ -4,6 +4,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+import java.util.Base64
 import java.util.Properties
 
 /**
@@ -19,12 +20,33 @@ fun signingValue(property: String, env: String): String? =
     keystoreProperties.getProperty(property) ?: System.getenv(env)?.takeIf { it.isNotBlank() }
 val releaseStoreFile = signingValue("storeFile", "ANDROID_KEYSTORE_PATH")
 
-/** Google Maps client key: Gradle property MAPS_API_KEY, or android/local.properties. */
-val mapsApiKey: String = (project.findProperty("MAPS_API_KEY") as String?)
-    ?: Properties().apply {
+/** MAPS_API_KEY de `--dart-define`: Flutter pasa la lista como `dart-defines`, cada entrada en base64. */
+fun mapsKeyFromDartDefines(): String? =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.mapNotNull { entry -> runCatching { String(Base64.getDecoder().decode(entry)) }.getOrNull() }
+        ?.firstOrNull { it.startsWith("MAPS_API_KEY=") }
+        ?.substringAfter("=")
+
+/**
+ * Clave de cliente de Google Maps (restringida a la app Android), en este orden: propiedad de
+ * Gradle MAPS_API_KEY, android/local.properties o `--dart-define=MAPS_API_KEY`.
+ */
+val mapsApiKey: String = listOf(
+    project.findProperty("MAPS_API_KEY") as String?,
+    Properties().apply {
         val file = rootProject.file("local.properties")
         if (file.exists()) file.inputStream().use { load(it) }
-    }.getProperty("MAPS_API_KEY", "")
+    }.getProperty("MAPS_API_KEY"),
+    mapsKeyFromDartDefines(),
+).firstOrNull { !it.isNullOrBlank() } ?: ""
+
+if (mapsApiKey.isBlank()) {
+    logger.warn(
+        "MAPS_API_KEY no está configurada para Android: el mapa de Google se verá vacío. " +
+            "Ponla en android/local.properties o pásala con --dart-define=MAPS_API_KEY.",
+    )
+}
 
 android {
     namespace = "com.example.farma_go"
